@@ -96,7 +96,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void ImportExistingProject()
+        private async Task ImportExistingProject()
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
@@ -120,11 +120,48 @@ namespace ProjectManager.ViewModels.Pages
                     dialogViewModel.LocalPath = projectPath;
                     dialogViewModel.WorkingDirectory = projectPath;
                     
-                    // 自动检测框架类型
-                    var detectedFramework = FrameworkConfigService.DetectFramework(projectPath);
-                    if (detectedFramework != "其他")
+                    // 自动检测框架类型（使用增强检测）
+                    try
                     {
-                        dialogViewModel.Framework = detectedFramework;
+                        var detectionService = _serviceProvider.GetService<IProjectDetectionService>();
+                        if (detectionService != null)
+                        {
+                            var detectionResult = await detectionService.DetectProjectTypeAsync(projectPath);
+                            if (detectionResult.ConfidenceLevel > 0.3 && detectionResult.DetectedFramework != "其他")
+                            {
+                                dialogViewModel.Framework = detectionResult.DetectedFramework;
+                                
+                                // 填充其他建议信息
+                                if (!string.IsNullOrEmpty(detectionResult.SuggestedDescription))
+                                {
+                                    dialogViewModel.ProjectDescription = detectionResult.SuggestedDescription;
+                                }
+                                
+                                if (!string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
+                                {
+                                    dialogViewModel.StartCommand = detectionResult.SuggestedStartCommand;
+                                }
+                                
+                                if (detectionResult.SuggestedPort > 0)
+                                {
+                                    dialogViewModel.Port = detectionResult.SuggestedPort.ToString();
+                                }
+                                
+                                if (detectionResult.SuggestedTags.Any())
+                                {
+                                    dialogViewModel.TagsString = string.Join(", ", detectionResult.SuggestedTags);
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // 如果增强检测失败，回退到原有检测
+                        var detectedFramework = FrameworkConfigService.DetectFramework(projectPath);
+                        if (detectedFramework != "其他")
+                        {
+                            dialogViewModel.Framework = detectedFramework;
+                        }
                     }
                     
                     var result = window.ShowDialog(Application.Current.MainWindow);

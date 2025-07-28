@@ -236,6 +236,138 @@ namespace ProjectManager.Models
                 CommonCommands = new List<string> { "ollama serve", "ollama run llama2", "python client.py" }
             },
             
+            ["PyTorch"] = new FrameworkConfig
+            {
+                Name = "PyTorch",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "深度学习", "机器学习", "PyTorch", "AI" },
+                Description = "PyTorch深度学习框架",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python train.py", "python inference.py" }
+            },
+            
+            ["TensorFlow"] = new FrameworkConfig
+            {
+                Name = "TensorFlow",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "机器学习", "深度学习", "TensorFlow", "AI" },
+                Description = "TensorFlow机器学习框架",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python train.py", "tensorboard --logdir=./logs" }
+            },
+            
+            ["Transformers"] = new FrameworkConfig
+            {
+                Name = "Transformers",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "NLP", "Transformers", "Hugging Face", "AI", "语言模型" },
+                Description = "Hugging Face Transformers库",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python train.py", "python inference.py" }
+            },
+            
+            ["LangChain"] = new FrameworkConfig
+            {
+                Name = "LangChain",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "LLM", "LangChain", "AI", "聊天机器人", "语言模型" },
+                Description = "LangChain大语言模型应用框架",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python chat.py", "streamlit run app.py" }
+            },
+            
+            ["OpenAI"] = new FrameworkConfig
+            {
+                Name = "OpenAI",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "OpenAI", "GPT", "AI", "语言模型", "API" },
+                Description = "OpenAI API应用",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python chat.py", "streamlit run app.py" }
+            },
+            
+            ["Stable Diffusion"] = new FrameworkConfig
+            {
+                Name = "Stable Diffusion",
+                DefaultStartCommand = "python main.py",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "图像生成", "Stable Diffusion", "AI绘画", "扩散模型" },
+                Description = "Stable Diffusion图像生成",
+                FileExtensions = "*.py",
+                RequirementsFile = "requirements.txt",
+                CommonCommands = new List<string> { "python main.py", "python generate.py", "gradio run app.py" }
+            },
+            
+            ["Next.js"] = new FrameworkConfig
+            {
+                Name = "Next.js",
+                DefaultStartCommand = "npm run dev",
+                DefaultPort = 3000,
+                DefaultTags = new List<string> { "全栈", "Next.js", "React", "Web应用" },
+                Description = "Next.js全栈React框架",
+                FileExtensions = "*.js,*.jsx,*.ts,*.tsx",
+                RequirementsFile = "package.json",
+                CommonCommands = new List<string> { "npm run dev", "npm run build", "npm start" }
+            },
+            
+            ["Angular"] = new FrameworkConfig
+            {
+                Name = "Angular",
+                DefaultStartCommand = "ng serve",
+                DefaultPort = 4200,
+                DefaultTags = new List<string> { "前端", "Angular", "TypeScript", "Web应用" },
+                Description = "Angular前端框架",
+                FileExtensions = "*.ts,*.html,*.css",
+                RequirementsFile = "package.json",
+                CommonCommands = new List<string> { "ng serve", "ng build", "ng test" }
+            },
+            
+            [".NET"] = new FrameworkConfig
+            {
+                Name = ".NET",
+                DefaultStartCommand = "dotnet run",
+                DefaultPort = 5000,
+                DefaultTags = new List<string> { ".NET", "C#", "后端", "Web API" },
+                Description = ".NET应用程序",
+                FileExtensions = "*.cs,*.csproj",
+                RequirementsFile = "*.csproj",
+                CommonCommands = new List<string> { "dotnet run", "dotnet build", "dotnet watch run" }
+            },
+            
+            ["Unity"] = new FrameworkConfig
+            {
+                Name = "Unity",
+                DefaultStartCommand = "Unity编辑器启动",
+                DefaultPort = 0,
+                DefaultTags = new List<string> { "游戏开发", "Unity", "C#", "3D" },
+                Description = "Unity游戏开发",
+                FileExtensions = "*.cs,*.unity",
+                RequirementsFile = "ProjectSettings/ProjectVersion.txt",
+                CommonCommands = new List<string> { "Unity编辑器启动", "Unity -batchmode", "Unity -executeMethod Build" }
+            },
+            
+            ["Spring Boot"] = new FrameworkConfig
+            {
+                Name = "Spring Boot",
+                DefaultStartCommand = "mvn spring-boot:run",
+                DefaultPort = 8080,
+                DefaultTags = new List<string> { "Java", "Spring Boot", "Web框架", "后端" },
+                Description = "Spring Boot Java框架",
+                FileExtensions = "*.java,*.xml",
+                RequirementsFile = "pom.xml",
+                CommonCommands = new List<string> { "mvn spring-boot:run", "gradle bootRun", "java -jar target/*.jar" }
+            },
+            
             ["ComfyUI"] = new FrameworkConfig
             {
                 Name = "ComfyUI",
@@ -278,13 +410,40 @@ namespace ProjectManager.Models
         }
 
         /// <summary>
-        /// 根据项目路径自动检测框架类型
+        /// 根据项目路径自动检测框架类型（增强版本）
         /// </summary>
         public static string DetectFramework(string projectPath)
         {
             if (string.IsNullOrEmpty(projectPath) || !Directory.Exists(projectPath))
                 return "其他";
 
+            try
+            {
+                // 使用新的检测服务
+                var detectionService = new ProjectManager.Services.ProjectDetectionService();
+                var detectionTask = detectionService.DetectProjectTypeAsync(projectPath);
+                var result = detectionTask.GetAwaiter().GetResult();
+
+                if (result.ConfidenceLevel > 0.3 && result.DetectedFramework != "其他")
+                {
+                    return result.DetectedFramework;
+                }
+
+                // 如果新检测服务未能识别，回退到原有逻辑
+                return DetectFrameworkLegacy(projectPath);
+            }
+            catch
+            {
+                // 如果出现异常，回退到原有逻辑
+                return DetectFrameworkLegacy(projectPath);
+            }
+        }
+
+        /// <summary>
+        /// 原有的框架检测逻辑（作为备用）
+        /// </summary>
+        private static string DetectFrameworkLegacy(string projectPath)
+        {
             try
             {
                 var files = Directory.GetFiles(projectPath, "*", SearchOption.TopDirectoryOnly);

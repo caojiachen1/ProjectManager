@@ -53,6 +53,60 @@
                             <ComboBoxItem Content="Streamlit"/>
                             <ComboBoxItem Content="其他"/>
                         </ComboBox>
+                        
+                        <!-- 智能检测区域 -->
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" 
+                                       Text="{Binding DetectionInfo}" 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="智能检测" 
+                                       Icon="{ui:SymbolIcon Search24}"
+                                       Command="{Binding DetectProjectTypeCommand}"
+                                       IsEnabled="{Binding IsDetecting, Converter={StaticResource BooleanToInverseBooleanConverter}}"
+                                       FontSize="11"
+                                       Padding="8,4"/>
+                        </Grid>
+                        
+                        <!-- 检测候选项 -->
+                        <ItemsControl ItemsSource="{Binding DetectionCandidates}" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ui:Card Padding="8" Margin="0,2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding DetectedFramework}" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Text="{Binding SuggestedDescription}" FontSize="10" 
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding ConfidenceLevel, StringFormat=P1}" 
+                                                       VerticalAlignment="Center" 
+                                                       FontSize="11"
+                                                       Margin="8,0"/>
+                                            <ui:Button Grid.Column="2" 
+                                                       Content="应用" 
+                                                       Command="{Binding DataContext.ApplyDetectionResultCommand, RelativeSource={RelativeSource AncestorType=ui:ContentDialog}}"
+                                                       CommandParameter="{Binding}"
+                                                       FontSize="10"
+                                                       Padding="6,2"/>
+                                        </Grid>
+                                    </ui:Card>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                     
                     <StackPanel Margin="0,0,0,12">

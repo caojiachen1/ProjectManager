@@ -10,6 +10,7 @@ namespace ProjectManager.ViewModels.Dialogs
     public partial class ProjectEditDialogViewModel : ObservableObject
     {
         private readonly IProjectService _projectService;
+        private readonly IProjectDetectionService _detectionService;
         private AiProject? _originalProject;
 
         [ObservableProperty]
@@ -57,13 +58,23 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private bool _isEditing = false;
 
+        [ObservableProperty]
+        private string _detectionInfo = string.Empty;
+
+        [ObservableProperty]
+        private bool _isDetecting = false;
+
+        [ObservableProperty]
+        private ObservableCollection<ProjectDetectionResult> _detectionCandidates = new();
+
         public event EventHandler<AiProject>? ProjectSaved;
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
-        public ProjectEditDialogViewModel(IProjectService projectService)
+        public ProjectEditDialogViewModel(IProjectService projectService, IProjectDetectionService detectionService)
         {
             _projectService = projectService;
+            _detectionService = detectionService;
             
             // 初始化可用框架列表
             AvailableFrameworks = new ObservableCollection<string>(FrameworkConfigService.GetFrameworkNames());
@@ -115,15 +126,72 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
-        private void OnLocalPathChanged()
+        private async void OnLocalPathChanged()
         {
             if (!string.IsNullOrEmpty(LocalPath) && string.IsNullOrEmpty(Framework))
             {
-                // 自动检测框架类型
-                var detectedFramework = FrameworkConfigService.DetectFramework(LocalPath);
-                if (detectedFramework != "其他")
+                try
                 {
-                    Framework = detectedFramework;
+                    // 使用增强的项目检测服务
+                    var detectionResult = await _detectionService.DetectProjectTypeAsync(LocalPath);
+                    
+                    if (detectionResult.ConfidenceLevel > 0.3 && detectionResult.DetectedFramework != "其他")
+                    {
+                        Framework = detectionResult.DetectedFramework;
+                        
+                        // 自动填充建议的信息
+                        if (string.IsNullOrEmpty(ProjectName) && !string.IsNullOrEmpty(detectionResult.SuggestedName))
+                        {
+                            ProjectName = detectionResult.SuggestedName;
+                        }
+                        
+                        if (string.IsNullOrEmpty(ProjectDescription) && !string.IsNullOrEmpty(detectionResult.SuggestedDescription))
+                        {
+                            ProjectDescription = detectionResult.SuggestedDescription;
+                        }
+                        
+                        if (string.IsNullOrEmpty(StartCommand) && !string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
+                        {
+                            StartCommand = detectionResult.SuggestedStartCommand;
+                        }
+                        
+                        if ((string.IsNullOrEmpty(Port) || Port == "0") && detectionResult.SuggestedPort > 0)
+                        {
+                            Port = detectionResult.SuggestedPort.ToString();
+                        }
+                        
+                        if (string.IsNullOrEmpty(TagsString) && detectionResult.SuggestedTags.Any())
+                        {
+                            TagsString = string.Join(", ", detectionResult.SuggestedTags);
+                        }
+                        
+                        // 显示检测信息（可选）
+                        DetectionInfo = $"检测结果: {detectionResult.DetectedFramework} (置信度: {detectionResult.ConfidenceLevel:P1})";
+                        if (!string.IsNullOrEmpty(detectionResult.DetectionReason))
+                        {
+                            DetectionInfo += $"\n原因: {detectionResult.DetectionReason}";
+                        }
+                    }
+                    else
+                    {
+                        // 回退到原有检测逻辑
+                        var detectedFramework = FrameworkConfigService.DetectFramework(LocalPath);
+                        if (detectedFramework != "其他")
+                        {
+                            Framework = detectedFramework;
+                        }
+                        DetectionInfo = "使用基础检测逻辑";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 如果检测失败，回退到原有逻辑
+                    var detectedFramework = FrameworkConfigService.DetectFramework(LocalPath);
+                    if (detectedFramework != "其他")
+                    {
+                        Framework = detectedFramework;
+                    }
+                    DetectionInfo = $"检测出错，使用基础检测: {ex.Message}";
                 }
             }
         }
@@ -312,6 +380,84 @@ namespace ProjectManager.ViewModels.Dialogs
                     System.Diagnostics.Debug.WriteLine($"删除项目失败: {ex.Message}");
                 }
             }
+        }
+
+        [RelayCommand]
+        private async Task DetectProjectType()
+        {
+            if (string.IsNullOrEmpty(LocalPath) || !Directory.Exists(LocalPath))
+            {
+                DetectionInfo = "请先选择有效的项目路径";
+                return;
+            }
+
+            try
+            {
+                IsDetecting = true;
+                DetectionInfo = "正在检测项目类型...";
+                
+                // 获取多个检测候选项
+                var candidates = await _detectionService.GetMultipleCandidatesAsync(LocalPath);
+                DetectionCandidates.Clear();
+                
+                foreach (var candidate in candidates.Take(5)) // 最多显示5个候选项
+                {
+                    DetectionCandidates.Add(candidate);
+                }
+
+                if (candidates.Any())
+                {
+                    var bestCandidate = candidates.First();
+                    DetectionInfo = $"检测到 {candidates.Count} 个可能的项目类型，最佳匹配: {bestCandidate.DetectedFramework} (置信度: {bestCandidate.ConfidenceLevel:P1})";
+                }
+                else
+                {
+                    DetectionInfo = "未能检测到已知的项目类型";
+                }
+            }
+            catch (Exception ex)
+            {
+                DetectionInfo = $"检测失败: {ex.Message}";
+            }
+            finally
+            {
+                IsDetecting = false;
+            }
+        }
+
+        [RelayCommand]
+        private void ApplyDetectionResult(ProjectDetectionResult? detectionResult)
+        {
+            if (detectionResult == null) return;
+
+            Framework = detectionResult.DetectedFramework;
+            
+            if (string.IsNullOrEmpty(ProjectName) && !string.IsNullOrEmpty(detectionResult.SuggestedName))
+            {
+                ProjectName = detectionResult.SuggestedName;
+            }
+            
+            if (string.IsNullOrEmpty(ProjectDescription) && !string.IsNullOrEmpty(detectionResult.SuggestedDescription))
+            {
+                ProjectDescription = detectionResult.SuggestedDescription;
+            }
+            
+            if (string.IsNullOrEmpty(StartCommand) && !string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
+            {
+                StartCommand = detectionResult.SuggestedStartCommand;
+            }
+            
+            if ((string.IsNullOrEmpty(Port) || Port == "0") && detectionResult.SuggestedPort > 0)
+            {
+                Port = detectionResult.SuggestedPort.ToString();
+            }
+            
+            if (string.IsNullOrEmpty(TagsString) && detectionResult.SuggestedTags.Any())
+            {
+                TagsString = string.Join(", ", detectionResult.SuggestedTags);
+            }
+
+            DetectionInfo = $"已应用 {detectionResult.DetectedFramework} 的检测结果";
         }
     }
 }
