@@ -19,6 +19,9 @@
             <local:StatusToStartEnabledConverter x:Key="StatusToStartEnabledConverter"/>
             <local:StatusToStopEnabledConverter x:Key="StatusToStopEnabledConverter"/>
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+            <local:FrameworkToDescriptionConverter x:Key="FrameworkToDescriptionConverter"/>
+            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

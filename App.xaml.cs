@@ -47,6 +47,9 @@ namespace ProjectManager
 
                 // Project service
                 services.AddSingleton<IProjectService, ProjectService>();
+                
+                // Project template service
+                services.AddSingleton<IProjectTemplateService, ProjectTemplateService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();

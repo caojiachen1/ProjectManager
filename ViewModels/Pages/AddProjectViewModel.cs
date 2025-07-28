@@ -9,6 +9,8 @@ using ProjectManager.Views.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
+using MessageBoxResult = Wpf.Ui.Controls.MessageBoxResult;
 
 namespace ProjectManager.ViewModels.Pages
 {
@@ -26,7 +28,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void CreateNewProject()
+        private async Task CreateNewProject()
         {
             var dialogViewModel = _serviceProvider.GetRequiredService<ProjectEditDialogViewModel>();
             var window = _serviceProvider.GetRequiredService<ProjectEditWindow>();
@@ -36,6 +38,58 @@ namespace ProjectManager.ViewModels.Pages
             var result = window.ShowDialog(Application.Current.MainWindow);
             if (result == true)
             {
+                // 如果选择了框架且路径存在，询问是否创建项目模板
+                if (!string.IsNullOrEmpty(dialogViewModel.Framework) && 
+                    !string.IsNullOrEmpty(dialogViewModel.LocalPath) &&
+                    Directory.Exists(dialogViewModel.LocalPath))
+                {
+                    var templateService = _serviceProvider.GetService<IProjectTemplateService>();
+                    if (templateService != null)
+                    {
+                        var isEmpty = await templateService.IsValidProjectDirectoryAsync(dialogViewModel.LocalPath);
+                        if (isEmpty)
+                        {
+                            var messageBox = new MessageBox
+                            {
+                                Title = "创建项目模板",
+                                Content = $"是否为 {dialogViewModel.Framework} 项目创建基础代码模板？\n这将创建示例代码文件和配置文件。",
+                                PrimaryButtonText = "创建模板",
+                                SecondaryButtonText = "跳过"
+                            };
+
+                            var createTemplate = await messageBox.ShowDialogAsync();
+                            if (createTemplate == MessageBoxResult.Primary)
+                            {
+                                try
+                                {
+                                    await templateService.CreateProjectTemplateAsync(
+                                        dialogViewModel.LocalPath, 
+                                        dialogViewModel.Framework, 
+                                        dialogViewModel.ProjectName);
+                                    
+                                    var successBox = new MessageBox
+                                    {
+                                        Title = "成功",
+                                        Content = "项目模板创建成功！",
+                                        PrimaryButtonText = "确定"
+                                    };
+                                    await successBox.ShowDialogAsync();
+                                }
+                                catch (Exception ex)
+                                {
+                                    var errorBox = new MessageBox
+                                    {
+                                        Title = "错误",
+                                        Content = $"创建项目模板失败：{ex.Message}",
+                                        PrimaryButtonText = "确定"
+                                    };
+                                    await errorBox.ShowDialogAsync();
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 // 导航到项目页面
                 _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
             }
@@ -65,6 +119,13 @@ namespace ProjectManager.ViewModels.Pages
                     dialogViewModel.ProjectName = Path.GetFileName(projectPath);
                     dialogViewModel.LocalPath = projectPath;
                     dialogViewModel.WorkingDirectory = projectPath;
+                    
+                    // 自动检测框架类型
+                    var detectedFramework = FrameworkConfigService.DetectFramework(projectPath);
+                    if (detectedFramework != "其他")
+                    {
+                        dialogViewModel.Framework = detectedFramework;
+                    }
                     
                     var result = window.ShowDialog(Application.Current.MainWindow);
                     if (result == true)

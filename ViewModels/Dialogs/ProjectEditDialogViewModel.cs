@@ -1,6 +1,9 @@
 using ProjectManager.Models;
 using ProjectManager.Services;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
@@ -31,6 +34,12 @@ namespace ProjectManager.ViewModels.Dialogs
         private string _framework = string.Empty;
 
         [ObservableProperty]
+        private ObservableCollection<string> _availableFrameworks = new();
+
+        [ObservableProperty]
+        private ObservableCollection<string> _frameworkCommands = new();
+
+        [ObservableProperty]
         private string _author = string.Empty;
 
         [ObservableProperty]
@@ -55,6 +64,68 @@ namespace ProjectManager.ViewModels.Dialogs
         public ProjectEditDialogViewModel(IProjectService projectService)
         {
             _projectService = projectService;
+            
+            // 初始化可用框架列表
+            AvailableFrameworks = new ObservableCollection<string>(FrameworkConfigService.GetFrameworkNames());
+            
+            // 监听框架变化
+            PropertyChanged += OnPropertyChanged;
+        }
+
+        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Framework))
+            {
+                OnFrameworkChanged();
+            }
+            else if (e.PropertyName == nameof(LocalPath))
+            {
+                OnLocalPathChanged();
+            }
+        }
+
+        private void OnFrameworkChanged()
+        {
+            if (string.IsNullOrEmpty(Framework))
+                return;
+
+            var config = FrameworkConfigService.GetFrameworkConfig(Framework);
+            if (config != null)
+            {
+                // 更新命令建议
+                FrameworkCommands = new ObservableCollection<string>(config.CommonCommands);
+                
+                // 如果启动命令为空，设置默认命令
+                if (string.IsNullOrEmpty(StartCommand))
+                {
+                    StartCommand = config.DefaultStartCommand;
+                }
+                
+                // 如果端口为空或为0，设置默认端口
+                if (string.IsNullOrEmpty(Port) || Port == "0")
+                {
+                    Port = config.DefaultPort.ToString();
+                }
+                
+                // 如果标签为空，设置默认标签
+                if (string.IsNullOrEmpty(TagsString))
+                {
+                    TagsString = string.Join(", ", config.DefaultTags);
+                }
+            }
+        }
+
+        private void OnLocalPathChanged()
+        {
+            if (!string.IsNullOrEmpty(LocalPath) && string.IsNullOrEmpty(Framework))
+            {
+                // 自动检测框架类型
+                var detectedFramework = FrameworkConfigService.DetectFramework(LocalPath);
+                if (detectedFramework != "其他")
+                {
+                    Framework = detectedFramework;
+                }
+            }
         }
 
         public void LoadProject(AiProject? project = null)
@@ -84,6 +155,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 Version = "1.0.0";
                 Port = "0";
                 AutoStart = false;
+                FrameworkCommands.Clear();
             }
         }
 
@@ -116,7 +188,19 @@ namespace ProjectManager.ViewModels.Dialogs
                     {
                         ProjectName = Path.GetFileName(path);
                     }
+                    
+                    // 触发路径变化事件来自动检测框架
+                    OnLocalPathChanged();
                 }
+            }
+        }
+
+        [RelayCommand]
+        private void ApplyFrameworkCommand(string command)
+        {
+            if (!string.IsNullOrEmpty(command))
+            {
+                StartCommand = command;
             }
         }
 
