@@ -158,8 +158,8 @@
                     VerticalAlignment="Center"
                     Visibility="{Binding HasProjects, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <ui:SymbolIcon Symbol="Apps24" FontSize="64" Opacity="0.3" Margin="0,0,0,16"/>
-            <TextBlock Text="还没有AI项目" FontSize="18" Opacity="0.6" Margin="0,0,0,8"/>
-            <TextBlock Text="点击'新建项目'开始创建您的第一个AI项目" Opacity="0.4" Margin="0,0,0,16"/>
+            <TextBlock Text="还没有项目" FontSize="18" Opacity="0.6" Margin="0,0,0,8"/>
+            <TextBlock Text="点击'新建项目'开始创建您的第一个项目" Opacity="0.4" Margin="0,0,0,16"/>
             <ui:Button 
                 Content="新建项目" 
                 Icon="{ui:SymbolIcon Add24}"

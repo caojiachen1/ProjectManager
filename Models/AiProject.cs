@@ -38,6 +38,7 @@ namespace ProjectManager.Models
         private DateTime _lastModified = DateTime.Now;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(StatusDisplay))]
         private ProjectStatus _status = ProjectStatus.Stopped;
 
         [ObservableProperty]
