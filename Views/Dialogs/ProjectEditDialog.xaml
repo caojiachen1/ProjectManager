@@ -1,0 +1,180 @@
+<ui:ContentDialog
+    x:Class="ProjectManager.Views.Dialogs.ProjectEditDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="项目设置"
+    d:DataContext="{d:DesignInstance local:ProjectEditDialog,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="600"
+    d:DesignWidth="500"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Margin="24">
+            <!-- 基本信息 -->
+            <ui:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="基本信息" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目名称" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入项目名称"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目描述" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="输入项目描述"
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinHeight="80"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="框架/技术栈" Margin="0,0,0,4"/>
+                        <ComboBox SelectedItem="{Binding Framework}" 
+                                  IsEditable="True"
+                                  Text="{Binding Framework}">
+                            <ComboBoxItem Content="PyTorch"/>
+                            <ComboBoxItem Content="TensorFlow"/>
+                            <ComboBoxItem Content="Transformers"/>
+                            <ComboBoxItem Content="LangChain"/>
+                            <ComboBoxItem Content="OpenAI"/>
+                            <ComboBoxItem Content="Stable Diffusion"/>
+                            <ComboBoxItem Content="FastAPI"/>
+                            <ComboBoxItem Content="Gradio"/>
+                            <ComboBoxItem Content="Streamlit"/>
+                            <ComboBoxItem Content="其他"/>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="作者" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding Author, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入作者名称"/>
+                    </StackPanel>
+                    
+                    <StackPanel>
+                        <TextBlock Text="版本" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="例如: 1.0.0"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 路径配置 -->
+            <ui:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="路径配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目本地路径" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                        Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="选择项目文件夹路径"
+                                        Margin="0,0,8,0"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="浏览" 
+                                       Icon="{ui:SymbolIcon FolderOpen24}"
+                                       Command="{Binding BrowseLocalPathCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <StackPanel>
+                        <TextBlock Text="工作目录" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                        Text="{Binding WorkingDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="设置启动工作目录（默认为项目路径）"
+                                        Margin="0,0,8,0"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="浏览" 
+                                       Icon="{ui:SymbolIcon FolderOpen24}"
+                                       Command="{Binding BrowseWorkingDirectoryCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 启动配置 -->
+            <ui:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="启动配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="例如: python app.py 或 streamlit run app.py"
+                                    TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="Python 环境" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding PythonEnvironment, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="Python 解释器路径或环境名称（可选）"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="端口号" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding Port}" 
+                                    PlaceholderText="应用端口号（可选，例如：8080）"/>
+                    </StackPanel>
+                    
+                    <CheckBox Content="应用启动时自动启动此项目" IsChecked="{Binding AutoStart}"/>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 标签 -->
+            <ui:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="标签" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
+                                PlaceholderText="输入标签，用逗号分隔（例如：机器学习,图像处理,API）"/>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 操作按钮 -->
+            <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ui:Button Content="保存" 
+                               Icon="{ui:SymbolIcon Save24}"
+                               Appearance="Primary"
+                               Command="{Binding SaveCommand}"
+                               Margin="0,0,4,0"/>
+                    <ui:Button Content="取消" 
+                               Icon="{ui:SymbolIcon Dismiss24}"
+                               Command="{Binding CancelCommand}"
+                               Margin="4,0,0,0"/>
+                </StackPanel>
+                
+                <ui:Button Grid.Column="2" 
+                           Content="删除项目" 
+                           Icon="{ui:SymbolIcon Delete24}"
+                           Appearance="Danger"
+                           Command="{Binding DeleteCommand}"
+                           Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           Margin="16,0,0,0"/>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</ui:ContentDialog>
