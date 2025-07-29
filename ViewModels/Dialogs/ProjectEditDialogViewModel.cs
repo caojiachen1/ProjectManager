@@ -203,26 +203,35 @@ namespace ProjectManager.ViewModels.Dialogs
             if (project != null)
             {
                 IsEditing = true;
-                ProjectName = project.Name;
-                ProjectDescription = project.Description;
-                LocalPath = project.LocalPath;
-                WorkingDirectory = project.WorkingDirectory;
-                StartCommand = project.StartCommand;
-                PythonEnvironment = project.PythonEnvironment;
-                Framework = project.Framework;
-                Author = project.Author;
-                Version = project.Version;
+                ProjectName = project.Name ?? string.Empty;
+                ProjectDescription = project.Description ?? string.Empty;
+                LocalPath = project.LocalPath ?? string.Empty;
+                WorkingDirectory = project.WorkingDirectory ?? string.Empty;
+                StartCommand = project.StartCommand ?? string.Empty;
+                PythonEnvironment = project.PythonEnvironment ?? string.Empty;
+                Framework = project.Framework ?? string.Empty;
+                Author = project.Author ?? string.Empty;
+                Version = project.Version ?? "1.0.0";
                 Port = project.Port.ToString();
                 AutoStart = project.AutoStart;
-                TagsString = string.Join(", ", project.Tags);
+                TagsString = project.Tags != null ? string.Join(", ", project.Tags) : string.Empty;
             }
             else
             {
                 IsEditing = false;
-                // 设置默认值
+                // 清空所有字段
+                ProjectName = string.Empty;
+                ProjectDescription = string.Empty;
+                LocalPath = string.Empty;
+                WorkingDirectory = string.Empty;
+                StartCommand = string.Empty;
+                PythonEnvironment = string.Empty;
+                Framework = string.Empty;
+                Author = string.Empty;
                 Version = "1.0.0";
                 Port = "0";
                 AutoStart = false;
+                TagsString = string.Empty;
                 FrameworkCommands.Clear();
             }
         }
