@@ -110,7 +110,10 @@ namespace ProjectManager.Services
                 }
                 else
                 {
+                    // 使用现有会话，但更新启动命令和工作目录
                     terminalSession = existingSession;
+                    terminalSession.Command = project.StartCommand;
+                    terminalSession.ProjectPath = string.IsNullOrEmpty(project.WorkingDirectory) ? project.LocalPath : project.WorkingDirectory;
                 }
 
                 // 启动终端会话

@@ -44,7 +44,7 @@ namespace ProjectManager.ViewModels.Pages
             {
                 Interval = TimeSpan.FromSeconds(2)
             };
-            _syncTimer.Tick += async (s, e) => await SyncProjectStatesAsync();
+            _syncTimer.Tick += (s, e) => SyncProjectStates();
         }
 
         public void OnNavigatedTo()
@@ -69,6 +69,15 @@ namespace ProjectManager.ViewModels.Pages
                 var existingSession = TerminalSessions.FirstOrDefault(s => s.ProjectName == _pendingProjectName);
                 if (existingSession != null)
                 {
+                    // 更新现有会话的命令和路径
+                    if (!string.IsNullOrEmpty(_pendingStartCommand))
+                    {
+                        existingSession.Command = _pendingStartCommand;
+                    }
+                    if (!string.IsNullOrEmpty(_pendingProjectPath))
+                    {
+                        existingSession.ProjectPath = _pendingProjectPath;
+                    }
                     // 切换到现有会话
                     SelectedSession = existingSession;
                 }
@@ -230,9 +239,25 @@ namespace ProjectManager.ViewModels.Pages
         /// <param name="command">启动命令</param>
         public async Task CreateAndStartSessionAsync(string projectName, string projectPath, string command)
         {
-            var session = _terminalService.CreateSession(projectName, projectPath, command);
-            TerminalSessions.Add(session);
-            SelectedSession = session;
+            // 检查是否已存在同名项目的会话
+            var existingSession = TerminalSessions.FirstOrDefault(s => s.ProjectName == projectName);
+            
+            TerminalSession session;
+            if (existingSession != null)
+            {
+                // 更新现有会话的命令和路径
+                session = existingSession;
+                session.Command = command;
+                session.ProjectPath = projectPath;
+                SelectedSession = session;
+            }
+            else
+            {
+                // 创建新会话
+                session = _terminalService.CreateSession(projectName, projectPath, command);
+                TerminalSessions.Add(session);
+                SelectedSession = session;
+            }
             
             await _terminalService.StartSessionAsync(session);
         }
@@ -240,7 +265,7 @@ namespace ProjectManager.ViewModels.Pages
         /// <summary>
         /// 同步项目状态
         /// </summary>
-        private async Task SyncProjectStatesAsync()
+        private void SyncProjectStates()
         {
             try
             {
