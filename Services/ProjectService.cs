@@ -42,6 +42,15 @@ namespace ProjectManager.Services
 
         public async Task SaveProjectAsync(AiProject project)
         {
+            // 检查项目名称是否已存在（不包括当前项目本身）
+            var existingProjectWithSameName = _projects.FirstOrDefault(p => 
+                p.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase) && p.Id != project.Id);
+            
+            if (existingProjectWithSameName != null)
+            {
+                throw new InvalidOperationException($"项目名称 '{project.Name}' 已存在，请使用不同的名称。");
+            }
+
             var existingProject = _projects.FirstOrDefault(p => p.Id == project.Id);
             if (existingProject != null)
             {

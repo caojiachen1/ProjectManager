@@ -4,6 +4,8 @@ using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
@@ -310,13 +312,13 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 验证必填字段
                 if (string.IsNullOrWhiteSpace(ProjectName))
                 {
-                    // TODO: 显示错误消息
+                    await ShowErrorMessage("项目名称不能为空");
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(LocalPath))
                 {
-                    // TODO: 显示错误消息
+                    await ShowErrorMessage("项目路径不能为空");
                     return;
                 }
 
@@ -359,9 +361,13 @@ namespace ProjectManager.ViewModels.Dialogs
                 
                 ProjectSaved?.Invoke(this, project);
             }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("项目名称"))
+            {
+                await ShowErrorMessage(ex.Message);
+            }
             catch (Exception ex)
             {
-                // TODO: 显示错误消息
+                await ShowErrorMessage($"保存项目失败: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"保存项目失败: {ex.Message}");
             }
         }
@@ -467,6 +473,17 @@ namespace ProjectManager.ViewModels.Dialogs
             }
 
             DetectionInfo = $"已应用 {detectionResult.DetectedFramework} 的检测结果";
+        }
+
+        private async Task ShowErrorMessage(string message)
+        {
+            var messageBox = new MessageBox
+            {
+                Title = "错误",
+                Content = message,
+                PrimaryButtonText = "确定"
+            };
+            await messageBox.ShowDialogAsync();
         }
     }
 }

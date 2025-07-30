@@ -12,6 +12,7 @@ using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ProjectManager.ViewModels.Pages
 {
@@ -121,7 +122,6 @@ namespace ProjectManager.ViewModels.Pages
         [RelayCommand]
         private async Task ImportProject()
         {
-            // TODO: 实现项目导入功能
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "选择项目文件夹",
@@ -135,17 +135,28 @@ namespace ProjectManager.ViewModels.Pages
                 var projectPath = Path.GetDirectoryName(dialog.FileName);
                 if (!string.IsNullOrEmpty(projectPath))
                 {
-                    var project = new AiProject
+                    try
                     {
-                        Name = Path.GetFileName(projectPath),
-                        LocalPath = projectPath,
-                        WorkingDirectory = projectPath,
-                        CreatedDate = DateTime.Now,
-                        LastModified = DateTime.Now
-                    };
+                        var project = new AiProject
+                        {
+                            Name = Path.GetFileName(projectPath),
+                            LocalPath = projectPath,
+                            WorkingDirectory = projectPath,
+                            CreatedDate = DateTime.Now,
+                            LastModified = DateTime.Now
+                        };
 
-                    await _projectService.SaveProjectAsync(project);
-                    await LoadProjects();
+                        await _projectService.SaveProjectAsync(project);
+                        await LoadProjects();
+                    }
+                    catch (InvalidOperationException ex) when (ex.Message.Contains("项目名称"))
+                    {
+                        await ShowErrorMessage(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        await ShowErrorMessage($"导入项目失败: {ex.Message}");
+                    }
                 }
             }
         }
@@ -259,6 +270,17 @@ namespace ProjectManager.ViewModels.Pages
         public async Task OnNavigatedFromAsync()
         {
             await Task.CompletedTask;
+        }
+
+        private async Task ShowErrorMessage(string message)
+        {
+            var messageBox = new MessageBox
+            {
+                Title = "错误",
+                Content = message,
+                PrimaryButtonText = "确定"
+            };
+            await messageBox.ShowDialogAsync();
         }
     }
 }
