@@ -54,7 +54,7 @@
                                            Padding="0"
                                            Background="Transparent"
                                            BorderThickness="0"
-                                           Command="{Binding DataContext.CloseSessionCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                           Command="{Binding DataContext.ViewModel.CloseSessionCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                            CommandParameter="{Binding}">
                                     <ui:SymbolIcon Symbol="Dismiss12" FontSize="10"/>
                                 </ui:Button>
