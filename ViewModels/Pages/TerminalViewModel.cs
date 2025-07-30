@@ -29,6 +29,11 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _isLoading = false;
 
+        // 用于在导航时指定要切换到的项目
+        private string? _pendingProjectName;
+        private string? _pendingProjectPath;
+        private string? _pendingStartCommand;
+
         public TerminalViewModel(TerminalService terminalService, IProjectService projectService)
         {
             _terminalService = terminalService;
@@ -56,6 +61,29 @@ namespace ProjectManager.ViewModels.Pages
         public async Task OnNavigatedToAsync()
         {
             LoadTerminalSessions();
+            
+            // 处理待切换的项目
+            if (!string.IsNullOrEmpty(_pendingProjectName))
+            {
+                // 检查是否已存在该项目的终端会话
+                var existingSession = TerminalSessions.FirstOrDefault(s => s.ProjectName == _pendingProjectName);
+                if (existingSession != null)
+                {
+                    // 切换到现有会话
+                    SelectedSession = existingSession;
+                }
+                else if (!string.IsNullOrEmpty(_pendingProjectPath) && !string.IsNullOrEmpty(_pendingStartCommand))
+                {
+                    // 创建新的终端会话
+                    await CreateAndStartSessionAsync(_pendingProjectName, _pendingProjectPath, _pendingStartCommand);
+                }
+                
+                // 清空待处理的项目信息
+                _pendingProjectName = null;
+                _pendingProjectPath = null;
+                _pendingStartCommand = null;
+            }
+            
             await Task.CompletedTask;
         }
 
@@ -166,6 +194,19 @@ namespace ProjectManager.ViewModels.Pages
         private void RefreshSessions()
         {
             LoadTerminalSessions();
+        }
+
+        /// <summary>
+        /// 设置导航到终端页面时要切换的项目
+        /// </summary>
+        /// <param name="projectName">项目名称</param>
+        /// <param name="projectPath">项目路径</param>
+        /// <param name="startCommand">启动命令</param>
+        public void SetPendingProject(string projectName, string projectPath, string startCommand)
+        {
+            _pendingProjectName = projectName;
+            _pendingProjectPath = projectPath;
+            _pendingStartCommand = startCommand;
         }
 
         /// <summary>

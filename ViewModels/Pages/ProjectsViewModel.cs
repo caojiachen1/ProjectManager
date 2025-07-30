@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using Microsoft.Extensions.DependencyInjection;
@@ -207,16 +208,20 @@ namespace ProjectManager.ViewModels.Pages
         {
             if (project != null)
             {
-                // 获取日志页面的ViewModel
-                var logsViewModel = _serviceProvider.GetService<ProjectLogsViewModel>();
-                if (logsViewModel != null)
+                // 获取终端页面的ViewModel并设置待处理的项目
+                var terminalViewModel = _serviceProvider.GetService<TerminalViewModel>();
+                if (terminalViewModel != null)
                 {
-                    // 加载项目到日志页面
-                    logsViewModel.LoadProject(project.Id);
+                    var startCommand = !string.IsNullOrEmpty(project.StartCommand) 
+                        ? project.StartCommand 
+                        : "dir";
                     
-                    // 导航到日志页面
-                    _navigationService.Navigate(typeof(Views.Pages.ProjectLogsPage));
+                    // 设置导航后要处理的项目
+                    terminalViewModel.SetPendingProject(project.Name, project.LocalPath, startCommand);
                 }
+                
+                // 直接导航到终端页面
+                _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
             }
         }
 
