@@ -45,9 +45,11 @@ namespace ProjectManager.ViewModels.Pages
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
-            
+
+            SelectedStatusFilter = "全部";
+
             _projectService.ProjectStatusChanged += OnProjectStatusChanged;
-            
+
             // 设置筛选
             FilteredProjects = CollectionViewSource.GetDefaultView(Projects);
             FilteredProjects.Filter = FilterProjects;
