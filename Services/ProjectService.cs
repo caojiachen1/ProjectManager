@@ -20,11 +20,13 @@ namespace ProjectManager.Services
     {
         private readonly string _projectsFilePath;
         private readonly List<AiProject> _projects;
+        private readonly TerminalService _terminalService;
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
 
-        public ProjectService()
+        public ProjectService(TerminalService terminalService)
         {
+            _terminalService = terminalService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var appFolder = Path.Combine(appDataPath, "AI Project Manager");
             Directory.CreateDirectory(appFolder);
@@ -84,50 +86,51 @@ namespace ProjectManager.Services
                 project.Status = ProjectStatus.Starting;
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
 
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c {project.StartCommand}",
-                    WorkingDirectory = string.IsNullOrEmpty(project.WorkingDirectory) ? project.LocalPath : project.WorkingDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                };
-
-                var process = new Process { StartInfo = startInfo };
+                // 创建或获取终端会话
+                var existingSessions = _terminalService.GetAllSessions();
+                var existingSession = existingSessions.FirstOrDefault(s => s.ProjectName == project.Name);
                 
-                process.OutputDataReceived += (sender, e) =>
+                TerminalSession terminalSession;
+                if (existingSession == null)
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    // 创建新的终端会话
+                    terminalSession = _terminalService.CreateSession(
+                        project.Name, 
+                        string.IsNullOrEmpty(project.WorkingDirectory) ? project.LocalPath : project.WorkingDirectory,
+                        project.StartCommand);
+                }
+                else
+                {
+                    terminalSession = existingSession;
+                }
+
+                // 启动终端会话
+                var sessionStarted = await _terminalService.StartSessionAsync(terminalSession);
+                
+                if (sessionStarted)
+                {
+                    // 如果终端会话启动成功，同步项目状态
+                    project.RunningProcess = terminalSession.Process;
+                    project.Status = ProjectStatus.Running;
+                    
+                    // 监听进程退出事件
+                    if (terminalSession.Process != null)
                     {
-                        project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] {e.Data}\n";
+                        terminalSession.Process.Exited += (sender, e) =>
+                        {
+                            project.Status = ProjectStatus.Stopped;
+                            project.RunningProcess = null;
+                            ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+                        };
                     }
-                };
-
-                process.ErrorDataReceived += (sender, e) =>
+                }
+                else
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] ERROR: {e.Data}\n";
-                    }
-                };
+                    project.Status = ProjectStatus.Error;
+                    project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 终端会话启动失败\n";
+                }
 
-                process.Exited += (sender, e) =>
-                {
-                    project.Status = ProjectStatus.Stopped;
-                    project.RunningProcess = null;
-                    ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
-                };
-
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                project.RunningProcess = process;
-                project.Status = ProjectStatus.Running;
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
-
                 await SaveProjectAsync(project);
             }
             catch (Exception ex)
@@ -147,6 +150,14 @@ namespace ProjectManager.Services
             {
                 project.Status = ProjectStatus.Stopping;
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+
+                // 同时停止终端会话
+                var existingSessions = _terminalService.GetAllSessions();
+                var terminalSession = existingSessions.FirstOrDefault(s => s.ProjectName == project.Name);
+                if (terminalSession != null)
+                {
+                    _terminalService.StopSession(terminalSession);
+                }
 
                 project.RunningProcess.Kill(true);
                 project.RunningProcess = null;

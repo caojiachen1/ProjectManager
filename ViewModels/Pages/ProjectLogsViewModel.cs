@@ -4,12 +4,17 @@ using Microsoft.Win32;
 using System.ComponentModel;
 using System.Windows.Threading;
 using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ProjectManager.ViewModels.Pages
 {
     public partial class ProjectLogsViewModel : ObservableObject, INavigationAware
     {
         private readonly IProjectService _projectService;
+        private readonly INavigationService _navigationService;
+        private readonly TerminalService _terminalService;
         private readonly DispatcherTimer _refreshTimer;
         private AiProject? _currentProject;
 
@@ -34,9 +39,11 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private DateTime _lastUpdated = DateTime.Now;
 
-        public ProjectLogsViewModel(IProjectService projectService)
+        public ProjectLogsViewModel(IProjectService projectService, INavigationService navigationService, TerminalService terminalService)
         {
             _projectService = projectService;
+            _navigationService = navigationService;
+            _terminalService = terminalService;
             
             // 设置定时器每秒刷新日志
             _refreshTimer = new DispatcherTimer
@@ -110,6 +117,65 @@ namespace ProjectManager.ViewModels.Pages
             }
         }
 
+        [RelayCommand]
+        private async Task GoToTerminal()
+        {
+            try
+            {
+                StatusText = "正在跳转到终端页面...";
+                
+                // 导航到终端页面
+                _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
+                
+                // 延迟一下确保页面加载完成
+                await Task.Delay(500);
+                
+                // 如果当前项目存在，尝试切换到对应的终端会话
+                if (_currentProject != null)
+                {
+                    // 获取终端页面的ViewModel并切换到对应项目的终端
+                    var terminalViewModel = App.Services.GetService(typeof(TerminalViewModel)) as TerminalViewModel;
+                    if (terminalViewModel != null)
+                    {
+                        // 检查是否已存在该项目的终端会话
+                        var existingSession = terminalViewModel.TerminalSessions.FirstOrDefault(s => s.ProjectName == _currentProject.Name);
+                        if (existingSession != null)
+                        {
+                            // 切换到现有会话
+                            terminalViewModel.SwitchToProjectTerminal(_currentProject.Name);
+                            StatusText = $"已切换到 {_currentProject.Name} 的终端会话";
+                        }
+                        else
+                        {
+                            // 创建新的终端会话
+                            var startCommand = !string.IsNullOrEmpty(_currentProject.StartCommand) 
+                                ? _currentProject.StartCommand 
+                                : "dir";
+                            
+                            await terminalViewModel.CreateAndStartSessionAsync(
+                                _currentProject.Name, 
+                                _currentProject.LocalPath, 
+                                startCommand);
+                            
+                            StatusText = $"已为 {_currentProject.Name} 创建新的终端会话";
+                        }
+                    }
+                    else
+                    {
+                        StatusText = "终端服务未找到";
+                    }
+                }
+                else
+                {
+                    StatusText = "已跳转到终端页面";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"跳转失败: {ex.Message}";
+            }
+        }
+
         private async Task RefreshLogs()
         {
             try
@@ -122,10 +188,26 @@ namespace ProjectManager.ViewModels.Pages
                         _currentProject = updatedProject;
                         ProjectStatus = updatedProject.Status;
                         
-                        var newLogContent = updatedProject.LogOutput ?? string.Empty;
-                        if (newLogContent != LogContent)
+                        // 先从项目自身获取日志
+                        var projectLogContent = updatedProject.LogOutput ?? string.Empty;
+                        
+                        // 如果有对应的终端会话，也获取终端日志
+                        var terminalSessions = _terminalService.GetAllSessions();
+                        var relatedSession = terminalSessions.FirstOrDefault(s => s.ProjectName == _currentProject.Name);
+                        
+                        string combinedLogContent = projectLogContent;
+                        if (relatedSession != null && relatedSession.OutputLines.Any())
                         {
-                            LogContent = newLogContent;
+                            var terminalOutput = string.Join("\n", relatedSession.OutputLines);
+                            if (!string.IsNullOrEmpty(terminalOutput))
+                            {
+                                combinedLogContent += "\n\n=== 终端输出 ===\n" + terminalOutput;
+                            }
+                        }
+                        
+                        if (combinedLogContent != LogContent)
+                        {
+                            LogContent = combinedLogContent;
                             LogLineCount = LogContent.Split('\n', StringSplitOptions.None).Length;
                             LastUpdated = DateTime.Now;
                         }

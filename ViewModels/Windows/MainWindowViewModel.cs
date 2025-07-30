@@ -22,6 +22,12 @@ namespace ProjectManager.ViewModels.Windows
                 Content = "Projects",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Apps24 },
                 TargetPageType = typeof(Views.Pages.ProjectsPage)
+            },
+            new NavigationViewItem()
+            {
+                Content = "终端",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
+                TargetPageType = typeof(Views.Pages.TerminalPage)
             }
         };
 

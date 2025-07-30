@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:converters="clr-namespace:ProjectManager.Converters"
     Title="ProjectLogsPage"
     d:DataContext="{d:DesignInstance local:ProjectLogsPage,
                                      IsDesignTimeCreatable=False}"
@@ -15,6 +16,12 @@
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BooleanToColorConverter x:Key="BooleanToColorConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:StatusToBadgeConverter x:Key="StatusToBadgeConverter"/>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -45,6 +52,12 @@
 
             <!-- 操作按钮 -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ui:Button 
+                    Content="查看终端" 
+                    Icon="{ui:SymbolIcon WindowConsole20}"
+                    Command="{Binding ViewModel.GoToTerminalCommand}"
+                    Appearance="Primary"
+                    Margin="0,0,8,0"/>
                 <ui:Button 
                     Content="清空日志" 
                     Icon="{ui:SymbolIcon Delete24}"

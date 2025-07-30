@@ -53,6 +53,9 @@ namespace ProjectManager
                 
                 // Project detection service
                 services.AddSingleton<IProjectDetectionService, ProjectDetectionService>();
+                
+                // Terminal service
+                services.AddSingleton<TerminalService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
@@ -65,12 +68,14 @@ namespace ProjectManager
                 services.AddSingleton<ProjectsViewModel>();
                 services.AddSingleton<AddProjectPage>();
                 services.AddSingleton<AddProjectViewModel>();
-                services.AddTransient<ProjectLogsPage>();
-                services.AddTransient<ProjectLogsViewModel>();
+                services.AddSingleton<ProjectLogsPage>();
+                services.AddSingleton<ProjectLogsViewModel>();
                 services.AddSingleton<DataPage>();
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+                services.AddSingleton<TerminalPage>();
+                services.AddSingleton<TerminalViewModel>();
                 
                 // Dialogs
                 services.AddTransient<Views.Dialogs.ProjectEditDialog>();

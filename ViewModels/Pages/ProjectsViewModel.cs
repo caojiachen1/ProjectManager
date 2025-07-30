@@ -192,7 +192,19 @@ namespace ProjectManager.ViewModels.Pages
         [RelayCommand]
         private void ViewLogs(AiProject project)
         {
-            // TODO: 导航到日志查看页面
+            if (project != null)
+            {
+                // 获取日志页面的ViewModel
+                var logsViewModel = _serviceProvider.GetService<ProjectLogsViewModel>();
+                if (logsViewModel != null)
+                {
+                    // 加载项目到日志页面
+                    logsViewModel.LoadProject(project.Id);
+                    
+                    // 导航到日志页面
+                    _navigationService.Navigate(typeof(Views.Pages.ProjectLogsPage));
+                }
+            }
         }
 
         [RelayCommand]
