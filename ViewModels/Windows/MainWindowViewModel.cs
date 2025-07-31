@@ -6,26 +6,26 @@ namespace ProjectManager.ViewModels.Windows
     public partial class MainWindowViewModel : ObservableObject
     {
         [ObservableProperty]
-        private string _applicationTitle = "AI 项目管理器";
+        private string _applicationTitle = "通用项目管理器";
 
         [ObservableProperty]
         private ObservableCollection<object> _menuItems = new()
         {
             new NavigationViewItem()
             {
-                Content = "Dashboard",
+                Content = "仪表板",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
                 TargetPageType = typeof(Views.Pages.DashboardPage)
             },
             new NavigationViewItem()
             {
-                Content = "Projects",
+                Content = "项目管理",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Apps24 },
                 TargetPageType = typeof(Views.Pages.ProjectsPage)
             },
             new NavigationViewItem()
             {
-                Content = "终端",
+                Content = "终端控制台",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
                 TargetPageType = typeof(Views.Pages.TerminalPage)
             }
@@ -36,7 +36,7 @@ namespace ProjectManager.ViewModels.Windows
         {
             new NavigationViewItem()
             {
-                Content = "Settings",
+                Content = "设置",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
                 TargetPageType = typeof(Views.Pages.SettingsPage)
             }
@@ -45,7 +45,7 @@ namespace ProjectManager.ViewModels.Windows
         [ObservableProperty]
         private ObservableCollection<MenuItem> _trayMenuItems = new()
         {
-            new MenuItem { Header = "Home", Tag = "tray_home" }
+            new MenuItem { Header = "主页", Tag = "tray_home" }
         };
     }
 }

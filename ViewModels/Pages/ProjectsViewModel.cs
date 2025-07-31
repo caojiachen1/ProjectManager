@@ -24,7 +24,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
-        private ObservableCollection<AiProject> _projects = new();
+        private ObservableCollection<Project> _projects = new();
 
         [ObservableProperty]
         private ICollectionView? _filteredProjects;
@@ -66,7 +66,7 @@ namespace ProjectManager.ViewModels.Pages
             FilteredProjects?.Refresh();
         }
 
-        partial void OnProjectsChanged(ObservableCollection<AiProject> value)
+        partial void OnProjectsChanged(ObservableCollection<Project> value)
         {
             HasProjects = Projects.Any();
             FilteredProjects?.Refresh();
@@ -74,7 +74,7 @@ namespace ProjectManager.ViewModels.Pages
 
         private bool FilterProjects(object obj)
         {
-            if (obj is not AiProject project) return false;
+            if (obj is not Project project) return false;
 
             // 搜索文本筛选
             if (!string.IsNullOrEmpty(SearchText))
@@ -140,7 +140,7 @@ namespace ProjectManager.ViewModels.Pages
                 {
                     try
                     {
-                        var project = new AiProject
+                        var project = new Project
                         {
                             Name = Path.GetFileName(projectPath),
                             LocalPath = projectPath,
@@ -165,7 +165,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task StartProject(AiProject project)
+        private async Task StartProject(Project project)
         {
             if (project != null)
             {
@@ -174,7 +174,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task StopProject(AiProject project)
+        private async Task StopProject(Project project)
         {
             if (project != null)
             {
@@ -183,7 +183,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task EditProject(AiProject project)
+        private async Task EditProject(Project project)
         {
             if (project != null)
             {
@@ -204,7 +204,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void ViewLogs(AiProject project)
+        private void ViewLogs(Project project)
         {
             if (project != null)
             {

@@ -55,4 +55,4 @@ nunit-*.xml
 
 .*/
 *.md
-!README.md
+# !README.md

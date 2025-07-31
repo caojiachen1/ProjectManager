@@ -13,7 +13,7 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private readonly IProjectDetectionService _detectionService;
-        private AiProject? _originalProject;
+        private Project? _originalProject;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -69,7 +69,7 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private ObservableCollection<ProjectDetectionResult> _detectionCandidates = new();
 
-        public event EventHandler<AiProject>? ProjectSaved;
+        public event EventHandler<Project>? ProjectSaved;
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
@@ -198,7 +198,7 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
-        public void LoadProject(AiProject? project = null)
+        public void LoadProject(Project? project = null)
         {
             _originalProject = project;
             
@@ -323,7 +323,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 }
 
                 // 创建或更新项目
-                var project = _originalProject ?? new AiProject();
+                var project = _originalProject ?? new Project();
                 
                 project.Name = ProjectName.Trim();
                 project.Description = ProjectDescription?.Trim() ?? string.Empty;

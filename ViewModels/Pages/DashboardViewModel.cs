@@ -32,7 +32,7 @@ namespace ProjectManager.ViewModels.Pages
         private int _errorProjects = 0;
 
         [ObservableProperty]
-        private ObservableCollection<AiProject> _recentProjects = new();
+        private ObservableCollection<Project> _recentProjects = new();
 
         public DashboardViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider)
         {
@@ -74,7 +74,7 @@ namespace ProjectManager.ViewModels.Pages
                 var projectPath = Path.GetDirectoryName(dialog.FileName);
                 if (!string.IsNullOrEmpty(projectPath))
                 {
-                    var project = new AiProject
+                    var project = new Project
                     {
                         Name = Path.GetFileName(projectPath),
                         LocalPath = projectPath,
@@ -110,7 +110,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task StartProject(AiProject project)
+        private async Task StartProject(Project project)
         {
             if (project != null)
             {
@@ -119,7 +119,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task StopProject(AiProject project)
+        private async Task StopProject(Project project)
         {
             if (project != null)
             {

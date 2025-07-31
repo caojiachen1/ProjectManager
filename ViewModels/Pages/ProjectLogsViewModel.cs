@@ -16,7 +16,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly INavigationService _navigationService;
         private readonly TerminalService _terminalService;
         private readonly DispatcherTimer _refreshTimer;
-        private AiProject? _currentProject;
+        private Project? _currentProject;
 
         [ObservableProperty]
         private string _projectName = string.Empty;

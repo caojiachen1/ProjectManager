@@ -18,7 +18,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:AiProject}">
+        <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
             <ui:Card Margin="8" Padding="16" MinWidth="300" MaxWidth="350">
                 <Grid>
                     <Grid.RowDefinitions>

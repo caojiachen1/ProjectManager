@@ -6,12 +6,12 @@ namespace ProjectManager.Services
 {
     public interface IProjectService
     {
-        Task<List<AiProject>> GetProjectsAsync();
-        Task SaveProjectAsync(AiProject project);
+        Task<List<Project>> GetProjectsAsync();
+        Task SaveProjectAsync(Project project);
         Task DeleteProjectAsync(string projectId);
-        Task<AiProject?> GetProjectAsync(string projectId);
-        Task StartProjectAsync(AiProject project);
-        Task StopProjectAsync(AiProject project);
+        Task<Project?> GetProjectAsync(string projectId);
+        Task StartProjectAsync(Project project);
+        Task StopProjectAsync(Project project);
         Task<string> GetProjectLogsAsync(string projectId);
         event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
     }
@@ -19,7 +19,7 @@ namespace ProjectManager.Services
     public class ProjectService : IProjectService
     {
         private readonly string _projectsFilePath;
-        private readonly List<AiProject> _projects;
+        private readonly List<Project> _projects;
         private readonly TerminalService _terminalService;
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
@@ -28,19 +28,19 @@ namespace ProjectManager.Services
         {
             _terminalService = terminalService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var appFolder = Path.Combine(appDataPath, "AI Project Manager");
+            var appFolder = Path.Combine(appDataPath, "Universal Project Manager");
             Directory.CreateDirectory(appFolder);
             _projectsFilePath = Path.Combine(appFolder, "projects.json");
-            _projects = new List<AiProject>();
+            _projects = new List<Project>();
             LoadProjects();
         }
 
-        public async Task<List<AiProject>> GetProjectsAsync()
+        public async Task<List<Project>> GetProjectsAsync()
         {
             return await Task.FromResult(_projects.ToList());
         }
 
-        public async Task SaveProjectAsync(AiProject project)
+        public async Task SaveProjectAsync(Project project)
         {
             // 检查项目名称是否已存在（不包括当前项目本身）
             var existingProjectWithSameName = _projects.FirstOrDefault(p => 
@@ -80,12 +80,12 @@ namespace ProjectManager.Services
             }
         }
 
-        public async Task<AiProject?> GetProjectAsync(string projectId)
+        public async Task<Project?> GetProjectAsync(string projectId)
         {
             return await Task.FromResult(_projects.FirstOrDefault(p => p.Id == projectId));
         }
 
-        public async Task StartProjectAsync(AiProject project)
+        public async Task StartProjectAsync(Project project)
         {
             if (project.Status == ProjectStatus.Running)
                 return;
@@ -153,7 +153,7 @@ namespace ProjectManager.Services
             }
         }
 
-        public async Task StopProjectAsync(AiProject project)
+        public async Task StopProjectAsync(Project project)
         {
             if (project.Status != ProjectStatus.Running || project.RunningProcess == null)
                 return;
@@ -199,7 +199,7 @@ namespace ProjectManager.Services
                 if (File.Exists(_projectsFilePath))
                 {
                     var json = File.ReadAllText(_projectsFilePath);
-                    var projects = JsonSerializer.Deserialize<List<AiProject>>(json);
+                    var projects = JsonSerializer.Deserialize<List<Project>>(json);
                     if (projects != null)
                     {
                         _projects.AddRange(projects);
