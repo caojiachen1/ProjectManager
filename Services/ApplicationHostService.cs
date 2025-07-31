@@ -14,7 +14,7 @@ namespace ProjectManager.Services
     {
         private readonly IServiceProvider _serviceProvider;
 
-        private INavigationWindow _navigationWindow;
+        private INavigationWindow _navigationWindow = null!;
 
         public ApplicationHostService(IServiceProvider serviceProvider)
         {
