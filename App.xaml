@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:local="clr-namespace:ProjectManager.Helpers"
+    xmlns:converters="clr-namespace:ProjectManager.Converters"
     DispatcherUnhandledException="OnDispatcherUnhandledException"
     Exit="OnExit"
     Startup="OnStartup">
@@ -23,6 +24,9 @@
             <local:FrameworkToDescriptionConverter x:Key="FrameworkToDescriptionConverter"/>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <local:BooleanToInverseBooleanConverter x:Key="BooleanToInverseBooleanConverter"/>
+            <converters:GitStatusToBadgeConverter x:Key="GitStatusToBadgeConverter"/>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

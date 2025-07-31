@@ -54,6 +54,9 @@ namespace ProjectManager
                 // Project detection service
                 services.AddSingleton<IProjectDetectionService, ProjectDetectionService>();
                 
+                // Git service
+                services.AddSingleton<IGitService, GitService>();
+                
                 // Terminal service
                 services.AddSingleton<TerminalService>();
 
@@ -81,6 +84,8 @@ namespace ProjectManager
                 services.AddTransient<Views.Dialogs.ProjectEditDialog>();
                 services.AddTransient<Views.Dialogs.ProjectEditWindow>();
                 services.AddTransient<ViewModels.Dialogs.ProjectEditDialogViewModel>();
+                services.AddTransient<Views.Dialogs.GitManagementWindow>();
+                services.AddTransient<ViewModels.Dialogs.GitManagementDialogViewModel>();
             }).Build();
 
         /// <summary>

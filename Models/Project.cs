@@ -32,6 +32,10 @@ namespace ProjectManager.Models
         private string _framework = string.Empty;
 
         [ObservableProperty]
+        [JsonIgnore]
+        private GitInfo? _gitInfo;
+
+        [ObservableProperty]
         private DateTime _createdDate = DateTime.Now;
 
         [ObservableProperty]

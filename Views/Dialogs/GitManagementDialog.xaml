@@ -1,0 +1,173 @@
+<ui:ContentDialog x:Class="ProjectManager.Views.Dialogs.GitManagementDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             Title="Git 管理"
+             MaxWidth="800"
+             MaxHeight="700">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="24">
+        <StackPanel>
+            
+            <!-- Git 仓库状态 -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel Margin="16">
+                    <TextBlock Text="仓库状态" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" Foreground="Green" Margin="0,0,8,0"/>
+                        <TextBlock Text="这是一个 Git 仓库" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,8" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Warning24" Foreground="Orange" Margin="0,0,8,0"/>
+                            <TextBlock Text="这不是一个 Git 仓库" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:Button Content="初始化 Git 仓库" 
+                                   Icon="{ui:SymbolIcon Add24}"
+                                   Command="{Binding InitializeRepositoryCommand}"
+                                   IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+
+                    <!-- Git 信息显示 -->
+                    <Grid Margin="0,0,0,8" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="当前分支:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding GitInfo.CurrentBranch}" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="状态:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding GitInfo.StatusDisplay}" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="未提交更改:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding GitInfo.UncommittedChanges}" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="未推送提交:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GitInfo.UnpushedCommits}" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="最后提交:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GitInfo.LastCommitMessage}" Margin="0,0,0,4" TextWrapping="Wrap"/>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="提交时间:" Margin="0,0,8,4" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding GitInfo.LastCommitDateDisplay}" Margin="0,0,0,4"/>
+                    </Grid>
+
+                    <ui:Button Content="刷新状态" 
+                               Icon="{ui:SymbolIcon ArrowSync24}"
+                               Command="{Binding RefreshGitInfoCommand}"
+                               IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                               Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 基本操作 -->
+            <ui:Card Margin="0,0,0,16" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="16">
+                    <TextBlock Text="基本操作" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <!-- 提交区域 -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="提交更改" FontWeight="Medium" Margin="0,0,0,8"/>
+                        <ui:TextBox Text="{Binding CommitMessage}" 
+                                 PlaceholderText="输入提交信息..." 
+                                 TextWrapping="Wrap"
+                                 MinHeight="60"
+                                 Margin="0,0,0,8"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <ui:Button Content="添加所有文件" 
+                                       Icon="{ui:SymbolIcon Add24}"
+                                       Command="{Binding AddAllFilesCommand}"
+                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                       Margin="0,0,8,0"/>
+                            <ui:Button Content="提交" 
+                                       Icon="{ui:SymbolIcon Checkmark24}"
+                                       Command="{Binding CommitCommand}"
+                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                       Margin="0,0,8,0"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- 同步操作 -->
+                    <StackPanel>
+                        <TextBlock Text="同步操作" FontWeight="Medium" Margin="0,0,0,8"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <ui:Button Content="推送" 
+                                       Icon="{ui:SymbolIcon ArrowUp24}"
+                                       Command="{Binding PushCommand}"
+                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                       Margin="0,0,8,0"/>
+                            <ui:Button Content="拉取" 
+                                       Icon="{ui:SymbolIcon ArrowDown24}"
+                                       Command="{Binding PullCommand}"
+                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                       Margin="0,0,8,0"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 分支管理 -->
+            <ui:Card Margin="0,0,0,16" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="16">
+                    <TextBlock Text="分支管理" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <!-- 当前分支 -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="当前分支" FontWeight="Medium" Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding AvailableBranches}"
+                                  SelectedItem="{Binding SelectedBranch}"
+                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                  Margin="0,0,0,8"/>
+                        <ui:Button Content="切换分支" 
+                                   Icon="{ui:SymbolIcon Branch24}"
+                                   Command="{Binding SwitchBranchCommand}"
+                                   IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+
+                    <!-- 创建新分支 -->
+                    <StackPanel>
+                        <TextBlock Text="创建新分支" FontWeight="Medium" Margin="0,0,0,8"/>
+                        <ui:TextBox Text="{Binding NewBranchName}" 
+                                 PlaceholderText="输入新分支名称..."
+                                 Margin="0,0,0,8"/>
+                        <ui:Button Content="创建分支" 
+                                   Icon="{ui:SymbolIcon Add24}"
+                                   Command="{Binding CreateBranchCommand}"
+                                   IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 远程仓库 -->
+            <ui:Card Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="16">
+                    <TextBlock Text="远程仓库" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    
+                    <StackPanel>
+                        <TextBlock Text="远程仓库地址" FontWeight="Medium" Margin="0,0,0,8"/>
+                        <ui:TextBox Text="{Binding RemoteUrl}" 
+                                 PlaceholderText="输入远程仓库 URL..."
+                                 Margin="0,0,0,8"/>
+                        <ui:Button Content="设置远程地址" 
+                                   Icon="{ui:SymbolIcon Globe24}"
+                                   Command="{Binding SetRemoteUrlCommand}"
+                                   IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+        </StackPanel>
+    </ScrollViewer>
+</ui:ContentDialog>

@@ -13,7 +13,8 @@ namespace ProjectManager.Views.Windows
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
-            INavigationService navigationService
+            INavigationService navigationService,
+            IContentDialogService contentDialogService
         )
         {
             ViewModel = viewModel;
@@ -25,6 +26,9 @@ namespace ProjectManager.Views.Windows
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+            
+            // 设置ContentDialogService的宿主
+            contentDialogService.SetDialogHost(RootContentDialog);
         }
 
         #region INavigationWindow methods

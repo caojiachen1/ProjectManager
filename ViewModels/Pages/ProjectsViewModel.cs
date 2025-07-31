@@ -204,6 +204,36 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task ManageGit(Project project)
+        {
+            if (project != null)
+            {
+                var dialogViewModel = _serviceProvider.GetRequiredService<GitManagementDialogViewModel>();
+                var dialog = new GitManagementWindow();
+                
+                // 设置ViewModel
+                dialog.SetViewModel(dialogViewModel);
+                
+                // 订阅Git信息更新事件
+                dialogViewModel.GitInfoUpdated += (sender, updatedProject) =>
+                {
+                    // 更新项目列表中的Git信息
+                    var existingProject = Projects.FirstOrDefault(p => p.Id == updatedProject.Id);
+                    if (existingProject != null)
+                    {
+                        existingProject.GitInfo = updatedProject.GitInfo;
+                    }
+                };
+                
+                await dialogViewModel.LoadProjectAsync(project);
+                
+                // 设置所有者窗口并显示为模态对话框
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.ShowDialog();
+            }
+        }
+
+        [RelayCommand]
         private void ViewLogs(Project project)
         {
             if (project != null)

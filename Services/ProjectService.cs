@@ -21,12 +21,14 @@ namespace ProjectManager.Services
         private readonly string _projectsFilePath;
         private readonly List<Project> _projects;
         private readonly TerminalService _terminalService;
+        private readonly IGitService _gitService;
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
 
-        public ProjectService(TerminalService terminalService)
+        public ProjectService(TerminalService terminalService, IGitService gitService)
         {
             _terminalService = terminalService;
+            _gitService = gitService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var appFolder = Path.Combine(appDataPath, "Universal Project Manager");
             Directory.CreateDirectory(appFolder);
@@ -37,6 +39,19 @@ namespace ProjectManager.Services
 
         public async Task<List<Project>> GetProjectsAsync()
         {
+            // 加载Git信息
+            foreach (var project in _projects)
+            {
+                try
+                {
+                    project.GitInfo = await _gitService.GetGitInfoAsync(project.LocalPath);
+                }
+                catch
+                {
+                    // 忽略Git信息加载错误
+                }
+            }
+
             return await Task.FromResult(_projects.ToList());
         }
 

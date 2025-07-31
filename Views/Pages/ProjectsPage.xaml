@@ -37,9 +37,20 @@
                     <!-- 项目描述 -->
                     <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" MaxHeight="60"/>
                     
-                    <!-- 项目状态 -->
+                    <!-- 项目状态和Git信息 -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:Badge Content="{Binding StatusDisplay}" Appearance="{Binding Status, Converter={StaticResource StatusToBadgeConverter}}" Margin="0,0,8,0"/>
+                        
+                        <!-- Git状态 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,8,0" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ui:SymbolIcon Symbol="Branch24" FontSize="12" Foreground="Green" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding GitInfo.CurrentBranch}" FontSize="11" Opacity="0.7" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ui:Badge Content="{Binding GitInfo.StatusDisplay}" 
+                                      Appearance="{Binding GitInfo.Status, Converter={StaticResource GitStatusToBadgeConverter}}" 
+                                      FontSize="10" 
+                                      Margin="0,0,4,0"/>
+                        </StackPanel>
+                        
                         <TextBlock Text="{Binding Framework}" Opacity="0.6" VerticalAlignment="Center"/>
                     </StackPanel>
                     
@@ -53,7 +64,7 @@
                     <Grid Grid.Row="5"/>
                     
                     <!-- 操作按钮 -->
-                    <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <WrapPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
                         <ui:Button 
                             Content="启动" 
                             Icon="{ui:SymbolIcon Play24}"
@@ -61,7 +72,7 @@
                             Command="{Binding DataContext.StartProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             IsEnabled="{Binding Status, Converter={StaticResource StatusToStartEnabledConverter}}"
-                            Margin="0,0,4,0"/>
+                            Margin="0,0,4,4"/>
                         <ui:Button 
                             Content="停止" 
                             Icon="{ui:SymbolIcon Stop24}"
@@ -69,20 +80,26 @@
                             Command="{Binding DataContext.StopProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             IsEnabled="{Binding Status, Converter={StaticResource StatusToStopEnabledConverter}}"
-                            Margin="4,0,4,0"/>
+                            Margin="0,0,4,4"/>
+                        <ui:Button 
+                            Content="Git" 
+                            Icon="{ui:SymbolIcon Branch24}"
+                            Command="{Binding DataContext.ManageGitCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                            CommandParameter="{Binding}"
+                            Margin="0,0,4,4"/>
                         <ui:Button 
                             Content="设置" 
                             Icon="{ui:SymbolIcon Settings24}"
                             Command="{Binding DataContext.EditProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
-                            Margin="4,0,4,0"/>
+                            Margin="0,0,4,4"/>
                         <ui:Button 
                             Content="日志" 
                             Icon="{ui:SymbolIcon Document24}"
                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
-                            Margin="4,0,0,0"/>
-                    </StackPanel>
+                            Margin="0,0,0,4"/>
+                    </WrapPanel>
                 </Grid>
             </ui:Card>
         </DataTemplate>
