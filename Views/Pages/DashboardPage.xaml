@@ -96,6 +96,11 @@
                             Command="{Binding ViewModel.ImportProjectCommand}"
                             Margin="6,0,6,0"/>
                         <ui:Button 
+                            Content="Git克隆" 
+                            Icon="{ui:SymbolIcon Branch24}"
+                            Command="{Binding ViewModel.GitCloneCommand}"
+                            Margin="6,0,6,0"/>
+                        <ui:Button 
                             Content="查看所有项目" 
                             Icon="{ui:SymbolIcon Apps24}"
                             Command="{Binding ViewModel.ViewAllProjectsCommand}"

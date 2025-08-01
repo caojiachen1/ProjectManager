@@ -90,6 +90,24 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task GitClone()
+        {
+            var dialogViewModel = _serviceProvider.GetRequiredService<GitCloneDialogViewModel>();
+            var window = _serviceProvider.GetRequiredService<Views.Dialogs.GitCloneWindow>();
+            
+            dialogViewModel.CloneCompleted += async (sender, result) =>
+            {
+                if (result)
+                {
+                    await LoadDashboardData();
+                }
+            };
+            
+            window.Owner = Application.Current.MainWindow;
+            window.ShowDialog();
+        }
+
+        [RelayCommand]
         private void ViewAllProjects()
         {
             _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
