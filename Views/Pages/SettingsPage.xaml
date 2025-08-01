@@ -22,7 +22,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" 
                   HorizontalScrollBarVisibility="Disabled"
-                  CanContentScroll="True"
+                  CanContentScroll="False"
                   PanningMode="VerticalOnly"
                   PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
         <StackPanel Margin="16">
