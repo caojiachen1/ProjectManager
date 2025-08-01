@@ -17,6 +17,9 @@ namespace ProjectManager.Services
         Task<List<string>> GetBranchesAsync(string projectPath);
         Task<string> GetRemoteUrlAsync(string projectPath);
         Task<bool> SetRemoteUrlAsync(string projectPath, string remoteUrl);
+        Task<(bool IsSuccess, string ErrorMessage)> CloneRepositoryAsync(string remoteUrl, string localPath, IProgress<string>? progress = null);
+        Task<bool> IsValidGitUrlAsync(string url);
+        Task<string> GetRepositoryNameFromUrlAsync(string url);
     }
 
     public class GitService : IGitService
@@ -226,6 +229,167 @@ namespace ProjectManager.Services
             catch
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 克隆远程仓库到本地
+        /// </summary>
+        public async Task<(bool IsSuccess, string ErrorMessage)> CloneRepositoryAsync(string remoteUrl, string localPath, IProgress<string>? progress = null)
+        {
+            try
+            {
+                // 确保本地路径存在
+                var parentDir = Path.GetDirectoryName(localPath);
+                if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
+                {
+                    Directory.CreateDirectory(parentDir);
+                }
+
+                // 如果目标目录已存在且不为空，返回错误
+                if (Directory.Exists(localPath) && Directory.GetFileSystemEntries(localPath).Length > 0)
+                {
+                    return (false, "目标目录已存在且不为空");
+                }
+
+                progress?.Report("开始克隆仓库...");
+
+                using var process = new Process();
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = $"clone \"{remoteUrl}\" \"{localPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                var output = new List<string>();
+                var error = new List<string>();
+
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        output.Add(e.Data);
+                        progress?.Report(e.Data);
+                    }
+                };
+
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        error.Add(e.Data);
+                        progress?.Report(e.Data);
+                    }
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    progress?.Report("克隆完成！");
+                    return (true, string.Empty);
+                }
+                else
+                {
+                    var errorMessage = string.Join("\n", error);
+                    return (false, string.IsNullOrEmpty(errorMessage) ? "克隆失败" : errorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"克隆过程中发生错误: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 验证Git URL是否有效
+        /// </summary>
+        public async Task<bool> IsValidGitUrlAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            try
+            {
+                // 检查URL格式
+                var gitUrlPatterns = new[]
+                {
+                    @"^https://github\.com/[\w\-\.]+/[\w\-\.]+(?:\.git)?/?$",
+                    @"^git@github\.com:[\w\-\.]+/[\w\-\.]+(?:\.git)?$",
+                    @"^https://gitlab\.com/[\w\-\.]+/[\w\-\.]+(?:\.git)?/?$",
+                    @"^git@gitlab\.com:[\w\-\.]+/[\w\-\.]+(?:\.git)?$",
+                    @"^https://bitbucket\.org/[\w\-\.]+/[\w\-\.]+(?:\.git)?/?$",
+                    @"^git@bitbucket\.org:[\w\-\.]+/[\w\-\.]+(?:\.git)?$",
+                    @"^https://.*\.git$",
+                    @"^git@.*:.*\.git$"
+                };
+
+                var isValidFormat = gitUrlPatterns.Any(pattern => Regex.IsMatch(url, pattern, RegexOptions.IgnoreCase));
+                if (!isValidFormat)
+                    return false;
+
+                // 尝试执行 git ls-remote 来验证仓库是否可访问
+                using var process = new Process();
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = $"ls-remote --heads \"{url}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                process.Start();
+                await process.WaitForExitAsync();
+
+                return process.ExitCode == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 从Git URL中提取仓库名称
+        /// </summary>
+        public Task<string> GetRepositoryNameFromUrlAsync(string url)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(url))
+                    return Task.FromResult(string.Empty);
+
+                // 移除 .git 后缀
+                var cleanUrl = url.EndsWith(".git") ? url[..^4] : url;
+                
+                // 提取最后一部分作为仓库名
+                var parts = cleanUrl.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 0)
+                {
+                    var repoName = parts[^1];
+                    // 如果是SSH格式，可能包含冒号
+                    if (repoName.Contains(':'))
+                    {
+                        repoName = repoName.Split(':')[^1];
+                    }
+                    return Task.FromResult(repoName);
+                }
+
+                return Task.FromResult(string.Empty);
+            }
+            catch
+            {
+                return Task.FromResult(string.Empty);
             }
         }
 

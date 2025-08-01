@@ -26,7 +26,7 @@
             <!-- 页面标题 -->
             <StackPanel Grid.Row="0" Margin="0,0,0,24">
                 <TextBlock Text="添加新项目" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
-                <TextBlock Text="创建一个新的项目或导入现有项目" FontSize="14" Opacity="0.7"/>
+                <TextBlock Text="创建一个新的项目、导入现有项目或从Git仓库克隆项目" FontSize="14" Opacity="0.7"/>
             </StackPanel>
 
             <!-- 添加方式选择 -->
@@ -34,10 +34,11 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- 新建项目 -->
-                <ui:Card Grid.Column="0" Margin="0,0,12,0" Padding="24">
+                <ui:Card Grid.Column="0" Margin="0,0,8,0" Padding="24">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Add24" FontSize="64" Opacity="0.6" Margin="0,0,0,16" HorizontalAlignment="Center"/>
                         <TextBlock Text="新建项目" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,8"/>
@@ -49,13 +50,13 @@
                         <ui:Button Content="创建新项目" 
                                    Icon="{ui:SymbolIcon Add24}"
                                    Appearance="Primary"
-                                   Command="{Binding ViewModel.CreateNewProjectCommand}"
+                                   Command="{Binding CreateNewProjectCommand}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- 导入项目 -->
-                <ui:Card Grid.Column="1" Margin="12,0,0,0" Padding="24">
+                <ui:Card Grid.Column="1" Margin="8,0,8,0" Padding="24">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="FolderOpen24" FontSize="64" Opacity="0.6" Margin="0,0,0,16" HorizontalAlignment="Center"/>
                         <TextBlock Text="导入项目" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,8"/>
@@ -66,7 +67,24 @@
                                    Margin="0,0,0,16"/>
                         <ui:Button Content="导入现有项目" 
                                    Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Command="{Binding ViewModel.ImportExistingProjectCommand}"
+                                   Command="{Binding ImportExistingProjectCommand}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- Git克隆 -->
+                <ui:Card Grid.Column="2" Margin="8,0,0,0" Padding="24">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Branch24" FontSize="64" Opacity="0.6" Margin="0,0,0,16" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Git克隆" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="从Git远程仓库克隆项目到本地" 
+                                   TextWrapping="Wrap" 
+                                   TextAlignment="Center" 
+                                   Opacity="0.7" 
+                                   Margin="0,0,0,16"/>
+                        <ui:Button Content="从Git克隆" 
+                                   Icon="{ui:SymbolIcon Branch24}"
+                                   Command="{Binding CloneFromGitCommand}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </ui:Card>

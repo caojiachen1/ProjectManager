@@ -149,6 +149,11 @@
                     Command="{Binding ImportProjectCommand}"
                     Margin="4,0,4,0"/>
                 <ui:Button 
+                    Content="Git克隆" 
+                    Icon="{ui:SymbolIcon Branch24}"
+                    Command="{Binding CloneFromGitCommand}"
+                    Margin="4,0,4,0"/>
+                <ui:Button 
                     Content="刷新" 
                     Icon="{ui:SymbolIcon ArrowSync24}"
                     Command="{Binding RefreshCommand}"

@@ -165,6 +165,22 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task CloneFromGit()
+        {
+            var dialogViewModel = _serviceProvider.GetRequiredService<GitCloneDialogViewModel>();
+            var window = _serviceProvider.GetRequiredService<Views.Dialogs.GitCloneWindow>();
+            
+            window.Owner = Application.Current.MainWindow;
+            var result = window.ShowDialog();
+            
+            if (result == true)
+            {
+                // 克隆成功，刷新项目列表
+                await LoadProjects();
+            }
+        }
+
+        [RelayCommand]
         private async Task StartProject(Project project)
         {
             if (project != null)

@@ -174,6 +174,20 @@ namespace ProjectManager.ViewModels.Pages
             }
         }
 
+        [RelayCommand]
+        private async Task CloneFromGit()
+        {
+            var dialogViewModel = _serviceProvider.GetRequiredService<GitCloneDialogViewModel>();
+            var dialog = _serviceProvider.GetRequiredService<GitCloneDialog>();
+            
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                // 克隆成功，导航到项目页面
+                _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
+            }
+        }
+
         public void OnNavigatedTo()
         {
         }

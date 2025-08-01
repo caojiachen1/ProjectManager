@@ -1,0 +1,159 @@
+<ui:FluentWindow x:Class="ProjectManager.Views.Dialogs.GitCloneWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 mc:Ignorable="d"
+                 Title="从Git仓库克隆项目"
+                 Height="500"
+                 Width="700"
+                 WindowStartupLocation="CenterOwner"
+                 ResizeMode="NoResize"
+                 WindowBackdropType="Mica"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowCornerPreference="Round">
+    
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+        <!-- 暗黑主题样式 -->
+        <Style x:Key="DarkTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        
+        <Style x:Key="DarkGroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#404040"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+        </Style>
+        
+        <Style x:Key="DarkExpanderStyle" TargetType="Expander">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+        </Style>
+        
+        <Style x:Key="DarkLogTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#00FF00"/>
+            <Setter Property="Background" Value="#1E1E1E"/>
+        </Style>
+    </ui:FluentWindow.Resources>
+    
+    <Grid Background="#2D2D30">
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="从Git仓库克隆项目"
+            Grid.Row="0">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Margin="20,50,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+        <!-- Git仓库URL -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Git仓库URL *" FontWeight="Medium" Margin="0,0,0,5"/>
+            <ui:TextBox x:Name="UrlTextBox"
+                        Text="{Binding RepositoryUrl, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="https://github.com/username/repository.git"
+                        Icon="{ui:SymbolIcon Link24}"/>
+            <TextBlock Text="{Binding UrlValidationMessage}" 
+                       Foreground="#FF6B6B" 
+                       FontSize="12" 
+                       Margin="0,5,0,0"
+                       Visibility="{Binding HasUrlValidationError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </StackPanel>
+
+        <!-- 本地路径 -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock Text="本地存储路径 *" 
+                       FontWeight="Medium" 
+                       Margin="0,0,0,5"
+                       Style="{StaticResource DarkTextBlockStyle}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:TextBox Grid.Column="0"
+                            Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="选择项目存储位置"
+                            Icon="{ui:SymbolIcon Folder24}"/>
+                <ui:Button Grid.Column="1" 
+                           Content="浏览" 
+                           Command="{Binding BrowseLocalPathCommand}"
+                           Margin="10,0,0,0"
+                           Appearance="Secondary"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- 高级选项 -->
+        <Expander Grid.Row="2" Header="高级选项" Margin="0,0,0,15">
+            <StackPanel Margin="0,10,0,0">
+                <CheckBox Content="自动检测项目类型和框架" 
+                          IsChecked="{Binding AutoDetectProjectType}" 
+                          Margin="0,0,0,10"/>
+                <CheckBox Content="克隆完成后自动添加到项目管理器" 
+                          IsChecked="{Binding AutoAddToManager}"/>
+            </StackPanel>
+        </Expander>
+
+        <!-- 进度显示 -->
+        <StackPanel Grid.Row="3" 
+                    Margin="0,0,0,15"
+                    Visibility="{Binding IsCloning, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="克隆进度" 
+                       FontWeight="Medium" 
+                       Margin="0,0,0,5"
+                       Style="{StaticResource DarkTextBlockStyle}"/>
+            <ProgressBar Value="{Binding CloneProgressValue}" 
+                         Maximum="100" 
+                         Height="8" 
+                         Margin="0,0,0,5"
+                         Foreground="#4CAF50"
+                         Background="#404040"/>
+            <TextBlock Text="{Binding CloneStatusMessage}" 
+                       FontSize="12" 
+                       Foreground="#B0B0B0"/>
+        </StackPanel>
+
+        <!-- 日志输出 -->
+        <GroupBox Grid.Row="4" 
+                  Header="克隆日志" 
+                  Margin="0,0,0,15"
+                  Style="{StaticResource DarkGroupBoxStyle}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{Binding CloneLog}" 
+                           FontFamily="Consolas" 
+                           FontSize="11" 
+                           Style="{StaticResource DarkLogTextBlockStyle}"
+                           Padding="10"
+                           TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </GroupBox>
+
+            <!-- 按钮区域 -->
+            <StackPanel Grid.Row="5" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right">
+                <ui:Button Content="克隆" 
+                           Command="{Binding CloneCommand}"
+                           IsEnabled="{Binding CanClone}"
+                           Appearance="Primary"
+                           Margin="0,0,10,0"/>
+                <ui:Button Content="取消" 
+                           Click="CancelButton_Click"
+                           Appearance="Secondary"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

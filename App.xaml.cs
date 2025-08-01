@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿﻿using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
@@ -86,6 +86,9 @@ namespace ProjectManager
                 services.AddTransient<ViewModels.Dialogs.ProjectEditDialogViewModel>();
                 services.AddTransient<Views.Dialogs.GitManagementWindow>();
                 services.AddTransient<ViewModels.Dialogs.GitManagementDialogViewModel>();
+                services.AddTransient<Views.Dialogs.GitCloneDialog>();
+                services.AddTransient<Views.Dialogs.GitCloneWindow>();
+                services.AddTransient<ViewModels.Dialogs.GitCloneDialogViewModel>();
             }).Build();
 
         /// <summary>

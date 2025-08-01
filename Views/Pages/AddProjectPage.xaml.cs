@@ -10,7 +10,7 @@ namespace ProjectManager.Views.Pages
         public AddProjectPage(AddProjectViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = this;
+            DataContext = viewModel;
 
             InitializeComponent();
         }
