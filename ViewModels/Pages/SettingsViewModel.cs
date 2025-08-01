@@ -1,10 +1,17 @@
-﻿using Wpf.Ui.Abstractions.Controls;
+﻿using System.IO;
+using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
+using ProjectManager.Services;
+using ProjectManager.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 
 namespace ProjectManager.ViewModels.Pages
 {
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
+        private readonly ISettingsService _settingsService;
         private bool _isInitialized = false;
 
         [ObservableProperty]
@@ -13,22 +20,104 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 
-        public Task OnNavigatedToAsync()
-        {
-            if (!_isInitialized)
-                InitializeViewModel();
+        [ObservableProperty]
+        private string _gitUserName = string.Empty;
 
-            return Task.CompletedTask;
+        [ObservableProperty]
+        private string _gitUserEmail = string.Empty;
+
+        [ObservableProperty]
+        private string _gitExecutablePath = string.Empty;
+
+        [ObservableProperty]
+        private string _defaultProjectPath = string.Empty;
+
+        [ObservableProperty]
+        private bool _autoStartProjects = false;
+
+        [ObservableProperty]
+        private string _defaultGitBranch = "main";
+
+        [ObservableProperty]
+        private bool _autoFetchGitUpdates = true;
+
+        [ObservableProperty]
+        private int _projectRefreshInterval = 30;
+
+        [ObservableProperty]
+        private bool _showNotifications = true;
+
+        [ObservableProperty]
+        private string _preferredTerminal = "PowerShell";
+
+        [ObservableProperty]
+        private string _preferredEditor = "VS Code";
+
+        [ObservableProperty]
+        private bool _autoSaveProjects = true;
+
+        [ObservableProperty]
+        private int _maxRecentProjects = 10;
+
+        public SettingsViewModel(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
         }
 
-        public Task OnNavigatedFromAsync() => Task.CompletedTask;
+        public async Task OnNavigatedToAsync()
+        {
+            if (!_isInitialized)
+                await InitializeViewModelAsync();
+        }
 
-        private void InitializeViewModel()
+        public async Task OnNavigatedFromAsync()
+        {
+            await SaveAllSettingsAsync();
+        }
+
+        private async Task InitializeViewModelAsync()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"项目管理器 - {GetAssemblyVersion()}";
+
+            var settings = await _settingsService.GetSettingsAsync();
+            GitUserName = settings.GitUserName;
+            GitUserEmail = settings.GitUserEmail;
+            GitExecutablePath = settings.GitExecutablePath;
+            DefaultProjectPath = settings.DefaultProjectPath;
+            AutoStartProjects = settings.AutoStartProjects;
+            DefaultGitBranch = settings.DefaultGitBranch;
+            AutoFetchGitUpdates = settings.AutoFetchGitUpdates;
+            ProjectRefreshInterval = settings.ProjectRefreshInterval;
+            ShowNotifications = settings.ShowNotifications;
+            PreferredTerminal = settings.PreferredTerminal;
+            PreferredEditor = settings.PreferredEditor;
+            AutoSaveProjects = settings.AutoSaveProjects;
+            MaxRecentProjects = settings.MaxRecentProjects;
 
             _isInitialized = true;
+        }
+
+        private async Task SaveAllSettingsAsync()
+        {
+            var settings = new AppSettings
+            {
+                GitUserName = GitUserName,
+                GitUserEmail = GitUserEmail,
+                GitExecutablePath = GitExecutablePath,
+                DefaultProjectPath = DefaultProjectPath,
+                AutoStartProjects = AutoStartProjects,
+                DefaultGitBranch = DefaultGitBranch,
+                AutoFetchGitUpdates = AutoFetchGitUpdates,
+                ProjectRefreshInterval = ProjectRefreshInterval,
+                ShowNotifications = ShowNotifications,
+                PreferredTerminal = PreferredTerminal,
+                PreferredEditor = PreferredEditor,
+                AutoSaveProjects = AutoSaveProjects,
+                MaxRecentProjects = MaxRecentProjects
+            };
+
+            await _settingsService.SaveSettingsAsync(settings);
         }
 
         private string GetAssemblyVersion()
@@ -48,7 +137,6 @@ namespace ProjectManager.ViewModels.Pages
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light);
                     CurrentTheme = ApplicationTheme.Light;
-
                     break;
 
                 default:
@@ -57,9 +145,59 @@ namespace ProjectManager.ViewModels.Pages
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark);
                     CurrentTheme = ApplicationTheme.Dark;
-
                     break;
             }
+        }
+
+        [RelayCommand]
+        private void BrowseDefaultProjectPath()
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = "选择默认项目路径",
+                InitialDirectory = DefaultProjectPath
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                DefaultProjectPath = dialog.FolderName;
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseGitExecutablePath()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "选择Git可执行文件",
+                Filter = "可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*",
+                InitialDirectory = string.IsNullOrEmpty(GitExecutablePath) ? 
+                    @"C:\Program Files\Git\bin" : 
+                    Path.GetDirectoryName(GitExecutablePath)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                GitExecutablePath = dialog.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private async Task SaveSettings()
+        {
+            await SaveAllSettingsAsync();
+        }
+
+        [RelayCommand]
+        private async Task ResetSettings()
+        {
+            var settings = new AppSettings
+            {
+                DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects")
+            };
+            
+            await _settingsService.SaveSettingsAsync(settings);
+            await InitializeViewModelAsync();
         }
     }
 }

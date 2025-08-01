@@ -56,7 +56,10 @@ namespace ProjectManager
                 
                 // Git service
                 services.AddSingleton<IGitService, GitService>();
-                
+
+                // Settings service
+                services.AddSingleton<ISettingsService, SettingsService>();
+
                 // Terminal service
                 services.AddSingleton<TerminalService>();
 
