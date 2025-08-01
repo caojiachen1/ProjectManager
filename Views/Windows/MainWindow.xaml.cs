@@ -1,4 +1,5 @@
-﻿using ProjectManager.ViewModels.Windows;
+﻿using System.Windows;
+using ProjectManager.ViewModels.Windows;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -29,6 +30,15 @@ namespace ProjectManager.Views.Windows
             
             // 设置ContentDialogService的宿主
             contentDialogService.SetDialogHost(RootContentDialog);
+
+            // 窗口加载完成后设置为最大化
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // 使用正确的方式最大化窗口
+            this.WindowState = WindowState.Maximized;
         }
 
         #region INavigationWindow methods
