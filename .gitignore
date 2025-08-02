@@ -56,3 +56,4 @@ nunit-*.xml
 .*/
 *.md
 !README.md
+!.github/
