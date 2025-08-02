@@ -152,12 +152,12 @@
                         FontSize="18"
                         FontWeight="SemiBold"
                         Text="应用程序设置" />
-                    
+
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="首选终端" Margin="0,0,0,4"/>
-                        <ComboBox SelectedItem="{Binding ViewModel.PreferredTerminal}">
+                        <ComboBox SelectedValue="{Binding ViewModel.PreferredTerminal}" SelectedValuePath="Content">
                             <ComboBoxItem Content="PowerShell"/>
-                            <ComboBoxItem Content="Command Prompt"/>
+                            <ComboBoxItem Content="CMD"/>
                             <ComboBoxItem Content="Windows Terminal"/>
                             <ComboBoxItem Content="Git Bash"/>
                         </ComboBox>

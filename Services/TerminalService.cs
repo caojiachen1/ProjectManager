@@ -11,6 +11,12 @@ namespace ProjectManager.Services
     {
         private readonly Dictionary<string, TerminalSession> _sessions = new();
         private readonly object _lockObject = new();
+        private readonly ISettingsService _settingsService;
+
+        public TerminalService(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
+        }
 
         /// <summary>
         /// 创建新的终端会话
@@ -80,10 +86,14 @@ namespace ProjectManager.Services
                 session.AddOutputLine($"启动命令: {session.Command}");
                 session.AddOutputLine($"工作目录: {session.ProjectPath}");
 
+                // 获取用户设置的终端类型
+                var settings = await _settingsService.GetSettingsAsync();
+                var (fileName, arguments) = GetTerminalCommand(settings.PreferredTerminal, session.Command);
+
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c {session.Command}",
+                    FileName = fileName,
+                    Arguments = arguments,
                     WorkingDirectory = session.ProjectPath,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -101,7 +111,9 @@ namespace ProjectManager.Services
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        session.AddOutputLine(e.Data);
+                        // 尝试修复可能的编码问题
+                        var fixedData = FixEncodingIssues(e.Data);
+                        session.AddOutputLine(fixedData);
                     }
                 };
 
@@ -110,7 +122,8 @@ namespace ProjectManager.Services
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        session.AddOutputLine($"ERROR: {e.Data}");
+                        var fixedData = FixEncodingIssues(e.Data);
+                        session.AddOutputLine($"ERROR: {fixedData}");
                     }
                 };
 
@@ -189,6 +202,76 @@ namespace ProjectManager.Services
                 }
                 _sessions.Clear();
             }
+        }
+
+        /// <summary>
+        /// 修复编码问题
+        /// </summary>
+        /// <param name="input">输入字符串</param>
+        /// <returns>修复后的字符串</returns>
+        private string FixEncodingIssues(string input)
+        {
+            try
+            {
+                // 如果字符串包含乱码字符，尝试重新编码
+                if (input.Contains("�") || HasGarbledCharacters(input))
+                {
+                    // 尝试从GBK转换到UTF-8
+                    var gbkEncoding = Encoding.GetEncoding("GBK");
+                    var utf8Encoding = Encoding.UTF8;
+                    
+                    // 先转换为字节数组，再用正确的编码解码
+                    var bytes = Encoding.Default.GetBytes(input);
+                    return gbkEncoding.GetString(bytes);
+                }
+                return input;
+            }
+            catch
+            {
+                // 如果转换失败，返回原字符串
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// <summary>
+        /// 检查是否包含乱码字符
+        /// </summary>
+        /// <param name="input">输入字符串</param>
+        /// <returns>是否包含乱码</returns>
+        private bool HasGarbledCharacters(string input)
+        {
+            // 检查是否包含常见的乱码模式
+            return input.Contains("��") || 
+                   input.Contains("锘�") ||
+                   System.Text.RegularExpressions.Regex.IsMatch(input, @"[^\x00-\x7F\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff]");
+        }
+
+        /// <summary>
+        /// 根据终端类型获取对应的命令
+        /// </summary>
+        /// <param name="terminalType">终端类型</param>
+        /// <param name="command">要执行的命令</param>
+        /// <returns>终端可执行文件名和参数</returns>
+        private (string fileName, string arguments) GetTerminalCommand(string terminalType, string command)
+        {
+            return terminalType?.ToLower() switch
+            {
+                "powershell" or "powershell 7" => 
+                    ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}\""),
+                
+                "cmd" or "command prompt" => 
+                    ("cmd.exe", $"/c chcp 65001 && {command}"),
+                
+                "windows terminal" => 
+                    ("wt.exe", $"powershell.exe -NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}\""),
+                
+                "git bash" => 
+                    ("bash.exe", $"-c \"{command}\""),
+                
+                _ => // 默认使用 PowerShell
+                    ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}\"")
+            };
         }
     }
 }

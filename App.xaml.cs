@@ -61,6 +61,7 @@ namespace ProjectManager
                 services.AddSingleton<ISettingsService, SettingsService>();
 
                 // Terminal service
+                // Terminal service
                 services.AddSingleton<TerminalService>();
 
                 // Main window with navigation

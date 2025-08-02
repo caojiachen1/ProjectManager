@@ -27,7 +27,6 @@ namespace ProjectManager.Converters
     }
 
     /// <summary>
-    /// <summary>
     /// 状态转Badge外观转换器
     /// </summary>
     public class StatusToBadgeConverter : IValueConverter
