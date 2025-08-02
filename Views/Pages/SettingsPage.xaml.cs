@@ -13,7 +13,7 @@ namespace ProjectManager.Views.Pages
         public SettingsPage(SettingsViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = this;
+            DataContext = viewModel;
 
             InitializeComponent();
         }

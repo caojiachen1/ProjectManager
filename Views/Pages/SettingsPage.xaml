@@ -43,13 +43,13 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox 
                                 Grid.Column="0"
-                                Text="{Binding ViewModel.GitExecutablePath, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding GitExecutablePath, UpdateSourceTrigger=PropertyChanged}"
                                 PlaceholderText="选择Git可执行文件路径 (如: C:\Program Files\Git\bin\git.exe)"/>
                             <ui:Button 
                                 Grid.Column="1"
                                 Content="浏览"
                                 Icon="{ui:SymbolIcon FolderOpen24}"
-                                Command="{Binding ViewModel.BrowseGitExecutablePathCommand}"
+                                Command="{Binding BrowseGitExecutablePathCommand}"
                                 Margin="8,0,0,0"/>
                         </Grid>
                     </StackPanel>
@@ -63,14 +63,14 @@
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="用户名" Margin="0,0,0,4"/>
                             <ui:TextBox 
-                                Text="{Binding ViewModel.GitUserName, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding GitUserName, UpdateSourceTrigger=PropertyChanged}"
                                 PlaceholderText="输入Git用户名"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
                             <TextBlock Text="邮箱" Margin="0,0,0,4"/>
                             <ui:TextBox 
-                                Text="{Binding ViewModel.GitUserEmail, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding GitUserEmail, UpdateSourceTrigger=PropertyChanged}"
                                 PlaceholderText="输入Git邮箱"/>
                         </StackPanel>
                     </Grid>
@@ -78,13 +78,13 @@
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="默认分支" Margin="0,0,0,4"/>
                         <ui:TextBox 
-                            Text="{Binding ViewModel.DefaultGitBranch, UpdateSourceTrigger=PropertyChanged}"
+                            Text="{Binding DefaultGitBranch, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="main"/>
                     </StackPanel>
                     
                     <CheckBox 
                         Content="自动获取Git更新"
-                        IsChecked="{Binding ViewModel.AutoFetchGitUpdates}"
+                        IsChecked="{Binding AutoFetchGitUpdates}"
                         Margin="0,16,0,0"/>
                 </StackPanel>
             </ui:Card>
@@ -106,31 +106,31 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox 
                                 Grid.Column="0"
-                                Text="{Binding ViewModel.DefaultProjectPath, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding DefaultProjectPath, UpdateSourceTrigger=PropertyChanged}"
                                 PlaceholderText="选择默认项目路径"/>
                             <ui:Button 
                                 Grid.Column="1"
                                 Content="浏览"
                                 Icon="{ui:SymbolIcon FolderOpen24}"
-                                Command="{Binding ViewModel.BrowseDefaultProjectPathCommand}"
+                                Command="{Binding BrowseDefaultProjectPathCommand}"
                                 Margin="8,0,0,0"/>
                         </Grid>
                     </StackPanel>
                     
                     <CheckBox 
                         Content="自动启动项目"
-                        IsChecked="{Binding ViewModel.AutoStartProjects}"
+                        IsChecked="{Binding AutoStartProjects}"
                         Margin="0,16,0,0"/>
                     
                     <CheckBox 
                         Content="自动保存项目"
-                        IsChecked="{Binding ViewModel.AutoSaveProjects}"
+                        IsChecked="{Binding AutoSaveProjects}"
                         Margin="0,8,0,0"/>
                     
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="项目刷新间隔（秒）" Margin="0,0,0,4"/>
                         <ui:NumberBox 
-                            Value="{Binding ViewModel.ProjectRefreshInterval}"
+                            Value="{Binding ProjectRefreshInterval}"
                             Minimum="10"
                             Maximum="300"/>
                     </StackPanel>
@@ -138,7 +138,7 @@
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="最大最近项目数" Margin="0,0,0,4"/>
                         <ui:NumberBox 
-                            Value="{Binding ViewModel.MaxRecentProjects}"
+                            Value="{Binding MaxRecentProjects}"
                             Minimum="5"
                             Maximum="50"/>
                     </StackPanel>
@@ -155,7 +155,7 @@
 
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="首选终端" Margin="0,0,0,4"/>
-                        <ComboBox SelectedValue="{Binding ViewModel.PreferredTerminal}" SelectedValuePath="Content">
+                        <ComboBox SelectedValue="{Binding PreferredTerminal}" SelectedValuePath="Content">
                             <ComboBoxItem Content="PowerShell"/>
                             <ComboBoxItem Content="CMD"/>
                             <ComboBoxItem Content="Windows Terminal"/>
@@ -165,7 +165,7 @@
                     
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock Text="首选编辑器" Margin="0,0,0,4"/>
-                        <ComboBox SelectedItem="{Binding ViewModel.PreferredEditor}">
+                        <ComboBox SelectedItem="{Binding PreferredEditor}">
                             <ComboBoxItem Content="VS Code"/>
                             <ComboBoxItem Content="Visual Studio"/>
                             <ComboBoxItem Content="Notepad++"/>
@@ -176,7 +176,7 @@
                     
                     <CheckBox 
                         Content="显示通知"
-                        IsChecked="{Binding ViewModel.ShowNotifications}"
+                        IsChecked="{Binding ShowNotifications}"
                         Margin="0,16,0,0"/>
                 </StackPanel>
             </ui:Card>
@@ -192,18 +192,18 @@
                     <TextBlock Margin="0,16,0,4" Text="主题" />
                     <RadioButton
                         Margin="0,8,0,0"
-                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                        Command="{Binding ChangeThemeCommand, Mode=OneWay}"
                         CommandParameter="theme_light"
                         Content="浅色主题"
                         GroupName="themeSelect"
-                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                        IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
                     <RadioButton
                         Margin="0,8,0,0"
-                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                        Command="{Binding ChangeThemeCommand, Mode=OneWay}"
                         CommandParameter="theme_dark"
                         Content="深色主题"
                         GroupName="themeSelect"
-                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                        IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
                 </StackPanel>
             </ui:Card>
 
@@ -220,13 +220,13 @@
                             Content="保存设置"
                             Icon="{ui:SymbolIcon Save24}"
                             Appearance="Primary"
-                            Command="{Binding ViewModel.SaveSettingsCommand}"
+                            Command="{Binding SaveSettingsCommand}"
                             Margin="0,0,8,0"/>
                         <ui:Button 
                             Content="重置设置"
                             Icon="{ui:SymbolIcon ArrowReset24}"
                             Appearance="Caution"
-                            Command="{Binding ViewModel.ResetSettingsCommand}"
+                            Command="{Binding ResetSettingsCommand}"
                             Margin="8,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -241,7 +241,7 @@
                         Text="关于项目管理器" />
                     <TextBlock 
                         Margin="0,16,0,0" 
-                        Text="{Binding ViewModel.AppVersion, Mode=OneWay}" />
+                        Text="{Binding AppVersion, Mode=OneWay}" />
                 </StackPanel>
             </ui:Card>
         </StackPanel>
