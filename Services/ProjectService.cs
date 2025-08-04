@@ -30,7 +30,7 @@ namespace ProjectManager.Services
             _terminalService = terminalService;
             _gitService = gitService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var appFolder = Path.Combine(appDataPath, "Universal Project Manager");
+            var appFolder = Path.Combine(appDataPath, "ProjectManager");
             Directory.CreateDirectory(appFolder);
             _projectsFilePath = Path.Combine(appFolder, "projects.json");
             _projects = new List<Project>();
