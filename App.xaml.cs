@@ -75,22 +75,16 @@ namespace ProjectManager
                 services.AddSingleton<ProjectsViewModel>();
                 services.AddSingleton<AddProjectPage>();
                 services.AddSingleton<AddProjectViewModel>();
-                services.AddSingleton<ProjectLogsPage>();
-                services.AddSingleton<ProjectLogsViewModel>();
-                services.AddSingleton<DataPage>();
-                services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<TerminalPage>();
                 services.AddSingleton<TerminalViewModel>();
                 
                 // Dialogs
-                services.AddTransient<Views.Dialogs.ProjectEditDialog>();
                 services.AddTransient<Views.Dialogs.ProjectEditWindow>();
                 services.AddTransient<ViewModels.Dialogs.ProjectEditDialogViewModel>();
                 services.AddTransient<Views.Dialogs.GitManagementWindow>();
                 services.AddTransient<ViewModels.Dialogs.GitManagementDialogViewModel>();
-                services.AddTransient<Views.Dialogs.GitCloneDialog>();
                 services.AddTransient<Views.Dialogs.GitCloneWindow>();
                 services.AddTransient<ViewModels.Dialogs.GitCloneDialogViewModel>();
             }).Build();

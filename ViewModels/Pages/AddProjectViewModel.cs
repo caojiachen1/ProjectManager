@@ -178,10 +178,11 @@ namespace ProjectManager.ViewModels.Pages
         private async Task CloneFromGit()
         {
             var dialogViewModel = _serviceProvider.GetRequiredService<GitCloneDialogViewModel>();
-            var dialog = _serviceProvider.GetRequiredService<GitCloneDialog>();
+            var window = _serviceProvider.GetRequiredService<Views.Dialogs.GitCloneWindow>();
             
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
+            window.Owner = Application.Current.MainWindow;
+            var result = window.ShowDialog();
+            if (result == true)
             {
                 // 克隆成功，导航到项目页面
                 _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
