@@ -101,7 +101,7 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Margin="0,0,0,60">
+    <StackPanel Margin="0,0,0,10">
         <!-- 顶部工具栏 -->
         <Border Background="#2D2D30" 
                 BorderBrush="#3F3F46" 
