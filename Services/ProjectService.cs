@@ -121,7 +121,8 @@ namespace ProjectManager.Services
                     terminalSession = _terminalService.CreateSession(
                         project.Name, 
                         string.IsNullOrEmpty(project.WorkingDirectory) ? project.LocalPath : project.WorkingDirectory,
-                        project.StartCommand);
+                        project.StartCommand,
+                        project.EnvironmentVariables);
                 }
                 else
                 {
@@ -131,8 +132,8 @@ namespace ProjectManager.Services
                     terminalSession.ProjectPath = string.IsNullOrEmpty(project.WorkingDirectory) ? project.LocalPath : project.WorkingDirectory;
                 }
 
-                // 启动终端会话
-                var sessionStarted = await _terminalService.StartSessionAsync(terminalSession);
+                // 启动终端会话，传递环境变量
+                var sessionStarted = await _terminalService.StartSessionAsync(terminalSession, project.EnvironmentVariables);
                 
                 if (sessionStarted)
                 {

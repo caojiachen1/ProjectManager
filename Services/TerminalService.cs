@@ -24,8 +24,9 @@ namespace ProjectManager.Services
         /// <param name="projectName">项目名称</param>
         /// <param name="projectPath">项目路径</param>
         /// <param name="command">启动命令</param>
+        /// <param name="environmentVariables">环境变量</param>
         /// <returns>终端会话</returns>
-        public TerminalSession CreateSession(string projectName, string projectPath, string command)
+        public TerminalSession CreateSession(string projectName, string projectPath, string command, Dictionary<string, string>? environmentVariables = null)
         {
             lock (_lockObject)
             {
@@ -34,7 +35,8 @@ namespace ProjectManager.Services
                     ProjectName = projectName,
                     ProjectPath = projectPath,
                     Command = command,
-                    StartTime = DateTime.Now
+                    StartTime = DateTime.Now,
+                    EnvironmentVariables = environmentVariables ?? new Dictionary<string, string>()
                 };
 
                 _sessions[session.SessionId] = session;
@@ -71,8 +73,9 @@ namespace ProjectManager.Services
         /// 启动终端会话
         /// </summary>
         /// <param name="session">终端会话</param>
+        /// <param name="environmentVariables">环境变量</param>
         /// <returns>是否启动成功</returns>
-        public async Task<bool> StartSessionAsync(TerminalSession session)
+        public async Task<bool> StartSessionAsync(TerminalSession session, Dictionary<string, string>? environmentVariables = null)
         {
             try
             {
@@ -86,9 +89,28 @@ namespace ProjectManager.Services
                 session.AddOutputLine($"启动命令: {session.Command}");
                 session.AddOutputLine($"工作目录: {session.ProjectPath}");
 
+                // 设置环境变量 - 优先使用传入的环境变量，否则使用会话中存储的环境变量
+                var envVars = environmentVariables ?? session.EnvironmentVariables;
+                
+                // 构建完整的命令序列
+                var commandSequence = new List<string>();
+                
+                if (envVars != null && envVars.Any())
+                {
+                    session.AddOutputLine("设置环境变量:");
+                    foreach (var env in envVars)
+                    {
+                        session.AddOutputLine($"  {env.Key}={env.Value}");
+                        commandSequence.Add($"set \"{env.Key}={env.Value}\"");
+                    }
+                }
+                
+                // 添加启动命令
+                commandSequence.Add(session.Command);
+                
                 // 获取用户设置的终端类型
                 var settings = await _settingsService.GetSettingsAsync();
-                var (fileName, arguments) = GetTerminalCommand(settings.PreferredTerminal, session.Command);
+                var (fileName, arguments) = GetTerminalCommandWithSequence(settings.PreferredTerminal, commandSequence);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -245,6 +267,38 @@ namespace ProjectManager.Services
             return input.Contains("��") || 
                    input.Contains("锘�") ||
                    System.Text.RegularExpressions.Regex.IsMatch(input, @"[^\x00-\x7F\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff]");
+        }
+
+        /// <summary>
+        /// 根据终端类型获取对应的命令序列
+        /// </summary>
+        /// <param name="terminalType">终端类型</param>
+        /// <param name="commandSequence">要执行的命令序列</param>
+        /// <returns>终端可执行文件名和参数</returns>
+        private (string fileName, string arguments) GetTerminalCommandWithSequence(string terminalType, List<string> commandSequence)
+        {
+            if (commandSequence == null || !commandSequence.Any())
+            {
+                return ("cmd.exe", "/c echo No commands to execute");
+            }
+
+            return terminalType?.ToLower() switch
+            {
+                "powershell" or "powershell 7" => 
+                    ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\""),
+                
+                "cmd" or "command prompt" => 
+                    ("cmd.exe", $"/c chcp 65001 && {string.Join(" && ", commandSequence)}"),
+                
+                "windows terminal" => 
+                    ("wt.exe", $"powershell.exe -NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\""),
+                
+                "git bash" => 
+                    ("bash.exe", $"-c \"{string.Join(" && ", commandSequence)}\""),
+                
+                _ => // 默认使用 PowerShell
+                    ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\"")
+            };
         }
 
         /// <summary>

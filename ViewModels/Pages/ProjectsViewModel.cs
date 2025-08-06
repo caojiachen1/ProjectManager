@@ -220,6 +220,30 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task ManageEnvironmentVariables(Project project)
+        {
+            if (project != null)
+            {
+                var dialogViewModel = _serviceProvider.GetRequiredService<EnvironmentVariablesDialogViewModel>();
+                
+                // 加载项目数据
+                dialogViewModel.LoadProject(project);
+                
+                // 创建窗口
+                var window = new Views.Dialogs.EnvironmentVariablesWindow(dialogViewModel);
+                window.Owner = Application.Current.MainWindow;
+                
+                var result = window.ShowDialog();
+                if (result == true)
+                {
+                    // 保存项目更改
+                    await _projectService.SaveProjectAsync(project);
+                    await LoadProjects();
+                }
+            }
+        }
+
+        [RelayCommand]
         private async Task ManageGit(Project project)
         {
             if (project != null)

@@ -66,6 +66,9 @@ namespace ProjectManager.Models
         [ObservableProperty]
         private bool _autoStart = false;
 
+        [ObservableProperty]
+        private Dictionary<string, string> _environmentVariables = new();
+
         [JsonIgnore]
         public string StatusDisplay => Status switch
         {

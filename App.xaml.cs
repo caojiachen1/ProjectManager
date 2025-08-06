@@ -87,6 +87,8 @@ namespace ProjectManager
                 services.AddTransient<ViewModels.Dialogs.GitManagementDialogViewModel>();
                 services.AddTransient<Views.Dialogs.GitCloneWindow>();
                 services.AddTransient<ViewModels.Dialogs.GitCloneDialogViewModel>();
+                services.AddTransient<Views.Dialogs.EnvironmentVariablesWindow>();
+                services.AddTransient<ViewModels.Dialogs.EnvironmentVariablesDialogViewModel>();
             }).Build();
 
         /// <summary>

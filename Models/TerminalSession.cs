@@ -34,6 +34,9 @@ namespace ProjectManager.Models
         [ObservableProperty]
         private string _status = "已停止";
 
+        [ObservableProperty]
+        private Dictionary<string, string> _environmentVariables = new();
+
         private Process? _process;
         private readonly object _lockObject = new();
 
