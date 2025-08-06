@@ -101,16 +101,9 @@
         </Style>
     </Page.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
+    <StackPanel Margin="0,0,0,60">
         <!-- 顶部工具栏 -->
-        <Border Grid.Row="0" 
-                Background="#2D2D30" 
+        <Border Background="#2D2D30" 
                 BorderBrush="#3F3F46" 
                 BorderThickness="0,0,0,1"
                 Padding="12,8">
@@ -145,7 +138,7 @@
         </Border>
 
         <!-- 主要内容区域 -->
-        <Grid Grid.Row="1">
+        <Grid Height="650">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -226,8 +219,7 @@
         </Grid>
 
         <!-- 底部状态栏 -->
-        <Border Grid.Row="2" 
-                Background="#2D2D30" 
+        <Border Background="#2D2D30" 
                 BorderBrush="#3F3F46" 
                 BorderThickness="0,1,0,0"
                 Padding="12,6">
@@ -256,12 +248,11 @@
         </Border>
 
         <!-- 加载指示器 -->
-        <Grid Grid.RowSpan="3" 
-              Background="#80000000" 
+        <Grid Background="#80000000" 
               Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ui:ProgressRing IsIndeterminate="True" 
                              Width="48" 
                              Height="48"/>
         </Grid>
-    </Grid>
+    </StackPanel>
 </Page>
