@@ -20,12 +20,7 @@
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                  HorizontalScrollBarVisibility="Disabled"
-                  CanContentScroll="False"
-                  PanningMode="VerticalOnly"
-                  PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-        <StackPanel Margin="16">
+    <StackPanel Margin="16">
             <!-- Git 设置 -->
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
@@ -244,6 +239,5 @@
                         Text="{Binding AppVersion, Mode=OneWay}" />
                 </StackPanel>
             </ui:Card>
-        </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
 </Page>
