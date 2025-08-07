@@ -153,26 +153,28 @@
                         <ComboBox SelectedValue="{Binding PreferredTerminal}" SelectedValuePath="Content">
                             <ComboBoxItem Content="PowerShell"/>
                             <ComboBoxItem Content="CMD"/>
-                            <ComboBoxItem Content="Windows Terminal"/>
                             <ComboBoxItem Content="Git Bash"/>
                         </ComboBox>
                     </StackPanel>
                     
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="首选编辑器" Margin="0,0,0,4"/>
-                        <ComboBox SelectedItem="{Binding PreferredEditor}">
-                            <ComboBoxItem Content="VS Code"/>
-                            <ComboBoxItem Content="Visual Studio"/>
-                            <ComboBoxItem Content="Notepad++"/>
-                            <ComboBoxItem Content="Sublime Text"/>
-                            <ComboBoxItem Content="Atom"/>
-                        </ComboBox>
-                    </StackPanel>
-                    
-                    <CheckBox 
-                        Content="显示通知"
-                        IsChecked="{Binding ShowNotifications}"
-                        Margin="0,16,0,0"/>
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <CheckBox 
+                            Grid.Column="0"
+                            Content="显示通知"
+                            IsChecked="{Binding ShowNotifications}"
+                            Margin="0,0,8,0"/>
+                        
+                        <CheckBox 
+                            Grid.Column="1"
+                            Content="UTF8"
+                            IsChecked="{Binding UseCmdChcp65001}"
+                            Margin="8,0,0,0"/>
+                    </Grid>
                 </StackPanel>
             </ui:Card>
 

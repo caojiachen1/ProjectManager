@@ -59,6 +59,9 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private int _maxRecentProjects = 10;
 
+        [ObservableProperty]
+        private bool _useCmdChcp65001 = true;
+
         public SettingsViewModel(ISettingsService settingsService)
         {
             _settingsService = settingsService;
@@ -91,9 +94,9 @@ namespace ProjectManager.ViewModels.Pages
             ProjectRefreshInterval = settings.ProjectRefreshInterval;
             ShowNotifications = settings.ShowNotifications;
             PreferredTerminal = settings.PreferredTerminal;
-            PreferredEditor = settings.PreferredEditor;
             AutoSaveProjects = settings.AutoSaveProjects;
             MaxRecentProjects = settings.MaxRecentProjects;
+            UseCmdChcp65001 = settings.UseCmdChcp65001;
 
             _isInitialized = true;
         }
@@ -112,9 +115,9 @@ namespace ProjectManager.ViewModels.Pages
                 ProjectRefreshInterval = ProjectRefreshInterval,
                 ShowNotifications = ShowNotifications,
                 PreferredTerminal = PreferredTerminal,
-                PreferredEditor = PreferredEditor,
                 AutoSaveProjects = AutoSaveProjects,
-                MaxRecentProjects = MaxRecentProjects
+                MaxRecentProjects = MaxRecentProjects,
+                UseCmdChcp65001 = UseCmdChcp65001
             };
 
             await _settingsService.SaveSettingsAsync(settings);

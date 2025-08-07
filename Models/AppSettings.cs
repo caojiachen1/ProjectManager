@@ -20,8 +20,8 @@ namespace ProjectManager.Models
 
         // 应用程序设置
         public string PreferredTerminal { get; set; } = "PowerShell";
-        public string PreferredEditor { get; set; } = "VS Code";
         public bool ShowNotifications { get; set; } = true;
+        public bool UseCmdChcp65001 { get; set; } = true;
 
         // 个性化设置
         public ApplicationTheme Theme { get; set; } = ApplicationTheme.Unknown;

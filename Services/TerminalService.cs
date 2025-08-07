@@ -145,7 +145,7 @@ namespace ProjectManager.Services
                     if (!string.IsNullOrEmpty(e.Data))
                     {
                         var fixedData = FixEncodingIssues(e.Data);
-                        session.AddOutputLine($"ERROR: {fixedData}");
+                        session.AddOutputLine(fixedData);
                     }
                 };
 
@@ -282,16 +282,16 @@ namespace ProjectManager.Services
                 return ("cmd.exe", "/c echo No commands to execute");
             }
 
+            var settings = _settingsService.GetSettingsAsync().Result;
+            var cmdPrefix = settings.UseCmdChcp65001 ? "chcp 65001 && " : "";
+
             return terminalType?.ToLower() switch
             {
                 "powershell" or "powershell 7" => 
                     ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\""),
                 
                 "cmd" or "command prompt" => 
-                    ("cmd.exe", $"/c chcp 65001 && {string.Join(" && ", commandSequence)}"),
-                
-                "windows terminal" => 
-                    ("wt.exe", $"powershell.exe -NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\""),
+                    ("cmd.exe", $"/c {cmdPrefix}{string.Join(" && ", commandSequence)}"),
                 
                 "git bash" => 
                     ("bash.exe", $"-c \"{string.Join(" && ", commandSequence)}\""),
@@ -309,16 +309,16 @@ namespace ProjectManager.Services
         /// <returns>终端可执行文件名和参数</returns>
         private (string fileName, string arguments) GetTerminalCommand(string terminalType, string command)
         {
+            var settings = _settingsService.GetSettingsAsync().Result;
+            var cmdPrefix = settings.UseCmdChcp65001 ? "chcp 65001 && " : "";
+
             return terminalType?.ToLower() switch
             {
                 "powershell" or "powershell 7" => 
                     ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}\""),
                 
                 "cmd" or "command prompt" => 
-                    ("cmd.exe", $"/c chcp 65001 && {command}"),
-                
-                "windows terminal" => 
-                    ("wt.exe", $"powershell.exe -NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}\""),
+                    ("cmd.exe", $"/c {cmdPrefix}{command}"),
                 
                 "git bash" => 
                     ("bash.exe", $"-c \"{command}\""),
