@@ -60,7 +60,6 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存设置失败: {ex.Message}");
-                throw;
             }
         }
 
