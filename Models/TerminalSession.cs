@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -40,6 +41,7 @@ namespace ProjectManager.Models
         private Process? _process;
         private readonly object _lockObject = new();
 
+        [JsonIgnore]
         public Process? Process
         {
             get => _process;

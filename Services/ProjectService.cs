@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Diagnostics;
 using ProjectManager.Models;
 
@@ -212,24 +213,31 @@ namespace ProjectManager.Services
         {
             try
             {
-                if (File.Exists(_projectsFilePath))
+                if (!File.Exists(_projectsFilePath)) return;
+
+                var json = File.ReadAllText(_projectsFilePath);
+                var options = new JsonSerializerOptions
                 {
-                    var json = File.ReadAllText(_projectsFilePath);
-                    var projects = JsonSerializer.Deserialize<List<Project>>(json);
-                    if (projects != null)
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+                var dtoList = JsonSerializer.Deserialize<List<PersistedProject>>(json, options);
+                if (dtoList == null) return;
+
+                foreach (var dto in dtoList)
+                {
+                    try
                     {
-                        _projects.AddRange(projects);
-                        // 重置运行状态，因为应用重启后进程会丢失
-                        foreach (var project in _projects.Where(p => p.Status == ProjectStatus.Running))
-                        {
-                            project.Status = ProjectStatus.Stopped;
-                        }
+                        var model = ProjectPersistenceMapper.ToModel(dto);
+                        _projects.Add(model);
+                    }
+                    catch (Exception mapEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"映射项目失败 (ID={dto.Id}): {mapEx.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                // 记录错误但不阻止应用启动
                 System.Diagnostics.Debug.WriteLine($"加载项目失败: {ex.Message}");
             }
         }
@@ -238,17 +246,26 @@ namespace ProjectManager.Services
         {
             try
             {
+                var dtoList = _projects.Select(ProjectPersistenceMapper.ToDto).ToList();
+                // 强制保存时排除运行中状态，避免误恢复
+                foreach (var dto in dtoList)
+                {
+                    if (dto.Status == ProjectStatus.Running || dto.Status == ProjectStatus.Starting || dto.Status == ProjectStatus.Stopping)
+                        dto.Status = ProjectStatus.Stopped;
+                }
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
-                var json = JsonSerializer.Serialize(_projects, options);
+                var json = JsonSerializer.Serialize(dtoList, options);
                 await File.WriteAllTextAsync(_projectsFilePath, json);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存项目失败: {ex.Message}");
+                throw new InvalidOperationException($"保存项目失败: {ex.Message}", ex);
             }
         }
     }
