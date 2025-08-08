@@ -246,13 +246,5 @@
                 </StackPanel>
             </Grid>
         </Border>
-
-        <!-- 加载指示器 -->
-        <Grid Background="#80000000" 
-              Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ui:ProgressRing IsIndeterminate="True" 
-                             Width="48" 
-                             Height="48"/>
-        </Grid>
     </StackPanel>
 </Page>
