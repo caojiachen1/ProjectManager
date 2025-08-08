@@ -265,7 +265,6 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存项目失败: {ex.Message}");
-                throw new InvalidOperationException($"保存项目失败: {ex.Message}", ex);
             }
         }
     }
