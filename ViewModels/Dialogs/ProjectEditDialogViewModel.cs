@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Wpf.Ui.Controls;
-using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
@@ -13,6 +12,7 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private readonly IProjectDetectionService _detectionService;
+        private readonly IErrorDisplayService _errorDisplayService;
         private Project? _originalProject;
 
         [ObservableProperty]
@@ -73,10 +73,11 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
-        public ProjectEditDialogViewModel(IProjectService projectService, IProjectDetectionService detectionService)
+        public ProjectEditDialogViewModel(IProjectService projectService, IProjectDetectionService detectionService, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _detectionService = detectionService;
+            _errorDisplayService = errorDisplayService;
             
             // 初始化可用框架列表
             AvailableFrameworks = new ObservableCollection<string>(FrameworkConfigService.GetFrameworkNames());
@@ -357,13 +358,12 @@ namespace ProjectManager.ViewModels.Dialogs
                     project.CreatedDate = DateTime.Now;
                 }
 
-                await _projectService.SaveProjectAsync(project);
+                var saveSuccess = await _projectService.SaveProjectAsync(project);
                 
-                ProjectSaved?.Invoke(this, project);
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("项目名称"))
-            {
-                await ShowErrorMessage(ex.Message);
+                if (saveSuccess)
+                {
+                    ProjectSaved?.Invoke(this, project);
+                }
             }
             catch (Exception ex)
             {
@@ -477,13 +477,7 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private async Task ShowErrorMessage(string message)
         {
-            var messageBox = new MessageBox
-            {
-                Title = "错误",
-                Content = message,
-                PrimaryButtonText = "确定"
-            };
-            await messageBox.ShowDialogAsync();
+            await _errorDisplayService.ShowErrorAsync(message, "错误");
         }
     }
 }

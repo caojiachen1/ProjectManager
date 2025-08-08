@@ -8,7 +8,7 @@ namespace ProjectManager.Services
     public interface IProjectService
     {
         Task<List<Project>> GetProjectsAsync();
-        Task SaveProjectAsync(Project project);
+        Task<bool> SaveProjectAsync(Project project);
         Task DeleteProjectAsync(string projectId);
         Task<Project?> GetProjectAsync(string projectId);
         Task StartProjectAsync(Project project);
@@ -23,13 +23,15 @@ namespace ProjectManager.Services
         private readonly List<Project> _projects;
         private readonly TerminalService _terminalService;
         private readonly IGitService _gitService;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
 
-        public ProjectService(TerminalService terminalService, IGitService gitService)
+        public ProjectService(TerminalService terminalService, IGitService gitService, IErrorDisplayService errorDisplayService)
         {
             _terminalService = terminalService;
             _gitService = gitService;
+            _errorDisplayService = errorDisplayService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var appFolder = Path.Combine(appDataPath, "ProjectManager");
             Directory.CreateDirectory(appFolder);
@@ -56,7 +58,7 @@ namespace ProjectManager.Services
             return await Task.FromResult(_projects.ToList());
         }
 
-        public async Task SaveProjectAsync(Project project)
+        public async Task<bool> SaveProjectAsync(Project project)
         {
             // 检查项目名称是否已存在（不包括当前项目本身）
             var existingProjectWithSameName = _projects.FirstOrDefault(p => 
@@ -64,7 +66,10 @@ namespace ProjectManager.Services
             
             if (existingProjectWithSameName != null)
             {
-                throw new InvalidOperationException($"项目名称 '{project.Name}' 已存在，请使用不同的名称。");
+                await _errorDisplayService.ShowWarningAsync(
+                    $"项目名称 '{project.Name}' 已存在，请使用不同的名称。",
+                    "项目名称冲突");
+                return false;
             }
 
             var existingProject = _projects.FirstOrDefault(p => p.Id == project.Id);
@@ -80,6 +85,7 @@ namespace ProjectManager.Services
 
             project.LastModified = DateTime.Now;
             await SaveProjectsToFile();
+            return true;
         }
 
         public async Task DeleteProjectAsync(string projectId)
@@ -160,13 +166,16 @@ namespace ProjectManager.Services
                 }
 
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
-                await SaveProjectAsync(project);
+                _ = await SaveProjectAsync(project);
             }
             catch (Exception ex)
             {
                 project.Status = ProjectStatus.Error;
                 project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 启动失败: {ex.Message}\n";
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+                
+                // 显示错误消息
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目启动失败: {ex.Message}", "项目启动错误"));
             }
         }
 
@@ -193,13 +202,16 @@ namespace ProjectManager.Services
                 project.Status = ProjectStatus.Stopped;
                 
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
-                await SaveProjectAsync(project);
+                _ = await SaveProjectAsync(project);
             }
             catch (Exception ex)
             {
                 project.Status = ProjectStatus.Error;
                 project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 停止失败: {ex.Message}\n";
                 ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+                
+                // 显示错误消息
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目停止失败: {ex.Message}", "项目停止错误"));
             }
         }
 
@@ -233,12 +245,16 @@ namespace ProjectManager.Services
                     catch (Exception mapEx)
                     {
                         System.Diagnostics.Debug.WriteLine($"映射项目失败 (ID={dto.Id}): {mapEx.Message}");
+                        // 显示映射错误
+                        _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目映射失败: {mapEx.Message}", "项目加载错误"));
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"加载项目失败: {ex.Message}");
+                // 显示加载错误
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"加载项目失败: {ex.Message}", "项目加载错误"));
             }
         }
 
@@ -265,6 +281,8 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存项目失败: {ex.Message}");
+                // 显示保存错误
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"保存项目失败: {ex.Message}", "项目保存错误"));
             }
         }
     }

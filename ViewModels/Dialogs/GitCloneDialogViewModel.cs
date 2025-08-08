@@ -10,7 +10,6 @@ using ProjectManager.ViewModels.Pages;
 using ProjectManager.Views.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
-using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
@@ -20,6 +19,7 @@ namespace ProjectManager.ViewModels.Dialogs
         private readonly IProjectService _projectService;
         private readonly IServiceProvider _serviceProvider;
         private readonly INavigationService _navigationService;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         public event EventHandler<bool>? CloneCompleted;
 
@@ -85,12 +85,14 @@ namespace ProjectManager.ViewModels.Dialogs
             IGitService gitService, 
             IProjectService projectService,
             IServiceProvider serviceProvider,
-            INavigationService navigationService)
+            INavigationService navigationService,
+            IErrorDisplayService errorDisplayService)
         {
             _gitService = gitService;
             _projectService = projectService;
             _serviceProvider = serviceProvider;
             _navigationService = navigationService;
+            _errorDisplayService = errorDisplayService;
         }
 
         partial void OnRepositoryUrlChanged(string value)
@@ -206,13 +208,7 @@ namespace ProjectManager.ViewModels.Dialogs
                     CloneLog += $"克隆失败: {result.ErrorMessage}\n";
                     CloneStatusMessage = $"克隆失败: {result.ErrorMessage}";
                     
-                    var errorBox = new MessageBox
-                    {
-                        Title = "克隆失败",
-                        Content = result.ErrorMessage,
-                        PrimaryButtonText = "确定"
-                    };
-                    await errorBox.ShowDialogAsync();
+                    await _errorDisplayService.ShowErrorAsync(result.ErrorMessage, "克隆失败");
                     
                     return false;
                 }
@@ -223,13 +219,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 CloneLog += $"发生错误: {ex.Message}\n";
                 CloneStatusMessage = $"发生错误: {ex.Message}";
                 
-                var errorBox = new MessageBox
-                {
-                    Title = "错误",
-                    Content = $"克隆过程中发生错误: {ex.Message}",
-                    PrimaryButtonText = "确定"
-                };
-                await errorBox.ShowDialogAsync();
+                await _errorDisplayService.ShowErrorAsync($"克隆过程中发生错误: {ex.Message}", "错误");
                 
                 return false;
             }
@@ -364,10 +354,18 @@ namespace ProjectManager.ViewModels.Dialogs
                 project.GitInfo = await _gitService.GetGitInfoAsync(projectPath);
 
                 // 添加项目到管理器
-                await _projectService.SaveProjectAsync(project);
+                var saveSuccess = await _projectService.SaveProjectAsync(project);
                 
-                CloneProgress += "项目已成功添加到管理器\n";
-                CloneLog += "项目已成功添加到管理器\n";
+                if (saveSuccess)
+                {
+                    CloneProgress += "项目已成功添加到管理器\n";
+                    CloneLog += "项目已成功添加到管理器\n";
+                }
+                else
+                {
+                    CloneProgress += "添加项目到管理器失败：项目名称已存在\n";
+                    CloneLog += "添加项目到管理器失败：项目名称已存在\n";
+                }
             }
             catch (Exception ex)
             {

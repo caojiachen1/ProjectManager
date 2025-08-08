@@ -56,6 +56,9 @@ namespace ProjectManager
                 
                 // Git service
                 services.AddSingleton<IGitService, GitService>();
+                
+                // Error display service
+                services.AddSingleton<IErrorDisplayService, ErrorDisplayService>();
 
                 // Settings service
                 services.AddSingleton<ISettingsService, SettingsService>();

@@ -15,6 +15,7 @@ namespace ProjectManager.ViewModels.Pages
     {
         private readonly TerminalService _terminalService;
         private readonly IProjectService _projectService;
+        private readonly IErrorDisplayService _errorDisplayService;
         private readonly System.Windows.Threading.DispatcherTimer _syncTimer;
 
         [ObservableProperty]
@@ -34,10 +35,11 @@ namespace ProjectManager.ViewModels.Pages
         private string? _pendingProjectPath;
         private string? _pendingStartCommand;
 
-        public TerminalViewModel(TerminalService terminalService, IProjectService projectService)
+        public TerminalViewModel(TerminalService terminalService, IProjectService projectService, IErrorDisplayService errorDisplayService)
         {
             _terminalService = terminalService;
             _projectService = projectService;
+            _errorDisplayService = errorDisplayService;
             
             // 设置同步定时器，每2秒同步一次项目状态
             _syncTimer = new System.Windows.Threading.DispatcherTimer
@@ -320,6 +322,11 @@ namespace ProjectManager.ViewModels.Pages
             {
                 // 记录错误但不影响UI
                 System.Diagnostics.Debug.WriteLine($"同步项目状态失败: {ex.Message}");
+                // 只在关键错误时显示给用户
+                if (ex is not TimeoutException)
+                {
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"同步项目状态失败: {ex.Message}", "同步错误"));
+                }
             }
         }
     }

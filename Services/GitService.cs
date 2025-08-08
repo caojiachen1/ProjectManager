@@ -25,11 +25,13 @@ namespace ProjectManager.Services
     public class GitService : IGitService
     {
         private readonly ISettingsService _settingsService;
+        private readonly IErrorDisplayService _errorDisplayService;
         private string? _cachedGitExe;
 
-        public GitService(ISettingsService settingsService)
+        public GitService(ISettingsService settingsService, IErrorDisplayService errorDisplayService)
         {
             _settingsService = settingsService;
+            _errorDisplayService = errorDisplayService;
         }
 
         private async Task<string> GetGitExecutableAsync()
@@ -85,6 +87,10 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"获取Git信息失败: {ex.Message}");
+                // 显示Git信息获取错误（仅在调试模式下显示，避免频繁弹窗）
+                #if DEBUG
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"获取Git信息失败: {ex.Message}", "Git信息获取错误"));
+                #endif
             }
 
             return gitInfo;

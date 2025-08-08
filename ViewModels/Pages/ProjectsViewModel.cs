@@ -13,7 +13,6 @@ using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ProjectManager.ViewModels.Pages
 {
@@ -22,6 +21,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly IProjectService _projectService;
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
         private ObservableCollection<Project> _projects = new();
@@ -41,11 +41,12 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _hasProjects = true;
 
-        public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider)
+        public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
+            _errorDisplayService = errorDisplayService;
 
             SelectedStatusFilter = "全部";
 
@@ -149,12 +150,11 @@ namespace ProjectManager.ViewModels.Pages
                             LastModified = DateTime.Now
                         };
 
-                        await _projectService.SaveProjectAsync(project);
-                        await LoadProjects();
-                    }
-                    catch (InvalidOperationException ex) when (ex.Message.Contains("项目名称"))
-                    {
-                        await ShowErrorMessage(ex.Message);
+                        var saveSuccess = await _projectService.SaveProjectAsync(project);
+                        if (saveSuccess)
+                        {
+                            await LoadProjects();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -237,8 +237,11 @@ namespace ProjectManager.ViewModels.Pages
                 if (result == true)
                 {
                     // 保存项目更改
-                    await _projectService.SaveProjectAsync(project);
-                    await LoadProjects();
+                    var saveSuccess = await _projectService.SaveProjectAsync(project);
+                    if (saveSuccess)
+                    {
+                        await LoadProjects();
+                    }
                 }
             }
         }
@@ -351,13 +354,7 @@ namespace ProjectManager.ViewModels.Pages
 
         private async Task ShowErrorMessage(string message)
         {
-            var messageBox = new MessageBox
-            {
-                Title = "错误",
-                Content = message,
-                PrimaryButtonText = "确定"
-            };
-            await messageBox.ShowDialogAsync();
+            await _errorDisplayService.ShowErrorAsync(message, "错误");
         }
     }
 }

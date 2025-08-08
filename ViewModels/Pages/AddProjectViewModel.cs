@@ -19,12 +19,14 @@ namespace ProjectManager.ViewModels.Pages
         private readonly IProjectService _projectService;
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IErrorDisplayService _errorDisplayService;
 
-        public AddProjectViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider)
+        public AddProjectViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
+            _errorDisplayService = errorDisplayService;
         }
 
         [RelayCommand]
@@ -49,16 +51,12 @@ namespace ProjectManager.ViewModels.Pages
                         var isEmpty = await templateService.IsValidProjectDirectoryAsync(dialogViewModel.LocalPath);
                         if (isEmpty)
                         {
-                            var messageBox = new MessageBox
-                            {
-                                Title = "创建项目模板",
-                                Content = $"是否为 {dialogViewModel.Framework} 项目创建基础代码模板？\n这将创建示例代码文件和配置文件。",
-                                PrimaryButtonText = "创建模板",
-                                SecondaryButtonText = "跳过"
-                            };
+                            var createTemplate = await _errorDisplayService.ShowConfirmationAsync(
+                                $"是否为 {dialogViewModel.Framework} 项目创建基础代码模板？\n这将创建示例代码文件和配置文件。",
+                                "创建项目模板"
+                            );
 
-                            var createTemplate = await messageBox.ShowDialogAsync();
-                            if (createTemplate == MessageBoxResult.Primary)
+                            if (createTemplate)
                             {
                                 try
                                 {
@@ -67,23 +65,11 @@ namespace ProjectManager.ViewModels.Pages
                                         dialogViewModel.Framework, 
                                         dialogViewModel.ProjectName);
                                     
-                                    var successBox = new MessageBox
-                                    {
-                                        Title = "成功",
-                                        Content = "项目模板创建成功！",
-                                        PrimaryButtonText = "确定"
-                                    };
-                                    await successBox.ShowDialogAsync();
+                                    await _errorDisplayService.ShowInfoAsync("项目模板创建成功！", "成功");
                                 }
                                 catch (Exception ex)
                                 {
-                                    var errorBox = new MessageBox
-                                    {
-                                        Title = "错误",
-                                        Content = $"创建项目模板失败：{ex.Message}",
-                                        PrimaryButtonText = "确定"
-                                    };
-                                    await errorBox.ShowDialogAsync();
+                                    await _errorDisplayService.ShowErrorAsync($"创建项目模板失败：{ex.Message}", "错误");
                                 }
                             }
                         }
@@ -187,6 +173,8 @@ namespace ProjectManager.ViewModels.Pages
                 // 克隆成功，导航到项目页面
                 _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
             }
+            
+            await Task.CompletedTask;
         }
 
         public void OnNavigatedTo()

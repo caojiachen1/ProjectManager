@@ -18,6 +18,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly IProjectService _projectService;
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
         private int _totalProjects = 0;
@@ -34,11 +35,12 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<Project> _recentProjects = new();
 
-        public DashboardViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider)
+        public DashboardViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
+            _errorDisplayService = errorDisplayService;
             
             _projectService.ProjectStatusChanged += OnProjectStatusChanged;
         }
@@ -83,8 +85,11 @@ namespace ProjectManager.ViewModels.Pages
                         LastModified = DateTime.Now
                     };
 
-                    await _projectService.SaveProjectAsync(project);
-                    await LoadDashboardData();
+                    var saveSuccess = await _projectService.SaveProjectAsync(project);
+                    if (saveSuccess)
+                    {
+                        await LoadDashboardData();
+                    }
                 }
             }
         }
@@ -105,6 +110,8 @@ namespace ProjectManager.ViewModels.Pages
             
             window.Owner = Application.Current.MainWindow;
             window.ShowDialog();
+            
+            await Task.CompletedTask;
         }
 
         [RelayCommand]
@@ -171,6 +178,8 @@ namespace ProjectManager.ViewModels.Pages
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"加载Dashboard数据失败: {ex.Message}");
+                // 显示关键错误给用户
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"加载仪表板数据失败: {ex.Message}", "数据加载错误"));
             }
         }
 

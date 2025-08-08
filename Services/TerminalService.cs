@@ -12,10 +12,12 @@ namespace ProjectManager.Services
         private readonly Dictionary<string, TerminalSession> _sessions = new();
         private readonly object _lockObject = new();
         private readonly ISettingsService _settingsService;
+        private readonly IErrorDisplayService _errorDisplayService;
 
-        public TerminalService(ISettingsService settingsService)
+        public TerminalService(ISettingsService settingsService, IErrorDisplayService errorDisplayService)
         {
             _settingsService = settingsService;
+            _errorDisplayService = errorDisplayService;
         }
 
         /// <summary>
@@ -188,6 +190,8 @@ namespace ProjectManager.Services
             {
                 session.UpdateStatus("启动失败", false);
                 session.AddOutputLine($"启动失败: {ex.Message}");
+                // 显示终端启动错误
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端启动失败: {ex.Message}", "终端启动错误"));
                 return false;
             }
         }
@@ -210,6 +214,8 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 session.AddOutputLine($"停止失败: {ex.Message}");
+                // 显示终端停止错误
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端停止失败: {ex.Message}", "终端停止错误"));
             }
         }
 

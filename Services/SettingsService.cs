@@ -6,10 +6,12 @@ namespace ProjectManager.Services
     public class SettingsService : ISettingsService
     {
         private readonly string _settingsFilePath;
+        private readonly IErrorDisplayService _errorDisplayService;
         private AppSettings? _cachedSettings;
 
-        public SettingsService()
+        public SettingsService(IErrorDisplayService errorDisplayService)
         {
+            _errorDisplayService = errorDisplayService;
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var appFolder = Path.Combine(appDataPath, "ProjectManager");
             Directory.CreateDirectory(appFolder);
@@ -60,6 +62,8 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存设置失败: {ex.Message}");
+                // 显示设置保存错误
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"保存设置失败: {ex.Message}", "设置保存错误"));
             }
         }
 
