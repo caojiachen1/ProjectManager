@@ -150,7 +150,21 @@ namespace ProjectManager.ViewModels.Pages
             IsLoading = true;
             try
             {
-                await _terminalService.StartSessionAsync(SelectedSession);
+                // 根据终端会话的项目名称获取对应的项目环境变量
+                Dictionary<string, string>? projectEnvironmentVariables = null;
+                
+                if (!string.IsNullOrEmpty(SelectedSession.ProjectName))
+                {
+                    var projects = await _projectService.GetProjectsAsync();
+                    var matchingProject = projects.FirstOrDefault(p => p.Name == SelectedSession.ProjectName);
+                    if (matchingProject != null)
+                    {
+                        projectEnvironmentVariables = matchingProject.EnvironmentVariables;
+                    }
+                }
+
+                // 启动会话时传递项目的环境变量，确保与项目卡片启动效果一致
+                await _terminalService.StartSessionAsync(SelectedSession, projectEnvironmentVariables);
             }
             finally
             {
@@ -259,7 +273,20 @@ namespace ProjectManager.ViewModels.Pages
                 SelectedSession = session;
             }
             
-            await _terminalService.StartSessionAsync(session);
+            // 获取项目的环境变量
+            Dictionary<string, string>? projectEnvironmentVariables = null;
+            if (!string.IsNullOrEmpty(projectName))
+            {
+                var projects = await _projectService.GetProjectsAsync();
+                var matchingProject = projects.FirstOrDefault(p => p.Name == projectName);
+                if (matchingProject != null)
+                {
+                    projectEnvironmentVariables = matchingProject.EnvironmentVariables;
+                }
+            }
+            
+            // 启动会话时传递项目的环境变量
+            await _terminalService.StartSessionAsync(session, projectEnvironmentVariables);
         }
 
         /// <summary>

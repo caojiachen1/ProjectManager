@@ -101,6 +101,7 @@ namespace ProjectManager.Services
                     foreach (var env in envVars)
                     {
                         session.AddOutputLine($"  {env.Key}={env.Value}");
+                        // 强制在命令序列中添加 set 命令
                         commandSequence.Add($"set \"{env.Key}={env.Value}\"");
                     }
                 }
@@ -124,6 +125,23 @@ namespace ProjectManager.Services
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8
                 };
+
+                // 双重保障：除了命令级set，还进行进程级环境变量注入
+                if (envVars != null && envVars.Any())
+                {
+                    foreach (var kv in envVars)
+                    {
+                        try
+                        {
+                            if (!string.IsNullOrWhiteSpace(kv.Key))
+                            {
+                                // 若已存在同名变量，覆盖设置
+                                processStartInfo.Environment[kv.Key] = kv.Value ?? string.Empty;
+                            }
+                        }
+                        catch { /* 忽略单个变量注入错误 */ }
+                    }
+                }
 
                 var process = new Process { StartInfo = processStartInfo };
                 session.Process = process;
