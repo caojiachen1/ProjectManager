@@ -24,6 +24,30 @@ namespace ProjectManager.Services
 
     public class GitService : IGitService
     {
+        private readonly ISettingsService _settingsService;
+        private string? _cachedGitExe;
+
+        public GitService(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
+        }
+
+        private async Task<string> GetGitExecutableAsync()
+        {
+            if (!string.IsNullOrEmpty(_cachedGitExe))
+                return _cachedGitExe!;
+            try
+            {
+                var path = await _settingsService.GetGitExecutablePathAsync();
+                _cachedGitExe = string.IsNullOrWhiteSpace(path) ? "git" : path.Trim();
+            }
+            catch
+            {
+                _cachedGitExe = "git";
+            }
+            return _cachedGitExe!;
+        }
+
         /// <summary>
         /// 获取项目的Git信息
         /// </summary>
@@ -254,10 +278,11 @@ namespace ProjectManager.Services
 
                 progress?.Report("开始克隆仓库...");
 
+                var gitExe = await GetGitExecutableAsync();
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo
                 {
-                    FileName = "git",
+                    FileName = gitExe,
                     Arguments = $"clone \"{remoteUrl}\" \"{localPath}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -337,10 +362,11 @@ namespace ProjectManager.Services
                     return false;
 
                 // 尝试执行 git ls-remote 来验证仓库是否可访问
+                var gitExe = await GetGitExecutableAsync();
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo
                 {
-                    FileName = "git",
+                    FileName = gitExe,
                     Arguments = $"ls-remote --heads \"{url}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -478,10 +504,11 @@ namespace ProjectManager.Services
         {
             try
             {
+                var gitExe = await GetGitExecutableAsync();
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo
                 {
-                    FileName = "git",
+                    FileName = gitExe,
                     Arguments = arguments,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
