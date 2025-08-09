@@ -20,226 +20,319 @@
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
 
-    <StackPanel Margin="16">
-            <!-- Git 设置 -->
-            <ui:Card Margin="0,0,0,16" Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="Git 设置" />
-                    
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="Git可执行文件路径" Margin="0,0,0,4"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <ui:TextBox 
-                                Grid.Column="0"
-                                Text="{Binding GitExecutablePath, UpdateSourceTrigger=PropertyChanged}"
-                                PlaceholderText="选择Git可执行文件路径 (如: C:\Program Files\Git\bin\git.exe)"/>
-                            <ui:Button 
-                                Grid.Column="1"
-                                Content="浏览"
-                                Icon="{ui:SymbolIcon FolderOpen24}"
-                                Command="{Binding BrowseGitExecutablePathCommand}"
-                                Margin="8,0,0,0"/>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <Grid Margin="0,16,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="用户名" Margin="0,0,0,4"/>
-                            <ui:TextBox 
-                                Text="{Binding GitUserName, UpdateSourceTrigger=PropertyChanged}"
-                                PlaceholderText="输入Git用户名"/>
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="邮箱" Margin="0,0,0,4"/>
-                            <ui:TextBox 
-                                Text="{Binding GitUserEmail, UpdateSourceTrigger=PropertyChanged}"
-                                PlaceholderText="输入Git邮箱"/>
-                        </StackPanel>
-                    </Grid>
-                    
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="默认分支" Margin="0,0,0,4"/>
-                        <ui:TextBox 
-                            Text="{Binding DefaultGitBranch, UpdateSourceTrigger=PropertyChanged}"
-                            PlaceholderText="main"/>
-                    </StackPanel>
-                    
-                    <CheckBox 
-                        Content="自动获取Git更新"
-                        IsChecked="{Binding AutoFetchGitUpdates}"
-                        Margin="0,16,0,0"/>
+    <StackPanel>
+        <!-- 常规设置 分组 -->
+        <TextBlock Text="常规设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- Git可执行文件路径 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Git可执行文件路径" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="Git可执行文件的路径" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-            </ui:Card>
-
-            <!-- 项目设置 -->
-            <ui:Card Margin="0,0,0,16" Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="项目设置" />
-                    
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="默认项目路径" Margin="0,0,0,4"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <ui:TextBox 
-                                Grid.Column="0"
-                                Text="{Binding DefaultProjectPath, UpdateSourceTrigger=PropertyChanged}"
-                                PlaceholderText="选择默认项目路径"/>
-                            <ui:Button 
-                                Grid.Column="1"
-                                Content="浏览"
-                                Icon="{ui:SymbolIcon FolderOpen24}"
-                                Command="{Binding BrowseDefaultProjectPathCommand}"
-                                Margin="8,0,0,0"/>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <CheckBox 
-                        Content="自动启动项目"
-                        IsChecked="{Binding AutoStartProjects}"
-                        Margin="0,16,0,0"/>
-                    
-                    <CheckBox 
-                        Content="自动保存项目"
-                        IsChecked="{Binding AutoSaveProjects}"
-                        Margin="0,8,0,0"/>
-                    
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="项目刷新间隔（秒）" Margin="0,0,0,4"/>
-                        <ui:NumberBox 
-                            Value="{Binding ProjectRefreshInterval}"
-                            Minimum="10"
-                            Maximum="300"/>
-                    </StackPanel>
-                    
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="最大最近项目数" Margin="0,0,0,4"/>
-                        <ui:NumberBox 
-                            Value="{Binding MaxRecentProjects}"
-                            Minimum="5"
-                            Maximum="50"/>
-                    </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:TextBox Text="{Binding GitExecutablePath, UpdateSourceTrigger=PropertyChanged}"
+                               PlaceholderText="选择Git可执行文件路径" Width="300" Margin="0,0,8,0"/>
+                    <ui:Button Content="浏览" Icon="{ui:SymbolIcon FolderOpen24}"
+                              Command="{Binding BrowseGitExecutablePathCommand}" Appearance="Secondary"/>
                 </StackPanel>
-            </ui:Card>
-
-            <!-- 应用程序设置 -->
-            <ui:Card Margin="0,0,0,16" Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="应用程序设置" />
-
-                    <StackPanel Margin="0,16,0,0">
-                        <TextBlock Text="首选终端" Margin="0,0,0,4"/>
-                        <ComboBox SelectedValue="{Binding PreferredTerminal}" SelectedValuePath="Content">
-                            <ComboBoxItem Content="PowerShell"/>
-                            <ComboBoxItem Content="CMD"/>
-                            <ComboBoxItem Content="Git Bash"/>
-                        </ComboBox>
-                    </StackPanel>
-                    
-                    <Grid Margin="0,16,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <CheckBox 
-                            Grid.Column="0"
-                            Content="显示通知"
-                            IsChecked="{Binding ShowNotifications}"
-                            Margin="0,0,8,0"/>
-                        
-                        <CheckBox 
-                            Grid.Column="1"
-                            Content="UTF8"
-                            IsChecked="{Binding UseCmdChcp65001}"
-                            Margin="8,0,0,0"/>
-                    </Grid>
+            </Grid>
+        </ui:Card>
+        
+        <!-- Git用户名 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Git用户名" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="用于提交的Git用户名" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-            </ui:Card>
-
-            <!-- 个性化设置 -->
-            <ui:Card Margin="0,0,0,16" Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="个性化设置" />
-                    
-                    <TextBlock Margin="0,16,0,4" Text="主题" />
-                    <RadioButton
-                        Margin="0,8,0,0"
-                        Command="{Binding ChangeThemeCommand, Mode=OneWay}"
-                        CommandParameter="theme_light"
-                        Content="浅色主题"
-                        GroupName="themeSelect"
-                        IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-                    <RadioButton
-                        Margin="0,8,0,0"
-                        Command="{Binding ChangeThemeCommand, Mode=OneWay}"
-                        CommandParameter="theme_dark"
-                        Content="深色主题"
-                        GroupName="themeSelect"
-                        IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                <ui:TextBox Grid.Column="1" Text="{Binding GitUserName, UpdateSourceTrigger=PropertyChanged}"
+                           PlaceholderText="输入Git用户名" Width="300" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- Git邮箱 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Git邮箱" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="用于提交的Git邮箱地址" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-            </ui:Card>
-
-            <!-- 操作按钮 -->
-            <ui:Card Margin="0,0,0,16" Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="操作" />
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                        <ui:Button 
-                            Content="保存设置"
-                            Icon="{ui:SymbolIcon Save24}"
-                            Appearance="Primary"
-                            Command="{Binding SaveSettingsCommand}"
-                            Margin="0,0,8,0"/>
-                        <ui:Button 
-                            Content="重置设置"
-                            Icon="{ui:SymbolIcon ArrowReset24}"
-                            Appearance="Caution"
-                            Command="{Binding ResetSettingsCommand}"
-                            Margin="8,0,0,0"/>
-                    </StackPanel>
+                <ui:TextBox Grid.Column="1" Text="{Binding GitUserEmail, UpdateSourceTrigger=PropertyChanged}"
+                           PlaceholderText="输入Git邮箱" Width="300" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 默认Git分支 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="默认Git分支" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="新仓库的默认分支名称" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-            </ui:Card>
-
-            <!-- 关于 -->
-            <ui:Card Padding="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="关于项目管理器" />
-                    <TextBlock 
-                        Margin="0,16,0,0" 
-                        Text="{Binding AppVersion, Mode=OneWay}" />
+                <ui:TextBox Grid.Column="1" Text="{Binding DefaultGitBranch, UpdateSourceTrigger=PropertyChanged}"
+                           PlaceholderText="main" Width="200" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 自动获取Git更新 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="自动获取Git更新" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="自动从远程仓库获取更新" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-            </ui:Card>
+                <CheckBox Grid.Column="1" IsChecked="{Binding AutoFetchGitUpdates}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 项目设置 分组 -->
+        <TextBlock Text="项目设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 默认项目路径 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="默认项目路径" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="新项目的默认目录" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:TextBox Text="{Binding DefaultProjectPath, UpdateSourceTrigger=PropertyChanged}"
+                               PlaceholderText="选择默认项目路径" Width="300" Margin="0,0,8,0"/>
+                    <ui:Button Content="浏览" Icon="{ui:SymbolIcon FolderOpen24}"
+                              Command="{Binding BrowseDefaultProjectPathCommand}" Appearance="Secondary"/>
+                </StackPanel>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 自动启动项目 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="自动启动项目" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="打开项目时自动启动" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" IsChecked="{Binding AutoStartProjects}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 自动保存项目 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="自动保存项目" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="自动保存项目更改" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" IsChecked="{Binding AutoSaveProjects}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 项目刷新间隔 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="项目刷新间隔" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="刷新项目状态的频率（秒）" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <ui:NumberBox Grid.Column="1" Value="{Binding ProjectRefreshInterval}" 
+                             Minimum="10" Maximum="300" Width="150" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 最大最近项目数 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="最大最近项目数" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="记住的最近项目的最大数量" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <ui:NumberBox Grid.Column="1" Value="{Binding MaxRecentProjects}" 
+                             Minimum="5" Maximum="50" Width="150" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 应用程序设置 分组 -->
+        <TextBlock Text="应用程序设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 首选终端 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="首选终端" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="使用的默认终端应用程序" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1" SelectedValue="{Binding PreferredTerminal}" SelectedValuePath="Content" 
+                         Width="200" VerticalAlignment="Center">
+                    <ComboBoxItem Content="PowerShell"/>
+                    <ComboBoxItem Content="CMD"/>
+                    <ComboBoxItem Content="Git Bash"/>
+                </ComboBox>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 显示通知 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="显示通知" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="显示桌面通知消息" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" IsChecked="{Binding ShowNotifications}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 使用UTF8编码 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="使用UTF8编码" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="终端命令使用UTF-8编码" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" IsChecked="{Binding UseCmdChcp65001}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 外观设置 分组 -->
+        <TextBlock Text="外观设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 主题 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="主题" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="选择应用程序颜色主题" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <RadioButton Content="浅色" GroupName="themeSelect" Margin="0,0,20,0"
+                               Command="{Binding ChangeThemeCommand, Mode=OneWay}" CommandParameter="theme_light"
+                               IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"/>
+                    <RadioButton Content="深色" GroupName="themeSelect"
+                               Command="{Binding ChangeThemeCommand, Mode=OneWay}" CommandParameter="theme_dark"
+                               IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"/>
+                </StackPanel>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 操作 分组 -->
+        <TextBlock Text="操作" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 设置管理 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="设置管理" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="保存或重置应用程序设置" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button Content="保存设置" Icon="{ui:SymbolIcon Save24}" Appearance="Primary"
+                              Command="{Binding SaveSettingsCommand}" Margin="0,0,10,0"/>
+                    <ui:Button Content="重置设置" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Caution"
+                              Command="{Binding ResetSettingsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 关于 分组 -->
+        <TextBlock Text="关于" FontSize="14" FontWeight="Medium" Margin="0,20,0,10" 
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 应用程序版本 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="应用程序版本" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="项目管理器的当前版本" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding AppVersion, Mode=OneWay}" VerticalAlignment="Center" 
+                          FontFamily="Consolas" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </Grid>
+        </ui:Card>
+        
     </StackPanel>
 </Page>
