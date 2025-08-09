@@ -83,10 +83,20 @@ namespace ProjectManager.ViewModels.Pages
                     // 切换到现有会话
                     SelectedSession = existingSession;
                 }
-                else if (!string.IsNullOrEmpty(_pendingProjectPath) && !string.IsNullOrEmpty(_pendingStartCommand))
+                else if (!string.IsNullOrEmpty(_pendingProjectPath))
                 {
-                    // 创建新的终端会话
-                    await CreateAndStartSessionAsync(_pendingProjectName, _pendingProjectPath, _pendingStartCommand);
+                    // 如果有启动命令，创建新的终端会话并启动
+                    if (!string.IsNullOrEmpty(_pendingStartCommand))
+                    {
+                        await CreateAndStartSessionAsync(_pendingProjectName, _pendingProjectPath, _pendingStartCommand);
+                    }
+                    else
+                    {
+                        // 只创建会话但不启动，用于终端按钮的情况
+                        var session = _terminalService.CreateSession(_pendingProjectName, _pendingProjectPath, "");
+                        TerminalSessions.Add(session);
+                        SelectedSession = session;
+                    }
                 }
                 
                 // 清空待处理的项目信息
@@ -232,6 +242,18 @@ namespace ProjectManager.ViewModels.Pages
             _pendingProjectName = projectName;
             _pendingProjectPath = projectPath;
             _pendingStartCommand = startCommand;
+        }
+
+        /// <summary>
+        /// 设置项目路径但不自动启动
+        /// </summary>
+        /// <param name="projectName">项目名称</param>
+        /// <param name="projectPath">项目路径</param>
+        public void SetProjectPath(string projectName, string projectPath)
+        {
+            _pendingProjectName = projectName;
+            _pendingProjectPath = projectPath;
+            _pendingStartCommand = null; // 不设置启动命令，避免自动启动
         }
 
         /// <summary>

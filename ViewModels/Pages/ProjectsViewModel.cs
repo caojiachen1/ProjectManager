@@ -281,16 +281,12 @@ namespace ProjectManager.ViewModels.Pages
         {
             if (project != null)
             {
-                // 获取终端页面的ViewModel并设置待处理的项目
+                // 获取终端页面的ViewModel并设置项目路径，但不自动启动
                 var terminalViewModel = _serviceProvider.GetService<TerminalViewModel>();
                 if (terminalViewModel != null)
                 {
-                    var startCommand = !string.IsNullOrEmpty(project.StartCommand) 
-                        ? project.StartCommand 
-                        : "dir";
-                    
-                    // 设置导航后要处理的项目
-                    terminalViewModel.SetPendingProject(project.Name, project.LocalPath, startCommand);
+                    // 只设置项目路径，不设置启动命令，避免自动启动
+                    terminalViewModel.SetProjectPath(project.Name, project.LocalPath);
                 }
                 
                 // 直接导航到终端页面

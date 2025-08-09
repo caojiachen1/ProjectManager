@@ -101,8 +101,8 @@
                             CommandParameter="{Binding}"
                             Margin="0,0,4,4"/>
                         <ui:Button 
-                            Content="日志" 
-                            Icon="{ui:SymbolIcon Document24}"
+                            Content="终端" 
+                            Icon="{ui:SymbolIcon WindowConsole20}"
                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             Margin="0,0,0,4"/>
