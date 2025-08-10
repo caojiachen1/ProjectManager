@@ -30,7 +30,7 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task CreateNewProject()
+        private void CreateNewProject()
         {
             var dialogViewModel = _serviceProvider.GetRequiredService<ProjectEditDialogViewModel>();
             var window = _serviceProvider.GetRequiredService<ProjectEditWindow>();
@@ -40,42 +40,6 @@ namespace ProjectManager.ViewModels.Pages
             var result = window.ShowDialog(Application.Current.MainWindow);
             if (result == true)
             {
-                // 如果选择了框架且路径存在，询问是否创建项目模板
-                if (!string.IsNullOrEmpty(dialogViewModel.Framework) && 
-                    !string.IsNullOrEmpty(dialogViewModel.LocalPath) &&
-                    Directory.Exists(dialogViewModel.LocalPath))
-                {
-                    var templateService = _serviceProvider.GetService<IProjectTemplateService>();
-                    if (templateService != null)
-                    {
-                        var isEmpty = await templateService.IsValidProjectDirectoryAsync(dialogViewModel.LocalPath);
-                        if (isEmpty)
-                        {
-                            var createTemplate = await _errorDisplayService.ShowConfirmationAsync(
-                                $"是否为 {dialogViewModel.Framework} 项目创建基础代码模板？\n这将创建示例代码文件和配置文件。",
-                                "创建项目模板"
-                            );
-
-                            if (createTemplate)
-                            {
-                                try
-                                {
-                                    await templateService.CreateProjectTemplateAsync(
-                                        dialogViewModel.LocalPath, 
-                                        dialogViewModel.Framework, 
-                                        dialogViewModel.ProjectName);
-                                    
-                                    await _errorDisplayService.ShowInfoAsync("项目模板创建成功！", "成功");
-                                }
-                                catch (Exception ex)
-                                {
-                                    await _errorDisplayService.ShowErrorAsync($"创建项目模板失败：{ex.Message}", "错误");
-                                }
-                            }
-                        }
-                    }
-                }
-                
                 // 导航到项目页面
                 _navigationService.Navigate(typeof(Views.Pages.ProjectsPage));
             }

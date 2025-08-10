@@ -48,9 +48,6 @@ namespace ProjectManager
                 // Project service
                 services.AddSingleton<IProjectService, ProjectService>();
                 
-                // Project template service
-                services.AddSingleton<IProjectTemplateService, ProjectTemplateService>();
-                
                 // Project detection service
                 services.AddSingleton<IProjectDetectionService, ProjectDetectionService>();
                 
