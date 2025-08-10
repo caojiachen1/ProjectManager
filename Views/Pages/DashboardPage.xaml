@@ -91,11 +91,6 @@
                             Command="{Binding ViewModel.CreateProjectCommand}"
                             Margin="0,0,6,0"/>
                         <ui:Button 
-                            Content="导入项目" 
-                            Icon="{ui:SymbolIcon FolderOpen24}"
-                            Command="{Binding ViewModel.ImportProjectCommand}"
-                            Margin="6,0,6,0"/>
-                        <ui:Button 
                             Content="Git克隆" 
                             Icon="{ui:SymbolIcon Branch24}"
                             Command="{Binding ViewModel.GitCloneCommand}"

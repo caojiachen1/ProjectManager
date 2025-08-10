@@ -61,40 +61,6 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private async Task ImportProject()
-        {
-            var dialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = "选择项目文件夹",
-                CheckFileExists = false,
-                CheckPathExists = true,
-                FileName = "选择文件夹"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                var projectPath = Path.GetDirectoryName(dialog.FileName);
-                if (!string.IsNullOrEmpty(projectPath))
-                {
-                    var project = new Project
-                    {
-                        Name = Path.GetFileName(projectPath),
-                        LocalPath = projectPath,
-                        WorkingDirectory = projectPath,
-                        CreatedDate = DateTime.Now,
-                        LastModified = DateTime.Now
-                    };
-
-                    var saveSuccess = await _projectService.SaveProjectAsync(project);
-                    if (saveSuccess)
-                    {
-                        await LoadDashboardData();
-                    }
-                }
-            }
-        }
-
-        [RelayCommand]
         private async Task GitClone()
         {
             var dialogViewModel = _serviceProvider.GetRequiredService<GitCloneDialogViewModel>();

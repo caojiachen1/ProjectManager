@@ -146,11 +146,6 @@
                     Command="{Binding CreateProjectCommand}"
                     Margin="0,0,4,0"/>
                 <ui:Button 
-                    Content="导入项目" 
-                    Icon="{ui:SymbolIcon FolderOpen24}"
-                    Command="{Binding ImportProjectCommand}"
-                    Margin="4,0,4,0"/>
-                <ui:Button 
                     Content="Git克隆" 
                     Icon="{ui:SymbolIcon Branch24}"
                     Command="{Binding CloneFromGitCommand}"
