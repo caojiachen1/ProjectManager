@@ -106,34 +106,10 @@ namespace ProjectManager.Services
         {
             var detectors = new Dictionary<string, ProjectTypeDetector>();
 
-            // Web框架检测器
-            detectors["Streamlit"] = new StreamlitDetector();
-            detectors["Gradio"] = new GradioDetector();
-            detectors["FastAPI"] = new FastAPIDetector();
-            detectors["Flask"] = new FlaskDetector();
-            detectors["Django"] = new DjangoDetector();
-
-            // AI/ML框架检测器
-            detectors["PyTorch"] = new PyTorchDetector();
-            detectors["TensorFlow"] = new TensorFlowDetector();
-            detectors["Transformers"] = new TransformersDetector();
-            detectors["LangChain"] = new LangChainDetector();
-            detectors["OpenAI"] = new OpenAIDetector();
-            detectors["Stable Diffusion"] = new StableDiffusionDetector();
+            // 只保留ComfyUI、Node.js和.NET检测器
             detectors["ComfyUI"] = new ComfyUIDetector();
-
-            // 前端框架检测器
-            detectors["React"] = new ReactDetector();
-            detectors["Vue.js"] = new VueDetector();
-            detectors["Next.js"] = new NextJSDetector();
-            detectors["Angular"] = new AngularDetector();
-
-            // 其他框架检测器
             detectors["Node.js"] = new NodeJSDetector();
-            detectors["Jupyter"] = new JupyterDetector();
-            detectors["Unity"] = new UnityDetector();
             detectors[".NET"] = new DotNetDetector();
-            detectors["Spring Boot"] = new SpringBootDetector();
 
             return detectors;
         }

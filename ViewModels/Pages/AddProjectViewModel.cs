@@ -92,11 +92,6 @@ namespace ProjectManager.ViewModels.Pages
                                     dialogViewModel.StartCommand = detectionResult.SuggestedStartCommand;
                                 }
                                 
-                                if (detectionResult.SuggestedPort > 0)
-                                {
-                                    dialogViewModel.Port = detectionResult.SuggestedPort.ToString();
-                                }
-                                
                                 if (detectionResult.SuggestedTags.Any())
                                 {
                                     dialogViewModel.TagsString = string.Join(", ", detectionResult.SuggestedTags);

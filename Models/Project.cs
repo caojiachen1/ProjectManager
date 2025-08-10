@@ -26,9 +26,6 @@ namespace ProjectManager.Models
         private string _workingDirectory = string.Empty;
 
         [ObservableProperty]
-        private string _pythonEnvironment = string.Empty;
-
-        [ObservableProperty]
         private string _framework = string.Empty;
 
         [ObservableProperty]
@@ -54,9 +51,6 @@ namespace ProjectManager.Models
 
         [ObservableProperty]
         private List<string> _tags = new();
-
-        [ObservableProperty]
-        private int _port = 0;
 
         [ObservableProperty]
         private bool _autoStart = false;

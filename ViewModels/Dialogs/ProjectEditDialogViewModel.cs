@@ -31,9 +31,6 @@ namespace ProjectManager.ViewModels.Dialogs
         private string _startCommand = string.Empty;
 
         [ObservableProperty]
-        private string _pythonEnvironment = string.Empty;
-
-        [ObservableProperty]
         private string _framework = string.Empty;
 
         [ObservableProperty]
@@ -41,10 +38,6 @@ namespace ProjectManager.ViewModels.Dialogs
 
         [ObservableProperty]
         private ObservableCollection<string> _frameworkCommands = new();
-
-
-        [ObservableProperty]
-        private string _port = "0";
 
         [ObservableProperty]
         private bool _autoStart = false;
@@ -110,12 +103,6 @@ namespace ProjectManager.ViewModels.Dialogs
                     StartCommand = config.DefaultStartCommand;
                 }
                 
-                // 如果端口为空或为0，设置默认端口
-                if (string.IsNullOrEmpty(Port) || Port == "0")
-                {
-                    Port = config.DefaultPort.ToString();
-                }
-                
                 // 如果标签为空，设置默认标签
                 if (string.IsNullOrEmpty(TagsString))
                 {
@@ -151,11 +138,6 @@ namespace ProjectManager.ViewModels.Dialogs
                         if (string.IsNullOrEmpty(StartCommand) && !string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
                         {
                             StartCommand = detectionResult.SuggestedStartCommand;
-                        }
-                        
-                        if ((string.IsNullOrEmpty(Port) || Port == "0") && detectionResult.SuggestedPort > 0)
-                        {
-                            Port = detectionResult.SuggestedPort.ToString();
                         }
                         
                         if (string.IsNullOrEmpty(TagsString) && detectionResult.SuggestedTags.Any())
@@ -206,9 +188,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 LocalPath = project.LocalPath ?? string.Empty;
                 WorkingDirectory = project.WorkingDirectory ?? string.Empty;
                 StartCommand = project.StartCommand ?? string.Empty;
-                PythonEnvironment = project.PythonEnvironment ?? string.Empty;
                 Framework = project.Framework ?? string.Empty;
-                Port = project.Port.ToString();
                 AutoStart = project.AutoStart;
                 TagsString = project.Tags != null ? string.Join(", ", project.Tags) : string.Empty;
             }
@@ -221,9 +201,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 LocalPath = string.Empty;
                 WorkingDirectory = string.Empty;
                 StartCommand = string.Empty;
-                PythonEnvironment = string.Empty;
                 Framework = string.Empty;
-                Port = "0";
                 AutoStart = false;
                 TagsString = string.Empty;
                 FrameworkCommands.Clear();
@@ -322,9 +300,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 project.LocalPath = LocalPath.Trim();
                 project.WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? LocalPath.Trim() : WorkingDirectory.Trim();
                 project.StartCommand = StartCommand?.Trim() ?? string.Empty;
-                project.PythonEnvironment = PythonEnvironment?.Trim() ?? string.Empty;
                 project.Framework = Framework?.Trim() ?? string.Empty;
-                project.Port = int.TryParse(Port, out var port) ? port : 0;
                 project.AutoStart = AutoStart;
                 
                 // 解析标签
@@ -449,11 +425,6 @@ namespace ProjectManager.ViewModels.Dialogs
             if (string.IsNullOrEmpty(StartCommand) && !string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
             {
                 StartCommand = detectionResult.SuggestedStartCommand;
-            }
-            
-            if ((string.IsNullOrEmpty(Port) || Port == "0") && detectionResult.SuggestedPort > 0)
-            {
-                Port = detectionResult.SuggestedPort.ToString();
             }
             
             if (string.IsNullOrEmpty(TagsString) && detectionResult.SuggestedTags.Any())

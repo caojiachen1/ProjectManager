@@ -332,11 +332,6 @@ namespace ProjectManager.ViewModels.Dialogs
                                     project.StartCommand = detectionResult.SuggestedStartCommand;
                                 }
                                 
-                                if (detectionResult.SuggestedPort > 0)
-                                {
-                                    project.Port = detectionResult.SuggestedPort;
-                                }
-                                
                                 if (detectionResult.SuggestedTags.Any())
                                 {
                                     project.Tags = detectionResult.SuggestedTags.ToList();

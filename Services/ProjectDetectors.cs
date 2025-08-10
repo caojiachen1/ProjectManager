@@ -3,10 +3,9 @@ using ProjectManager.Models;
 
 namespace ProjectManager.Services
 {
-    // Web框架检测器
-    public class StreamlitDetector : ProjectTypeDetector
+    public class ComfyUIDetector : ProjectTypeDetector
     {
-        public override string FrameworkName => "Streamlit";
+        public override string FrameworkName => "ComfyUI";
 
         public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
         {
@@ -19,168 +18,117 @@ namespace ProjectManager.Services
             double confidence = 0.0;
             var reasons = new List<string>();
 
+            // 检查典型的ComfyUI目录结构
+            var comfyDirs = new[] { "custom_nodes", "models", "web", "comfy" };
+            foreach (var dir in comfyDirs)
+            {
+                if (Directory.Exists(Path.Combine(projectPath, dir)))
+                {
+                    confidence += 0.2;
+                    reasons.Add($"发现ComfyUI目录结构: {dir}");
+                }
+            }
+
+            // 检查main.py和典型的ComfyUI文件
+            if (File.Exists(Path.Combine(projectPath, "main.py")))
+            {
+                var mainContent = await ReadFileContentAsync(Path.Combine(projectPath, "main.py"));
+                if (ContainsAnyKeyword(mainContent, "comfy", "ComfyUI", "server.py"))
+                {
+                    confidence += 0.4;
+                    reasons.Add("在main.py中发现ComfyUI相关代码");
+                }
+            }
+
             // 检查requirements.txt
             var reqPath = Path.Combine(projectPath, "requirements.txt");
             if (File.Exists(reqPath))
             {
                 var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("streamlit")))
+                if (ContainsAnyKeyword(reqContent, "torch", "transformers", "diffusers"))
                 {
-                    confidence += 0.6;
-                    reasons.Add("在requirements.txt中发现streamlit依赖");
-                    result.DetectedDependencies = dependencies;
+                    confidence += 0.2;
+                    reasons.Add("发现与图像生成相关的依赖");
                 }
             }
 
-            // 检查Python文件中的streamlit导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10)) // 限制检查文件数量
+            result.ConfidenceLevel = Math.Min(confidence, 1.0);
+            result.DetectionReason = string.Join("; ", reasons);
+
+            if (confidence > 0.5)
             {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "import streamlit", "from streamlit", "st."))
+                result.SuggestedName = Path.GetFileName(projectPath) ?? "ComfyUI项目";
+                result.SuggestedDescription = "ComfyUI图像生成工作流";
+                result.SuggestedStartCommand = "python main.py";
+                result.SuggestedPort = 8188;
+                result.SuggestedTags = new List<string> { "图像生成", "ComfyUI", "Stable Diffusion", "AI绘画" };
+            }
+
+            return result;
+        }
+    }
+
+    public class NodeJSDetector : ProjectTypeDetector
+    {
+        public override string FrameworkName => "Node.js";
+
+        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
+        {
+            var result = new ProjectDetectionResult
+            {
+                DetectedFramework = FrameworkName,
+                DetectedLanguage = "JavaScript/TypeScript"
+            };
+
+            double confidence = 0.0;
+            var reasons = new List<string>();
+
+            // 检查package.json
+            var packageJsonPath = Path.Combine(projectPath, "package.json");
+            if (File.Exists(packageJsonPath))
+            {
+                confidence += 0.5;
+                reasons.Add("发现package.json文件");
+
+                var packageJson = await ReadJsonFileAsync(packageJsonPath);
+                if (packageJson.HasValue)
                 {
-                    confidence += 0.3;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现streamlit相关代码");
-                    break;
+                    var json = packageJson.Value;
+                    
+                    if (json.TryGetProperty("main", out _))
+                    {
+                        confidence += 0.1;
+                        reasons.Add("package.json中定义了main入口");
+                    }
+
+                    if (json.TryGetProperty("scripts", out var scripts))
+                    {
+                        if (scripts.TryGetProperty("start", out _))
+                        {
+                            confidence += 0.1;
+                            reasons.Add("定义了start脚本");
+                        }
+                    }
                 }
             }
 
-            // 检查典型的Streamlit文件名
-            var streamlitFiles = new[] { "app.py", "main.py", "streamlit_app.py", "dashboard.py" };
-            foreach (var fileName in streamlitFiles)
+            // 检查server.js, index.js, app.js等典型的Node.js入口文件
+            var nodeFiles = new[] { "server.js", "index.js", "app.js", "main.js" };
+            foreach (var file in nodeFiles)
             {
-                if (File.Exists(Path.Combine(projectPath, fileName)))
+                if (File.Exists(Path.Combine(projectPath, file)))
                 {
                     confidence += 0.1;
-                    reasons.Add($"发现典型的Streamlit文件: {fileName}");
-                }
-            }
-
-            result.ConfidenceLevel = Math.Min(confidence, 1.0);
-            result.DetectionReason = string.Join("; ", reasons);
-
-            if (confidence > 0.3)
-            {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "Streamlit应用";
-                result.SuggestedDescription = "基于Streamlit的数据应用";
-                result.SuggestedStartCommand = "streamlit run app.py";
-                result.SuggestedPort = 8501;
-                result.SuggestedTags = new List<string> { "Web应用", "数据可视化", "Streamlit", "仪表板" };
-            }
-
-            return result;
-        }
-    }
-
-    public class GradioDetector : ProjectTypeDetector
-    {
-        public override string FrameworkName => "Gradio";
-
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
-        {
-            var result = new ProjectDetectionResult
-            {
-                DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
-            };
-
-            double confidence = 0.0;
-            var reasons = new List<string>();
-
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
-            {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("gradio")))
-                {
-                    confidence += 0.6;
-                    reasons.Add("在requirements.txt中发现gradio依赖");
-                    result.DetectedDependencies = dependencies;
-                }
-            }
-
-            // 检查Python文件中的gradio导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10))
-            {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "import gradio", "from gradio", "gr.", ".launch()"))
-                {
-                    confidence += 0.3;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现gradio相关代码");
+                    reasons.Add($"发现Node.js入口文件: {file}");
                     break;
                 }
             }
 
-            result.ConfidenceLevel = Math.Min(confidence, 1.0);
-            result.DetectionReason = string.Join("; ", reasons);
-
-            if (confidence > 0.3)
+            // 检查node_modules目录
+            if (Directory.Exists(Path.Combine(projectPath, "node_modules")))
             {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "Gradio应用";
-                result.SuggestedDescription = "基于Gradio的交互式Web界面";
-                result.SuggestedStartCommand = "python app.py";
-                result.SuggestedPort = 7860;
-                result.SuggestedTags = new List<string> { "Web界面", "演示", "Gradio", "交互式" };
-            }
-
-            return result;
-        }
-    }
-
-    public class FastAPIDetector : ProjectTypeDetector
-    {
-        public override string FrameworkName => "FastAPI";
-
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
-        {
-            var result = new ProjectDetectionResult
-            {
-                DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
-            };
-
-            double confidence = 0.0;
-            var reasons = new List<string>();
-
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
-            {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("fastapi")))
-                {
-                    confidence += 0.5;
-                    reasons.Add("在requirements.txt中发现fastapi依赖");
-                }
-                
-                if (dependencies.Any(d => d.ToLower().Contains("uvicorn")))
-                {
-                    confidence += 0.2;
-                    reasons.Add("在requirements.txt中发现uvicorn依赖");
-                }
-                
-                result.DetectedDependencies = dependencies;
-            }
-
-            // 检查Python文件中的FastAPI导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10))
-            {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "from fastapi", "FastAPI()", "@app.get", "@app.post"))
-                {
-                    confidence += 0.4;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现FastAPI相关代码");
-                    break;
-                }
+                confidence += 0.1;
+                reasons.Add("发现node_modules目录");
             }
 
             result.ConfidenceLevel = Math.Min(confidence, 1.0);
@@ -188,267 +136,68 @@ namespace ProjectManager.Services
 
             if (confidence > 0.3)
             {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "FastAPI应用";
-                result.SuggestedDescription = "基于FastAPI的Web API服务";
-                result.SuggestedStartCommand = "uvicorn main:app --host 0.0.0.0 --port 8000 --reload";
-                result.SuggestedPort = 8000;
-                result.SuggestedTags = new List<string> { "API", "Web服务", "FastAPI", "后端" };
+                result.SuggestedName = Path.GetFileName(projectPath) ?? "Node.js应用";
+                result.SuggestedDescription = "基于Node.js的服务端应用";
+                result.SuggestedStartCommand = "npm start";
+                result.SuggestedPort = 3000;
+                result.SuggestedTags = new List<string> { "后端", "Node.js", "JavaScript", "服务器" };
             }
 
             return result;
         }
     }
 
-    public class FlaskDetector : ProjectTypeDetector
+    public class DotNetDetector : ProjectTypeDetector
     {
-        public override string FrameworkName => "Flask";
+        public override string FrameworkName => ".NET";
 
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
+        public override Task<ProjectDetectionResult> DetectAsync(string projectPath)
         {
             var result = new ProjectDetectionResult
             {
                 DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
+                DetectedLanguage = "C#"
             };
 
             double confidence = 0.0;
             var reasons = new List<string>();
 
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
+            // 检查.csproj文件
+            var csprojFiles = Directory.GetFiles(projectPath, "*.csproj", SearchOption.TopDirectoryOnly);
+            if (csprojFiles.Any())
             {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("flask")))
-                {
-                    confidence += 0.6;
-                    reasons.Add("在requirements.txt中发现flask依赖");
-                    result.DetectedDependencies = dependencies;
-                }
+                confidence += 0.8;
+                reasons.Add($"发现{csprojFiles.Length}个.csproj项目文件");
             }
 
-            // 检查Python文件中的Flask导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10))
-            {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "from flask", "Flask(__name__)", "@app.route", "app.run()"))
-                {
-                    confidence += 0.4;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现Flask相关代码");
-                    break;
-                }
-            }
-
-            result.ConfidenceLevel = Math.Min(confidence, 1.0);
-            result.DetectionReason = string.Join("; ", reasons);
-
-            if (confidence > 0.3)
-            {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "Flask应用";
-                result.SuggestedDescription = "基于Flask的Web应用";
-                result.SuggestedStartCommand = "python app.py";
-                result.SuggestedPort = 5000;
-                result.SuggestedTags = new List<string> { "Web框架", "Flask", "API", "后端" };
-            }
-
-            return result;
-        }
-    }
-
-    public class DjangoDetector : ProjectTypeDetector
-    {
-        public override string FrameworkName => "Django";
-
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
-        {
-            var result = new ProjectDetectionResult
-            {
-                DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
-            };
-
-            double confidence = 0.0;
-            var reasons = new List<string>();
-
-            // 检查manage.py文件
-            if (File.Exists(Path.Combine(projectPath, "manage.py")))
-            {
-                confidence += 0.7;
-                reasons.Add("发现Django的manage.py文件");
-            }
-
-            // 检查settings.py文件
-            var settingsFiles = Directory.GetFiles(projectPath, "settings.py", SearchOption.AllDirectories);
-            if (settingsFiles.Any())
+            // 检查.sln文件
+            var slnFiles = Directory.GetFiles(projectPath, "*.sln", SearchOption.TopDirectoryOnly);
+            if (slnFiles.Any())
             {
                 confidence += 0.3;
-                reasons.Add("发现Django的settings.py文件");
+                reasons.Add($"发现{slnFiles.Length}个解决方案文件");
             }
 
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
+            // 检查Program.cs或Startup.cs
+            if (File.Exists(Path.Combine(projectPath, "Program.cs")))
             {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("django")))
-                {
-                    confidence += 0.4;
-                    reasons.Add("在requirements.txt中发现django依赖");
-                    result.DetectedDependencies = dependencies;
-                }
+                confidence += 0.2;
+                reasons.Add("发现Program.cs文件");
             }
 
             result.ConfidenceLevel = Math.Min(confidence, 1.0);
             result.DetectionReason = string.Join("; ", reasons);
 
-            if (confidence > 0.3)
+            if (confidence > 0.5)
             {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "Django项目";
-                result.SuggestedDescription = "基于Django的Web框架项目";
-                result.SuggestedStartCommand = "python manage.py runserver";
-                result.SuggestedPort = 8000;
-                result.SuggestedTags = new List<string> { "Web框架", "Django", "全栈", "后端" };
+                result.SuggestedName = Path.GetFileName(projectPath) ?? ".NET项目";
+                result.SuggestedDescription = "基于.NET的C#应用程序";
+                result.SuggestedStartCommand = "dotnet run";
+                result.SuggestedPort = 5000;
+                result.SuggestedTags = new List<string> { ".NET", "C#", "后端", "Web API" };
             }
 
-            return result;
-        }
-    }
-
-    // AI/ML框架检测器
-    public class PyTorchDetector : ProjectTypeDetector
-    {
-        public override string FrameworkName => "PyTorch";
-
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
-        {
-            var result = new ProjectDetectionResult
-            {
-                DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
-            };
-
-            double confidence = 0.0;
-            var reasons = new List<string>();
-
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
-            {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("torch")))
-                {
-                    confidence += 0.6;
-                    reasons.Add("在requirements.txt中发现torch依赖");
-                }
-                
-                if (dependencies.Any(d => d.ToLower().Contains("torchvision")))
-                {
-                    confidence += 0.2;
-                    reasons.Add("在requirements.txt中发现torchvision依赖");
-                }
-                
-                result.DetectedDependencies = dependencies;
-            }
-
-            // 检查Python文件中的PyTorch导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10))
-            {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "import torch", "from torch", "torch.nn", "torch.tensor"))
-                {
-                    confidence += 0.4;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现PyTorch相关代码");
-                    break;
-                }
-            }
-
-            result.ConfidenceLevel = Math.Min(confidence, 1.0);
-            result.DetectionReason = string.Join("; ", reasons);
-
-            if (confidence > 0.3)
-            {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "PyTorch项目";
-                result.SuggestedDescription = "基于PyTorch的深度学习项目";
-                result.SuggestedStartCommand = "python main.py";
-                result.SuggestedPort = 0;
-                result.SuggestedTags = new List<string> { "深度学习", "机器学习", "PyTorch", "AI" };
-            }
-
-            return result;
-        }
-    }
-
-    public class TransformersDetector : ProjectTypeDetector
-    {
-        public override string FrameworkName => "Transformers";
-
-        public override async Task<ProjectDetectionResult> DetectAsync(string projectPath)
-        {
-            var result = new ProjectDetectionResult
-            {
-                DetectedFramework = FrameworkName,
-                DetectedLanguage = "Python"
-            };
-
-            double confidence = 0.0;
-            var reasons = new List<string>();
-
-            // 检查requirements.txt
-            var reqPath = Path.Combine(projectPath, "requirements.txt");
-            if (File.Exists(reqPath))
-            {
-                var reqContent = await ReadFileContentAsync(reqPath);
-                var dependencies = ExtractDependencies(reqContent);
-                
-                if (dependencies.Any(d => d.ToLower().Contains("transformers")))
-                {
-                    confidence += 0.6;
-                    reasons.Add("在requirements.txt中发现transformers依赖");
-                }
-                
-                if (dependencies.Any(d => d.ToLower().Contains("datasets")))
-                {
-                    confidence += 0.2;
-                    reasons.Add("在requirements.txt中发现datasets依赖");
-                }
-                
-                result.DetectedDependencies = dependencies;
-            }
-
-            // 检查Python文件中的Transformers导入
-            var pythonFiles = Directory.GetFiles(projectPath, "*.py", SearchOption.TopDirectoryOnly);
-            foreach (var file in pythonFiles.Take(10))
-            {
-                var content = await ReadFileContentAsync(file, 50);
-                if (ContainsAnyKeyword(content, "from transformers", "AutoModel", "AutoTokenizer", "pipeline"))
-                {
-                    confidence += 0.5;
-                    reasons.Add($"在{Path.GetFileName(file)}中发现Transformers相关代码");
-                    break;
-                }
-            }
-
-            result.ConfidenceLevel = Math.Min(confidence, 1.0);
-            result.DetectionReason = string.Join("; ", reasons);
-
-            if (confidence > 0.3)
-            {
-                result.SuggestedName = Path.GetFileName(projectPath) ?? "Transformers项目";
-                result.SuggestedDescription = "基于Hugging Face Transformers的NLP项目";
-                result.SuggestedStartCommand = "python main.py";
-                result.SuggestedPort = 0;
-                result.SuggestedTags = new List<string> { "NLP", "Transformers", "Hugging Face", "AI", "语言模型" };
-            }
-
-            return result;
+            return Task.FromResult(result);
         }
     }
 }

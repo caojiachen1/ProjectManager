@@ -13,14 +13,12 @@ public class PersistedProject
     public string LocalPath { get; set; } = string.Empty;
     public string StartCommand { get; set; } = string.Empty;
     public string WorkingDirectory { get; set; } = string.Empty;
-    public string PythonEnvironment { get; set; } = string.Empty;
     public string Framework { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; } = DateTime.Now;
     public DateTime LastModified { get; set; } = DateTime.Now;
     public ProjectStatus Status { get; set; } = ProjectStatus.Stopped; // 读取时会重置为 Stopped
     public string LogOutput { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = new();
-    public int Port { get; set; }
     public bool AutoStart { get; set; }
     public Dictionary<string,string> EnvironmentVariables { get; set; } = new();
 }
@@ -35,14 +33,12 @@ internal static class ProjectPersistenceMapper
         LocalPath = p.LocalPath,
         StartCommand = p.StartCommand,
         WorkingDirectory = p.WorkingDirectory,
-        PythonEnvironment = p.PythonEnvironment,
         Framework = p.Framework,
         CreatedDate = p.CreatedDate,
         LastModified = p.LastModified,
         Status = p.Status, // 保存当前状态（读取时会安全处理）
         LogOutput = p.LogOutput,
         Tags = new List<string>(p.Tags),
-        Port = p.Port,
         AutoStart = p.AutoStart,
         EnvironmentVariables = new Dictionary<string,string>(p.EnvironmentVariables)
     };
@@ -57,14 +53,12 @@ internal static class ProjectPersistenceMapper
             LocalPath = dto.LocalPath,
             StartCommand = dto.StartCommand,
             WorkingDirectory = dto.WorkingDirectory,
-            PythonEnvironment = dto.PythonEnvironment,
             Framework = dto.Framework,
             CreatedDate = dto.CreatedDate,
             LastModified = dto.LastModified,
             Status = ProjectStatus.Stopped, // 启动时不恢复 Running 状态
             LogOutput = dto.LogOutput,
             Tags = new List<string>(dto.Tags),
-            Port = dto.Port,
             AutoStart = dto.AutoStart,
             EnvironmentVariables = new Dictionary<string,string>(dto.EnvironmentVariables)
         };

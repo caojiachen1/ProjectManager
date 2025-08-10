@@ -145,16 +145,6 @@
                                 </ItemsControl>
                             </Grid>
                         </StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Python 环境" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding PythonEnvironment, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="Python 解释器路径或环境名称（可选）"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="端口号" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding Port}" 
-                                        PlaceholderText="应用端口号（可选，例如：8080）"/>
-                        </StackPanel>
                         <CheckBox Content="应用启动时自动启动此项目" IsChecked="{Binding AutoStart}"/>
                     </StackPanel>
                 </Expander>
