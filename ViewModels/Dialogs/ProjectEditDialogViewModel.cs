@@ -42,11 +42,6 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private ObservableCollection<string> _frameworkCommands = new();
 
-        [ObservableProperty]
-        private string _author = string.Empty;
-
-        [ObservableProperty]
-        private string _version = "1.0.0";
 
         [ObservableProperty]
         private string _port = "0";
@@ -213,8 +208,6 @@ namespace ProjectManager.ViewModels.Dialogs
                 StartCommand = project.StartCommand ?? string.Empty;
                 PythonEnvironment = project.PythonEnvironment ?? string.Empty;
                 Framework = project.Framework ?? string.Empty;
-                Author = project.Author ?? string.Empty;
-                Version = project.Version ?? "1.0.0";
                 Port = project.Port.ToString();
                 AutoStart = project.AutoStart;
                 TagsString = project.Tags != null ? string.Join(", ", project.Tags) : string.Empty;
@@ -230,8 +223,6 @@ namespace ProjectManager.ViewModels.Dialogs
                 StartCommand = string.Empty;
                 PythonEnvironment = string.Empty;
                 Framework = string.Empty;
-                Author = string.Empty;
-                Version = "1.0.0";
                 Port = "0";
                 AutoStart = false;
                 TagsString = string.Empty;
@@ -333,8 +324,6 @@ namespace ProjectManager.ViewModels.Dialogs
                 project.StartCommand = StartCommand?.Trim() ?? string.Empty;
                 project.PythonEnvironment = PythonEnvironment?.Trim() ?? string.Empty;
                 project.Framework = Framework?.Trim() ?? string.Empty;
-                project.Author = Author?.Trim() ?? string.Empty;
-                project.Version = Version?.Trim() ?? "1.0.0";
                 project.Port = int.TryParse(Port, out var port) ? port : 0;
                 project.AutoStart = AutoStart;
                 

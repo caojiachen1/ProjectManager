@@ -56,12 +56,6 @@ namespace ProjectManager.Models
         private List<string> _tags = new();
 
         [ObservableProperty]
-        private string _version = "1.0.0";
-
-        [ObservableProperty]
-        private string _author = string.Empty;
-
-        [ObservableProperty]
         private int _port = 0;
 
         [ObservableProperty]

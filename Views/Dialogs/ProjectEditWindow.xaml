@@ -49,7 +49,7 @@
                                         AcceptsReturn="True"
                                         MinHeight="80"/>
                         </StackPanel>
-                        <StackPanel Margin="0,0,0,12">
+                        <StackPanel>
                             <TextBlock Text="框架/技术栈" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding Framework}" 
                                       IsEditable="True"
@@ -61,14 +61,6 @@
                                        Opacity="0.7"
                                        TextWrapping="Wrap"
                                        Text="{Binding Framework, Converter={StaticResource FrameworkToDescriptionConverter}}"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="作者" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding Author, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入作者名称"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="版本" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="例如: 1.0.0"/>
                         </StackPanel>
                     </StackPanel>
                 </Expander>

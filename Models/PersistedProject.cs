@@ -20,8 +20,6 @@ public class PersistedProject
     public ProjectStatus Status { get; set; } = ProjectStatus.Stopped; // 读取时会重置为 Stopped
     public string LogOutput { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = new();
-    public string Version { get; set; } = "1.0.0";
-    public string Author { get; set; } = string.Empty;
     public int Port { get; set; }
     public bool AutoStart { get; set; }
     public Dictionary<string,string> EnvironmentVariables { get; set; } = new();
@@ -44,8 +42,6 @@ internal static class ProjectPersistenceMapper
         Status = p.Status, // 保存当前状态（读取时会安全处理）
         LogOutput = p.LogOutput,
         Tags = new List<string>(p.Tags),
-        Version = p.Version,
-        Author = p.Author,
         Port = p.Port,
         AutoStart = p.AutoStart,
         EnvironmentVariables = new Dictionary<string,string>(p.EnvironmentVariables)
@@ -68,8 +64,6 @@ internal static class ProjectPersistenceMapper
             Status = ProjectStatus.Stopped, // 启动时不恢复 Running 状态
             LogOutput = dto.LogOutput,
             Tags = new List<string>(dto.Tags),
-            Version = dto.Version,
-            Author = dto.Author,
             Port = dto.Port,
             AutoStart = dto.AutoStart,
             EnvironmentVariables = new Dictionary<string,string>(dto.EnvironmentVariables)
