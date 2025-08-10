@@ -8,9 +8,9 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="新建项目"
     Width="500"
-    Height="600"
+    Height="520"
     MinWidth="450"
-    MinHeight="500"
+    MinHeight="520"
     d:DataContext="{d:DesignInstance local:NewProjectWindow,
                                      IsDesignTimeCreatable=False}"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -76,8 +76,11 @@
                 <!-- 框架选择 -->
                 <StackPanel Margin="0,0,0,24">
                     <TextBlock Text="选择项目框架" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <TextBlock Text="选择框架后将自动保存，后续可在专属设置界面进行详细配置" 
-                               Opacity="0.7" FontSize="12" Margin="0,0,0,16"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Warning16" Foreground="Orange" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="请谨慎选择！选择框架后将自动保存，后续无法修改框架类型" 
+                                   Opacity="0.8" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+                    </StackPanel>
                     
                     <!-- 框架下拉选择 -->
                     <ComboBox SelectedItem="{Binding SelectedFramework}" 
@@ -132,15 +135,6 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                </StackPanel>
-
-                <!-- 当前选择信息 -->
-                <StackPanel Margin="0,0,0,24" Visibility="{Binding SelectedFramework, Converter={StaticResource StringToVisibilityConverter}}">
-                    <ui:InfoBar IsOpen="True" 
-                                Severity="Informational" 
-                                Title="框架选择"
-                                Message="{Binding FrameworkDescription}"
-                                IsClosable="False"/>
                 </StackPanel>
 
                 <!-- 操作按钮 -->
