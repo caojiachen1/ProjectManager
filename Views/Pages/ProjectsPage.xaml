@@ -66,21 +66,16 @@
                     <!-- 操作按钮 -->
                     <WrapPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Left">
                         <ui:Button 
-                            Content="启动" 
-                            Icon="{ui:SymbolIcon Play24}"
-                            Appearance="Primary"
-                            Command="{Binding DataContext.StartProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                            Content="{Binding Status, Converter={StaticResource StatusToToggleButtonTextConverter}}" 
+                            Appearance="{Binding Status, Converter={StaticResource StatusToToggleButtonAppearanceConverter}}"
+                            Command="{Binding DataContext.ToggleProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
-                            IsEnabled="{Binding Status, Converter={StaticResource StatusToStartEnabledConverter}}"
-                            Margin="0,0,4,4"/>
-                        <ui:Button 
-                            Content="停止" 
-                            Icon="{ui:SymbolIcon Stop24}"
-                            Appearance="Secondary"
-                            Command="{Binding DataContext.StopProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                            CommandParameter="{Binding}"
-                            IsEnabled="{Binding Status, Converter={StaticResource StatusToStopEnabledConverter}}"
-                            Margin="0,0,4,4"/>
+                            IsEnabled="{Binding Status, Converter={StaticResource StatusToToggleButtonEnabledConverter}}"
+                            Margin="0,0,4,4">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="{Binding Status, Converter={StaticResource StatusToToggleButtonIconConverter}}"/>
+                            </ui:Button.Icon>
+                        </ui:Button>
                         <ui:Button 
                             Content="Git" 
                             Icon="{ui:SymbolIcon Branch24}"

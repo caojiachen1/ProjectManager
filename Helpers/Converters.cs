@@ -170,4 +170,96 @@ namespace ProjectManager.Helpers
             return false;
         }
     }
+
+    public class StatusToToggleButtonTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is ProjectStatus status)
+            {
+                return status switch
+                {
+                    ProjectStatus.Running => "停止",
+                    ProjectStatus.Starting => "启动中...",
+                    ProjectStatus.Stopping => "停止中...",
+                    ProjectStatus.Stopped => "启动",
+                    ProjectStatus.Error => "启动",
+                    _ => "启动"
+                };
+            }
+            return "启动";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StatusToToggleButtonIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is ProjectStatus status)
+            {
+                return status switch
+                {
+                    ProjectStatus.Running => "Stop24",
+                    ProjectStatus.Starting => "Play24",
+                    ProjectStatus.Stopping => "Stop24", 
+                    ProjectStatus.Stopped => "Play24",
+                    ProjectStatus.Error => "Play24",
+                    _ => "Play24"
+                };
+            }
+            return "Play24";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StatusToToggleButtonEnabledConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is ProjectStatus status)
+            {
+                return status != ProjectStatus.Starting && status != ProjectStatus.Stopping;
+            }
+            return true;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StatusToToggleButtonAppearanceConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is ProjectStatus status)
+            {
+                return status switch
+                {
+                    ProjectStatus.Running => "Danger",      // 红色，表示停止操作
+                    ProjectStatus.Starting => "Info",       // 信息色，表示启动中
+                    ProjectStatus.Stopping => "Caution",    // 警告色，表示停止中
+                    ProjectStatus.Stopped => "Primary",     // 主色，表示启动操作
+                    ProjectStatus.Error => "Primary",       // 主色，表示启动操作
+                    _ => "Primary"
+                };
+            }
+            return "Primary";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

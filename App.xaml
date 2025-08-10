@@ -19,6 +19,10 @@
             <local:StatusToBadgeConverter x:Key="StatusToBadgeConverter"/>
             <local:StatusToStartEnabledConverter x:Key="StatusToStartEnabledConverter"/>
             <local:StatusToStopEnabledConverter x:Key="StatusToStopEnabledConverter"/>
+            <local:StatusToToggleButtonTextConverter x:Key="StatusToToggleButtonTextConverter"/>
+            <local:StatusToToggleButtonIconConverter x:Key="StatusToToggleButtonIconConverter"/>
+            <local:StatusToToggleButtonEnabledConverter x:Key="StatusToToggleButtonEnabledConverter"/>
+            <local:StatusToToggleButtonAppearanceConverter x:Key="StatusToToggleButtonAppearanceConverter"/>
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
             <local:FrameworkToDescriptionConverter x:Key="FrameworkToDescriptionConverter"/>

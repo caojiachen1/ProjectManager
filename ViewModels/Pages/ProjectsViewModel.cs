@@ -199,6 +199,22 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task ToggleProject(Project project)
+        {
+            if (project != null)
+            {
+                if (project.Status == ProjectStatus.Running || project.Status == ProjectStatus.Starting)
+                {
+                    await _projectService.StopProjectAsync(project);
+                }
+                else if (project.Status == ProjectStatus.Stopped || project.Status == ProjectStatus.Error)
+                {
+                    await _projectService.StartProjectAsync(project);
+                }
+            }
+        }
+
+        [RelayCommand]
         private async Task EditProject(Project project)
         {
             if (project != null)
