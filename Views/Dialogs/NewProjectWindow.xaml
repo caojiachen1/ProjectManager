@@ -90,16 +90,16 @@
                                             <Style TargetType="ui:SymbolIcon">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding}" Value="ComfyUI">
-                                                        <Setter Property="Symbol" Value="ImageSparkle24"/>
+                                                        <Setter Property="Symbol" Value="Flow16"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding}" Value="Node.js">
-                                                        <Setter Property="Symbol" Value="Code24"/>
+                                                        <Setter Property="Symbol" Value="Code16"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding}" Value=".NET">
-                                                        <Setter Property="Symbol" Value="DeveloperBoard24"/>
+                                                        <Setter Property="Symbol" Value="CodeCs16"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding}" Value="其他">
-                                                        <Setter Property="Symbol" Value="AppGeneric24"/>
+                                                        <Setter Property="Symbol" Value="AppGeneric20"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
