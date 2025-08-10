@@ -246,7 +246,7 @@
         </ui:Card>
         
         <!-- 使用UTF8编码 -->
-        <ui:Card Margin="0,0,0,20" Padding="16">
+        <ui:Card Margin="0,0,0,8" Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -258,6 +258,27 @@
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding UseCmdChcp65001}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+        
+        <!-- 默认启动页面 -->
+        <ui:Card Margin="0,0,0,20" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="默认启动页面" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="启动应用程序时默认打开的页面" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1" SelectedValue="{Binding DefaultStartupPage}" SelectedValuePath="Tag" 
+                         Width="200" VerticalAlignment="Center">
+                    <ComboBoxItem Content="仪表板" Tag="Dashboard"/>
+                    <ComboBoxItem Content="项目管理" Tag="Projects"/>
+                    <ComboBoxItem Content="终端控制台" Tag="Terminal"/>
+                </ComboBox>
             </Grid>
         </ui:Card>
         

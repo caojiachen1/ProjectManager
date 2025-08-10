@@ -62,9 +62,26 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _useCmdChcp65001 = true;
 
+        [ObservableProperty]
+        private string _defaultStartupPage = "Dashboard";
+
         public SettingsViewModel(ISettingsService settingsService)
         {
             _settingsService = settingsService;
+            
+            // 监听属性变化以自动保存设置
+            PropertyChanged += OnPropertyChanged;
+        }
+
+        private async void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (!_isInitialized) return;
+
+            // 当设置属性发生变化时自动保存
+            if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(CurrentTheme))
+            {
+                await SaveAllSettingsAsync();
+            }
         }
 
         public async Task OnNavigatedToAsync()
@@ -97,6 +114,7 @@ namespace ProjectManager.ViewModels.Pages
             AutoSaveProjects = settings.AutoSaveProjects;
             MaxRecentProjects = settings.MaxRecentProjects;
             UseCmdChcp65001 = settings.UseCmdChcp65001;
+            DefaultStartupPage = settings.DefaultStartupPage;
 
             _isInitialized = true;
         }
@@ -117,7 +135,8 @@ namespace ProjectManager.ViewModels.Pages
                 PreferredTerminal = PreferredTerminal,
                 AutoSaveProjects = AutoSaveProjects,
                 MaxRecentProjects = MaxRecentProjects,
-                UseCmdChcp65001 = UseCmdChcp65001
+                UseCmdChcp65001 = UseCmdChcp65001,
+                DefaultStartupPage = DefaultStartupPage
             };
 
             await _settingsService.SaveSettingsAsync(settings);
@@ -196,7 +215,8 @@ namespace ProjectManager.ViewModels.Pages
         {
             var settings = new AppSettings
             {
-                DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects")
+                DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
+                DefaultStartupPage = "Dashboard"
             };
             
             await _settingsService.SaveSettingsAsync(settings);

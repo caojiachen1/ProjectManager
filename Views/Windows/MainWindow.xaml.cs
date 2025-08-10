@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using ProjectManager.ViewModels.Windows;
+using ProjectManager.Services;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -10,15 +11,20 @@ namespace ProjectManager.Views.Windows
     public partial class MainWindow : INavigationWindow
     {
         public MainWindowViewModel ViewModel { get; }
+        private readonly ISettingsService _settingsService;
+        private readonly INavigationService _navigationService;
 
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
-            IContentDialogService contentDialogService
+            IContentDialogService contentDialogService,
+            ISettingsService settingsService
         )
         {
             ViewModel = viewModel;
+            _settingsService = settingsService;
+            _navigationService = navigationService;
             DataContext = this;
 
             SystemThemeWatcher.Watch(this);
@@ -35,10 +41,37 @@ namespace ProjectManager.Views.Windows
             this.Loaded += MainWindow_Loaded;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // 使用正确的方式最大化窗口
             this.WindowState = WindowState.Maximized;
+            
+            // 导航到默认启动页面
+            await NavigateToDefaultStartupPage();
+        }
+
+        private async Task NavigateToDefaultStartupPage()
+        {
+            try
+            {
+                var settings = await _settingsService.GetSettingsAsync();
+                var defaultPage = settings.DefaultStartupPage;
+
+                Type? pageType = defaultPage switch
+                {
+                    "Dashboard" => typeof(Views.Pages.DashboardPage),
+                    "Projects" => typeof(Views.Pages.ProjectsPage),
+                    "Terminal" => typeof(Views.Pages.TerminalPage),
+                    _ => typeof(Views.Pages.DashboardPage) // 默认为仪表板
+                };
+
+                _navigationService.Navigate(pageType);
+            }
+            catch
+            {
+                // 如果出错，默认导航到仪表板
+                _navigationService.Navigate(typeof(Views.Pages.DashboardPage));
+            }
         }
 
         #region INavigationWindow methods

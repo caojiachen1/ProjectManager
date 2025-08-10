@@ -34,13 +34,18 @@ namespace ProjectManager.Services
                 {
                     _cachedSettings = new AppSettings
                     {
-                        DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects")
+                        DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
+                        DefaultStartupPage = "Dashboard"
                     };
                 }
             }
             catch
             {
-                _cachedSettings = new AppSettings();
+                _cachedSettings = new AppSettings
+                {
+                    DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
+                    DefaultStartupPage = "Dashboard"
+                };
             }
 
             return _cachedSettings;
