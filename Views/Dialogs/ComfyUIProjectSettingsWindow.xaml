@@ -39,7 +39,7 @@
                 <ui:Card Margin="0,0,0,16" Padding="16">
                     <StackPanel>
                         <TextBlock Text="{Binding ProjectName}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="ComfyUI AI图像生成工作流项目" Opacity="0.7" FontSize="12"/>
+                        <TextBlock Text="ComfyUI 工作流项目" Opacity="0.7" FontSize="12"/>
                         <TextBlock Text="{Binding ProjectPath}" Opacity="0.6" FontSize="11" Margin="0,4,0,0"/>
                     </StackPanel>
                 </ui:Card>
