@@ -30,9 +30,10 @@
             x:Name="TitleBar"
             Title="环境变量管理"
             Grid.Row="0"
-            CloseWindowByDoubleClickOnIcon="True">
+            CloseWindowByDoubleClickOnIcon="True"
+            Padding="5,0,0,0"> <!-- 调整文字的左移 -->
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
+                <ui:SymbolIcon Symbol="BracesVariable24" Margin="10,-3,10,0"/>
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
