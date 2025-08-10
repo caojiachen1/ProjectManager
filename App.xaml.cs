@@ -48,9 +48,6 @@ namespace ProjectManager
                 // Project service
                 services.AddSingleton<IProjectService, ProjectService>();
                 
-                // Project detection service
-                services.AddSingleton<IProjectDetectionService, ProjectDetectionService>();
-                
                 // Git service
                 services.AddSingleton<IGitService, GitService>();
                 
@@ -80,7 +77,20 @@ namespace ProjectManager
                 services.AddSingleton<TerminalPage>();
                 services.AddSingleton<TerminalViewModel>();
                 
+                // Project Settings Window Service
+                services.AddTransient<IProjectSettingsWindowService, ProjectSettingsWindowService>();
+                
                 // Dialogs
+                services.AddTransient<Views.Dialogs.NewProjectWindow>();
+                services.AddTransient<ViewModels.Dialogs.NewProjectDialogViewModel>();
+                
+                // Framework-specific settings windows
+                services.AddTransient<ViewModels.Dialogs.ComfyUIProjectSettingsViewModel>();
+                services.AddTransient<ViewModels.Dialogs.NodeJSProjectSettingsViewModel>();
+                services.AddTransient<ViewModels.Dialogs.DotNetProjectSettingsViewModel>();
+                services.AddTransient<ViewModels.Dialogs.GenericProjectSettingsViewModel>();
+                
+                // Keep original dialogs for compatibility
                 services.AddTransient<Views.Dialogs.ProjectEditWindow>();
                 services.AddTransient<ViewModels.Dialogs.ProjectEditDialogViewModel>();
                 services.AddTransient<Views.Dialogs.GitManagementWindow>();

@@ -35,130 +35,98 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,32,0,0">
             <StackPanel Margin="24">
-                <!-- 基本信息 -->
-                <Expander Header="基本信息" IsExpanded="True" Margin="0,0,0,16">
-                    <StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="项目名称" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入项目名称"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="项目描述" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="输入项目描述"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"
-                                        MinHeight="80"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="框架/技术栈" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding Framework}" 
-                                      IsEditable="True"
-                                      Text="{Binding Framework}"
-                                      ItemsSource="{Binding AvailableFrameworks}"/>
-                            <!-- 框架信息提示 -->
-                            <TextBlock Margin="0,4,0,0"
-                                       FontSize="11"
-                                       Opacity="0.7"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding Framework, Converter={StaticResource FrameworkToDescriptionConverter}}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Expander>
-
                 <!-- 路径配置 -->
-                <Expander Header="路径配置" IsExpanded="False" Margin="0,0,0,16">
-                    <StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="项目本地路径" Margin="0,0,0,4"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBox Grid.Column="0" 
-                                            Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="选择项目文件夹路径"
-                                            Margin="0,0,8,0"/>
-                                <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
-                                           Icon="{ui:SymbolIcon FolderOpen24}"
-                                           Command="{Binding BrowseLocalPathCommand}"/>
-                            </Grid>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="工作目录" Margin="0,0,0,4"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBox Grid.Column="0" 
-                                            Text="{Binding WorkingDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="设置启动工作目录（默认为项目路径）"
-                                            Margin="0,0,8,0"/>
-                                <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
-                                           Icon="{ui:SymbolIcon FolderOpen24}"
-                                           Command="{Binding BrowseWorkingDirectoryCommand}"/>
-                            </Grid>
-                        </StackPanel>
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="路径配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目本地路径" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                        Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="选择项目文件夹路径"
+                                        Margin="0,0,8,0"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="浏览" 
+                                       Icon="{ui:SymbolIcon FolderOpen24}"
+                                       Command="{Binding BrowseLocalPathCommand}"/>
+                        </Grid>
                     </StackPanel>
-                </Expander>
+                    <StackPanel>
+                        <TextBlock Text="工作目录" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                        Text="{Binding WorkingDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="设置启动工作目录（默认为项目路径）"
+                                        Margin="0,0,8,0"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="浏览" 
+                                       Icon="{ui:SymbolIcon FolderOpen24}"
+                                       Command="{Binding BrowseWorkingDirectoryCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
 
                 <!-- 启动配置 -->
-                <Expander Header="启动配置" IsExpanded="False" Margin="0,0,0,16">
-                    <StackPanel>
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="启动命令" Margin="0,0,0,4"/>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <ui:TextBox Grid.Row="0"
-                                            Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="例如: python app.py 或 streamlit run app.py"
-                                            TextWrapping="Wrap"/>
-                                <!-- 框架推荐命令 -->
-                                <ItemsControl Grid.Row="1" 
-                                              ItemsSource="{Binding FrameworkCommands}"
-                                              Margin="0,8,0,0"
-                                              Visibility="{Binding FrameworkCommands.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <ui:Button Content="{Binding}"
-                                                       Appearance="Secondary"
-                                                       FontSize="10"
-                                                       Padding="8,4"
-                                                       Margin="0,0,4,4"
-                                                       Command="{Binding DataContext.ApplyFrameworkCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                       CommandParameter="{Binding}"
-                                                       ToolTip="点击应用此命令"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                        </StackPanel>
-                        <CheckBox Content="应用启动时自动启动此项目" IsChecked="{Binding AutoStart}"/>
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="启动配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <ui:TextBox Grid.Row="0"
+                                        Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="例如: python app.py 或 streamlit run app.py"
+                                        TextWrapping="Wrap"/>
+                            <!-- 框架推荐命令 -->
+                            <ItemsControl Grid.Row="1" 
+                                          ItemsSource="{Binding FrameworkCommands}"
+                                          Margin="0,8,0,0"
+                                          Visibility="{Binding FrameworkCommands.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ui:Button Content="{Binding}"
+                                                   Appearance="Secondary"
+                                                   FontSize="10"
+                                                   Padding="8,4"
+                                                   Margin="0,0,4,4"
+                                                   Command="{Binding DataContext.ApplyFrameworkCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   ToolTip="点击应用此命令"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </StackPanel>
-                </Expander>
+                    <CheckBox Content="应用启动时自动启动此项目" IsChecked="{Binding AutoStart}"/>
+                </StackPanel>
 
                 <!-- 标签 -->
-                <Expander Header="标签" IsExpanded="False" Margin="0,0,0,16">
-                    <StackPanel>
-                        <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入标签，用逗号分隔（例如：机器学习,图像处理,API）"/>
-                    </StackPanel>
-                </Expander>
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="标签" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
+                                PlaceholderText="输入标签，用逗号分隔（例如：机器学习,图像处理,API）"/>
+                </StackPanel>
 
                 <!-- 操作按钮 -->
-                <Grid Margin="0,16,0,0">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>

@@ -93,7 +93,7 @@ jobs:
         }
         
         # Escape special characters for GitHub output
-        $cleanCommitMessage = $cleanCommitMessage -replace "`n", " " -replace "`r", " " -replace "\*", "\*" -replace "_", "\_"
+        $cleanCommitMessage = $cleanCommitMessage -replace "`n", "\\n" -replace "`r", "" -replace "\\*", "\\*" -replace "_", "\\_"
         
         if ($latestTag) {
           # Extract version number

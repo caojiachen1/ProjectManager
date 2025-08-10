@@ -8,7 +8,7 @@ using Wpf.Ui.Controls;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
-    public partial class ProjectEditDialogViewModel : ObservableObject
+    public partial class GenericProjectSettingsViewModel : ObservableObject
     {
         private readonly IProjectService _projectService;
         private readonly IErrorDisplayService _errorDisplayService;
@@ -51,7 +51,7 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
-        public ProjectEditDialogViewModel(IProjectService projectService, IErrorDisplayService errorDisplayService)
+        public GenericProjectSettingsViewModel(IProjectService projectService, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _errorDisplayService = errorDisplayService;

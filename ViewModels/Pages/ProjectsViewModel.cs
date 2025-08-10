@@ -108,13 +108,8 @@ namespace ProjectManager.ViewModels.Pages
         [RelayCommand]
         private async Task CreateProject()
         {
-            var dialogViewModel = _serviceProvider.GetRequiredService<ProjectEditDialogViewModel>();
-            
-            // 加载空项目（新建模式）
-            dialogViewModel.LoadProject();
-            
-            // 创建窗口并手动设置 DataContext
-            var window = new Views.Dialogs.ProjectEditWindow(dialogViewModel);
+            var dialogViewModel = _serviceProvider.GetRequiredService<NewProjectDialogViewModel>();
+            var window = _serviceProvider.GetRequiredService<NewProjectWindow>();
             
             var result = window.ShowDialog(Application.Current.MainWindow);
             if (result == true)
@@ -178,15 +173,9 @@ namespace ProjectManager.ViewModels.Pages
         {
             if (project != null)
             {
-                var dialogViewModel = _serviceProvider.GetRequiredService<ProjectEditDialogViewModel>();
+                var settingsWindowService = _serviceProvider.GetRequiredService<IProjectSettingsWindowService>();
+                var result = settingsWindowService.ShowSettingsWindow(project, Application.Current.MainWindow);
                 
-                // 先加载项目数据
-                dialogViewModel.LoadProject(project);
-                
-                // 创建窗口并手动设置 DataContext
-                var window = new Views.Dialogs.ProjectEditWindow(dialogViewModel);
-                
-                var result = window.ShowDialog(Application.Current.MainWindow);
                 if (result == true)
                 {
                     await LoadProjects();

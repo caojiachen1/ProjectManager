@@ -1,0 +1,247 @@
+<ui:FluentWindow
+    x:Class="ProjectManager.Views.Dialogs.DotNetProjectSettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title=".NET项目设置"
+    Width="700"
+    Height="800"
+    MinWidth="600"
+    MinHeight="700"
+    d:DataContext="{d:DesignInstance local:DotNetProjectSettingsWindow,
+                                     IsDesignTimeCreatable=False}"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ExtendsContentIntoTitleBar="True"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title=".NET项目设置"
+            Grid.Row="0"
+            Padding="5,0,0,0">
+            <ui:TitleBar.Icon>
+                <ui:SymbolIcon Symbol="DesktopEdit24" Margin="10,-3,10,0"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,32,0,0">
+            <StackPanel Margin="24">
+                <!-- 项目信息展示 -->
+                <ui:Card Margin="0,0,0,16" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="{Binding ProjectName}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text=".NET应用程序项目" Opacity="0.7" FontSize="12"/>
+                        <TextBlock Text="{Binding ProjectPath}" Opacity="0.6" FontSize="11" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- .NET特定配置 -->
+                <Expander Header=".NET配置" IsExpanded="True" Margin="0,0,0,16">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding StartCommand}" 
+                                      IsEditable="True"
+                                      Text="{Binding StartCommand}">
+                                <ComboBoxItem Content="dotnet run"/>
+                                <ComboBoxItem Content="dotnet watch run"/>
+                                <ComboBoxItem Content="dotnet run --launch-profile Development"/>
+                                <ComboBoxItem Content="dotnet run --no-build"/>
+                                <ComboBoxItem Content="dotnet run --configuration Release"/>
+                                <ComboBoxItem Content="dotnet run --project ."/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="目标框架" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding TargetFramework}">
+                                <ComboBoxItem Content="net8.0"/>
+                                <ComboBoxItem Content="net7.0"/>
+                                <ComboBoxItem Content="net6.0"/>
+                                <ComboBoxItem Content="netcoreapp3.1"/>
+                                <ComboBoxItem Content="net48"/>
+                                <ComboBoxItem Content="netstandard2.1"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="项目类型" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding ProjectType}">
+                                <ComboBoxItem Content="Web API"/>
+                                <ComboBoxItem Content="Web App (MVC)"/>
+                                <ComboBoxItem Content="Blazor Server"/>
+                                <ComboBoxItem Content="Blazor WebAssembly"/>
+                                <ComboBoxItem Content="Console App"/>
+                                <ComboBoxItem Content="Class Library"/>
+                                <ComboBoxItem Content="Worker Service"/>
+                                <ComboBoxItem Content="WPF"/>
+                                <ComboBoxItem Content="WinForms"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="服务端口（Web项目）" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding Port}" 
+                                          Minimum="1024" 
+                                          Maximum="65535"
+                                          PlaceholderText="5000"/>
+                        </StackPanel>
+
+                        <CheckBox Content="启用热重载 (dotnet watch)" 
+                                  IsChecked="{Binding EnableHotReload}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用HTTPS重定向" 
+                                  IsChecked="{Binding EnableHttpsRedirection}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用开发者异常页面" 
+                                  IsChecked="{Binding EnableDeveloperExceptionPage}"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 构建配置 -->
+                <Expander Header="构建配置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="构建配置" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding BuildConfiguration}">
+                                <ComboBoxItem Content="Debug"/>
+                                <ComboBoxItem Content="Release"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="构建命令" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding BuildCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="dotnet build"/>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="测试命令" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding TestCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="dotnet test"/>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="输出目录" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="./bin/Debug"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseOutputPathCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <CheckBox Content="构建前自动运行测试" 
+                                  IsChecked="{Binding RunTestsBeforeBuild}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用代码分析" 
+                                  IsChecked="{Binding EnableCodeAnalysis}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="警告视为错误" 
+                                  IsChecked="{Binding TreatWarningsAsErrors}"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 发布配置 -->
+                <Expander Header="发布配置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="发布命令" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding PublishCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="dotnet publish"/>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="目标运行时" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding TargetRuntime}">
+                                <ComboBoxItem Content="portable"/>
+                                <ComboBoxItem Content="win-x64"/>
+                                <ComboBoxItem Content="win-x86"/>
+                                <ComboBoxItem Content="linux-x64"/>
+                                <ComboBoxItem Content="osx-x64"/>
+                                <ComboBoxItem Content="osx-arm64"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <StackPanel>
+                            <TextBlock Text="发布输出目录" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding PublishPath, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="./publish"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowsePublishPathCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <CheckBox Content="单文件发布" 
+                                  IsChecked="{Binding SingleFilePublish}" 
+                                  Margin="0,8,0,8"/>
+                        <CheckBox Content="自包含发布" 
+                                  IsChecked="{Binding SelfContainedPublish}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用ReadyToRun" 
+                                  IsChecked="{Binding EnableReadyToRun}"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 标签 -->
+                <Expander Header="项目标签" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="输入标签，用逗号分隔（例如：.NET,C#,后端,Web API）"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 操作按钮 -->
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button Content="保存" 
+                                   Icon="{ui:SymbolIcon Save24}"
+                                   Appearance="Primary"
+                                   Command="{Binding SaveCommand}"
+                                   Margin="0,0,8,0"/>
+                        <ui:Button Content="取消" 
+                                   Icon="{ui:SymbolIcon Dismiss24}"
+                                   Command="{Binding CancelCommand}"/>
+                    </StackPanel>
+                    <ui:Button Grid.Column="2" 
+                               Content="删除项目" 
+                               Icon="{ui:SymbolIcon Delete24}"
+                               Appearance="Danger"
+                               Command="{Binding DeleteCommand}"
+                               Margin="16,0,0,0"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</ui:FluentWindow>

@@ -1,0 +1,167 @@
+<ui:FluentWindow
+    x:Class="ProjectManager.Views.Dialogs.NewProjectWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="新建项目"
+    Width="500"
+    Height="600"
+    MinWidth="450"
+    MinHeight="500"
+    d:DataContext="{d:DesignInstance local:NewProjectWindow,
+                                     IsDesignTimeCreatable=False}"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ExtendsContentIntoTitleBar="True"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="新建项目"
+            Grid.Row="0"
+            Padding="5,0,0,0">
+            <ui:TitleBar.Icon>
+                <ui:SymbolIcon Symbol="Add24" Margin="10,-3,10,0"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,32,0,0">
+            <StackPanel Margin="24">
+                <!-- 项目基本信息 -->
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="项目信息" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目名称" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="输入项目名称"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="项目路径" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                        Text="{Binding ProjectPath, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="选择项目文件夹路径"
+                                        Margin="0,0,8,0"/>
+                            <ui:Button Grid.Column="1" 
+                                       Content="浏览" 
+                                       Icon="{ui:SymbolIcon FolderOpen24}"
+                                       Command="{Binding BrowseProjectPathCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <StackPanel>
+                        <TextBlock Text="项目描述（可选）" Margin="0,0,0,4"/>
+                        <ui:TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" 
+                                    PlaceholderText="输入项目描述"
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinHeight="60"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 框架选择 -->
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="选择项目框架" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="选择框架后将自动保存，后续可在专属设置界面进行详细配置" 
+                               Opacity="0.7" FontSize="12" Margin="0,0,0,16"/>
+                    
+                    <!-- 框架下拉选择 -->
+                    <ComboBox SelectedItem="{Binding SelectedFramework}" 
+                              ItemsSource="{Binding AvailableFrameworks}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Margin="0,0,8,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon.Style>
+                                            <Style TargetType="ui:SymbolIcon">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="ComfyUI">
+                                                        <Setter Property="Symbol" Value="ImageSparkle24"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding}" Value="Node.js">
+                                                        <Setter Property="Symbol" Value="Code24"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding}" Value=".NET">
+                                                        <Setter Property="Symbol" Value="DeveloperBoard24"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding}" Value="其他">
+                                                        <Setter Property="Symbol" Value="AppGeneric24"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:SymbolIcon.Style>
+                                    </ui:SymbolIcon>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding}" FontWeight="SemiBold"/>
+                                        <TextBlock FontSize="11" Opacity="0.7">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="ComfyUI">
+                                                            <Setter Property="Text" Value="AI图像生成工作流"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding}" Value="Node.js">
+                                                            <Setter Property="Text" Value="JavaScript运行时"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding}" Value=".NET">
+                                                            <Setter Property="Text" Value="微软开发平台"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding}" Value="其他">
+                                                            <Setter Property="Text" Value="自定义项目类型"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- 当前选择信息 -->
+                <StackPanel Margin="0,0,0,24" Visibility="{Binding SelectedFramework, Converter={StaticResource StringToVisibilityConverter}}">
+                    <ui:InfoBar IsOpen="True" 
+                                Severity="Informational" 
+                                Title="框架选择"
+                                Message="{Binding FrameworkDescription}"
+                                IsClosable="False"/>
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button Content="下一步" 
+                                   Icon="{ui:SymbolIcon ArrowRight24}"
+                                   Appearance="Primary"
+                                   Command="{Binding NextCommand}"
+                                   IsEnabled="{Binding CanProceed}"
+                                   Margin="0,0,8,0"/>
+                        <ui:Button Content="取消" 
+                                   Icon="{ui:SymbolIcon Dismiss24}"
+                                   Command="{Binding CancelCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</ui:FluentWindow>

@@ -56,6 +56,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -97,19 +98,50 @@
             </Grid>
         </StackPanel>
 
-        <!-- 高级选项 -->
-        <Expander Grid.Row="2" Header="高级选项" Margin="0,0,0,15">
-            <StackPanel Margin="0,10,0,0">
-                <CheckBox Content="自动检测项目类型和框架" 
-                          IsChecked="{Binding AutoDetectProjectType}" 
-                          Margin="0,0,0,10"/>
-                <CheckBox Content="克隆完成后自动添加到项目管理器" 
-                          IsChecked="{Binding AutoAddToManager}"/>
-            </StackPanel>
-        </Expander>
+        <!-- 框架选择 -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,15">
+            <TextBlock Text="项目框架" FontWeight="Medium" Margin="0,0,0,5" Style="{StaticResource DarkTextBlockStyle}"/>
+            <ComboBox SelectedItem="{Binding SelectedFramework}" 
+                      ItemsSource="{Binding AvailableFrameworks}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Margin="0,0,8,0" VerticalAlignment="Center">
+                                <ui:SymbolIcon.Style>
+                                    <Style TargetType="ui:SymbolIcon">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding}" Value="ComfyUI">
+                                                <Setter Property="Symbol" Value="ImageSparkle24"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding}" Value="Node.js">
+                                                <Setter Property="Symbol" Value="Code24"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding}" Value=".NET">
+                                                <Setter Property="Symbol" Value="DeveloperBoard24"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding}" Value="其他">
+                                                <Setter Property="Symbol" Value="AppGeneric24"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:SymbolIcon.Style>
+                            </ui:SymbolIcon>
+                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- 其他选项 -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,15">
+            <CheckBox Content="克隆完成后自动添加到项目管理器" 
+                      IsChecked="{Binding AutoAddToManager}"/>
+        </StackPanel>
 
         <!-- 进度显示 -->
-        <StackPanel Grid.Row="3" 
+        <StackPanel Grid.Row="4" 
                     Margin="0,0,0,15"
                     Visibility="{Binding IsCloning, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Text="克隆进度" 
@@ -128,7 +160,7 @@
         </StackPanel>
 
         <!-- 日志输出 -->
-        <GroupBox Grid.Row="4" 
+        <GroupBox Grid.Row="5" 
                   Header="克隆日志" 
                   Margin="0,0,0,15"
                   Style="{StaticResource DarkGroupBoxStyle}">
@@ -143,7 +175,7 @@
         </GroupBox>
 
             <!-- 按钮区域 -->
-            <StackPanel Grid.Row="5" 
+            <StackPanel Grid.Row="6" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
                 <ui:Button Content="克隆" 

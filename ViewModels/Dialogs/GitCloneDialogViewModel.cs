@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,10 +34,13 @@ namespace ProjectManager.ViewModels.Dialogs
         private string _projectName = string.Empty;
 
         [ObservableProperty]
-        private bool _autoDetectProjectType = true;
+        private bool _autoAddToManager = true;
 
         [ObservableProperty]
-        private bool _autoAddToManager = true;
+        private string _selectedFramework = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _availableFrameworks = new();
 
         public bool AddToProjectManager 
         { 
@@ -93,6 +97,9 @@ namespace ProjectManager.ViewModels.Dialogs
             _serviceProvider = serviceProvider;
             _navigationService = navigationService;
             _errorDisplayService = errorDisplayService;
+            
+            // 初始化可用框架列表
+            AvailableFrameworks = new ObservableCollection<string>(FrameworkConfigService.GetFrameworkNames());
         }
 
         partial void OnRepositoryUrlChanged(string value)
@@ -305,45 +312,10 @@ namespace ProjectManager.ViewModels.Dialogs
                     Name = ProjectName,
                     LocalPath = projectPath,
                     WorkingDirectory = projectPath,
+                    Framework = SelectedFramework,
                     CreatedDate = DateTime.Now,
                     LastModified = DateTime.Now
                 };
-
-                // 如果启用了自动检测，尝试检测项目类型
-                if (AutoDetectProjectType)
-                {
-                    try
-                    {
-                        var detectionService = _serviceProvider.GetService<IProjectDetectionService>();
-                        if (detectionService != null)
-                        {
-                            var detectionResult = await detectionService.DetectProjectTypeAsync(projectPath);
-                            if (detectionResult.ConfidenceLevel > 0.3 && detectionResult.DetectedFramework != "其他")
-                            {
-                                project.Framework = detectionResult.DetectedFramework;
-                                
-                                if (!string.IsNullOrEmpty(detectionResult.SuggestedDescription))
-                                {
-                                    project.Description = detectionResult.SuggestedDescription;
-                                }
-                                
-                                if (!string.IsNullOrEmpty(detectionResult.SuggestedStartCommand))
-                                {
-                                    project.StartCommand = detectionResult.SuggestedStartCommand;
-                                }
-                                
-                                if (detectionResult.SuggestedTags.Any())
-                                {
-                                    project.Tags = detectionResult.SuggestedTags.ToList();
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // 如果检测失败，使用默认值
-                    }
-                }
 
                 // 获取Git信息
                 project.GitInfo = await _gitService.GetGitInfoAsync(projectPath);

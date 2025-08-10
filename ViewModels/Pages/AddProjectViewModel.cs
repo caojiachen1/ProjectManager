@@ -32,10 +32,8 @@ namespace ProjectManager.ViewModels.Pages
         [RelayCommand]
         private void CreateNewProject()
         {
-            var dialogViewModel = _serviceProvider.GetRequiredService<ProjectEditDialogViewModel>();
-            var window = _serviceProvider.GetRequiredService<ProjectEditWindow>();
-            
-            dialogViewModel.LoadProject();
+            var dialogViewModel = _serviceProvider.GetRequiredService<NewProjectDialogViewModel>();
+            var window = _serviceProvider.GetRequiredService<NewProjectWindow>();
             
             var result = window.ShowDialog(Application.Current.MainWindow);
             if (result == true)
