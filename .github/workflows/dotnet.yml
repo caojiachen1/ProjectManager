@@ -69,38 +69,30 @@ jobs:
           echo "No previous releases found or API error: $_"
           $latestTag = $null
         }
-        
-        # Check commit message for version bump indicators
-        $commitMessage = "${{ github.event.head_commit.message }}" -replace '"', '\"' -replace "'", "\'"
-        Write-Host "Processing commit message: $commitMessage"
-        
-        # Validate commit message is not empty
+
+        # Obtain commit message (may be empty for some event types)
+        $commitMessage = "${{ github.event.head_commit.message }}"
         if ([string]::IsNullOrWhiteSpace($commitMessage)) {
-          Write-Host "Warning: Empty commit message, treating as patch update"
-          $commitMessage = "Update"
+          try { $commitMessage = (git log -1 --pretty=%B) } catch { $commitMessage = "Update" }
         }
-        
+        Write-Host "Raw commit message:`n$commitMessage"
+
+        # Detect version bump tags
         $isMajorBump = $commitMessage -match "\[major\]" -or $commitMessage -match "BREAKING CHANGE"
         $isMinorBump = $commitMessage -match "\[minor\]" -or $commitMessage -match "\[feature\]"
-        
-        # Clean commit message by removing version tags with improved regex
-        $cleanCommitMessage = $commitMessage -replace "\s*\[(major|minor|feature)\]\s*", "" -replace "BREAKING CHANGE:\s*", "" -replace "\s+", " "
+
+        # Clean message (remove tags but keep newlines & paragraph structure)
+        $cleanCommitMessage = $commitMessage -replace "\s*\[(major|minor|feature)\]\s*", "" -replace "BREAKING CHANGE:\s*", ""
+        $cleanCommitMessage = ($cleanCommitMessage -split "\r?\n" | ForEach-Object { $_.TrimEnd() }) -join "`n"
         $cleanCommitMessage = $cleanCommitMessage.Trim()
-        
-        # Ensure clean commit message is not empty
-        if ([string]::IsNullOrWhiteSpace($cleanCommitMessage)) {
-          $cleanCommitMessage = "Update"
-        }
-        
-        # Escape special characters for GitHub output
-        $cleanCommitMessage = $cleanCommitMessage -replace "`n", "\\n" -replace "`r", "" -replace "\\*", "\\*" -replace "_", "\\_"
-        
+        if ([string]::IsNullOrWhiteSpace($cleanCommitMessage)) { $cleanCommitMessage = "Update" }
+
+        # Version calculation with proper error handling
         if ($latestTag) {
-          # Extract version number
           $version = $latestTag -replace '^v', ''
           $versionParts = $version.Split('.')
           
-          # Validate version parts
+          # Validate and parse version parts safely
           if ($versionParts.Length -eq 0) {
             Write-Host "Warning: Invalid version format in tag $latestTag, starting fresh"
             $major = 0
@@ -111,13 +103,11 @@ jobs:
           }
           
           if ($isMajorBump) {
-            # Major version bump (e.g., v0.3 -> v1.0)
             $major++
             $minor = 0
             $newVersion = "v$major.$minor"
             echo "major_update=true" >> $env:GITHUB_OUTPUT
           } else {
-            # Regular increment by 1 in minor version (e.g., v0.1 -> v0.2, v0.3 -> v0.4)
             $minor++
             $newVersion = "v$major.$minor"
             if ($isMinorBump) {
@@ -127,18 +117,23 @@ jobs:
             }
           }
         } else {
-          # No previous releases, start with v0.1
           $newVersion = "v0.1"
           echo "initial_release=true" >> $env:GITHUB_OUTPUT
         }
-        
+
         echo "new_version=$newVersion" >> $env:GITHUB_OUTPUT
         echo "previous_tag=$latestTag" >> $env:GITHUB_OUTPUT
-        echo "clean_commit_message=$cleanCommitMessage" >> $env:GITHUB_OUTPUT
+
+        # Multiline output for release body
+        $delim = "EOF_COMMIT_$([guid]::NewGuid().ToString('N'))"
+        Add-Content -Path $env:GITHUB_OUTPUT -Value "clean_commit_message<<$delim"
+        Add-Content -Path $env:GITHUB_OUTPUT -Value $cleanCommitMessage
+        Add-Content -Path $env:GITHUB_OUTPUT -Value $delim
+
         echo "New version will be: $newVersion"
-        if ($isMajorBump) { echo "This is a MAJOR version update!" }
-        elseif ($isMinorBump) { echo "This is a MINOR version update!" }
-        else { echo "This is a regular patch update." }
+        if ($isMajorBump) { echo 'This is a MAJOR version update!' }
+        elseif ($isMinorBump) { echo 'This is a MINOR version update!' }
+        else { echo 'This is a regular patch update.' }
 
     # 直接用 GitHub 仓库名作为项目名，无需额外步骤
 
