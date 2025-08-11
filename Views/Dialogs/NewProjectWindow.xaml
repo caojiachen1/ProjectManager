@@ -8,9 +8,9 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="新建项目"
     Width="500"
-    Height="520"
+    Height="700"
     MinWidth="450"
-    MinHeight="520"
+    MinHeight="500"
     d:DataContext="{d:DesignInstance local:NewProjectWindow,
                                      IsDesignTimeCreatable=False}"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -71,6 +71,44 @@
                                     AcceptsReturn="True"
                                     MinHeight="60"/>
                     </StackPanel>
+                </StackPanel>
+
+                <!-- Git仓库扫描设置 -->
+                <StackPanel Margin="0,0,0,24">
+                    <TextBlock Text="Git仓库扫描" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    
+                    <ui:Card Padding="16" Margin="0,0,0,12">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <CheckBox IsChecked="{Binding ScanForGitRepositories}" 
+                                          Content="扫描项目中的Git仓库" 
+                                          FontWeight="Medium"/>
+                            </StackPanel>
+                            
+                            <TextBlock Text="启用后将自动扫描项目文件夹及其子文件夹中的所有Git仓库，可在Git管理界面中切换管理不同的仓库。"
+                                       TextWrapping="Wrap"
+                                       FontSize="12"
+                                       Opacity="0.7"
+                                       Margin="24,0,0,0"/>
+                                       
+                            <!-- 扫描进度显示 -->
+                            <StackPanel Visibility="{Binding IsScanningGitRepositories, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Margin="24,8,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <ui:SymbolIcon Symbol="ArrowClockwise16" 
+                                                   Margin="0,0,4,0" 
+                                                   VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding GitScanStatusMessage}" 
+                                               FontSize="12" 
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <ProgressBar Value="{Binding GitScanProgress}" 
+                                                Height="4" 
+                                                Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:Card>
                 </StackPanel>
 
                 <!-- 框架选择 -->

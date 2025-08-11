@@ -8,9 +8,9 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="项目设置"
     Width="600"
-    Height="700"
+    Height="650"
     MinWidth="550"
-    MinHeight="650"
+    MinHeight="500"
     d:DataContext="{d:DesignInstance local:ProjectEditWindow,
                                      IsDesignTimeCreatable=False}"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"

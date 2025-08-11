@@ -26,8 +26,8 @@ namespace ProjectManager.Views.Dialogs
 
         private void OnProjectCreated(object? sender, EventArgs e)
         {
-            // 关闭新建项目窗口
-            DialogResult = true;
+            // 不设置DialogResult = true，避免调用者认为项目创建成功
+            // 只有在ProjectEditWindow中确认保存后才算真正创建成功
             
             // 打开ProjectEditWindow进行详细设置
             if (ViewModel.CreatedProject != null)
@@ -35,9 +35,25 @@ namespace ProjectManager.Views.Dialogs
                 var editWindow = _serviceProvider.GetRequiredService<Views.Dialogs.ProjectEditWindow>();
                 editWindow.ViewModel.LoadProject(ViewModel.CreatedProject);
                 editWindow.Owner = Owner ?? this;
-                editWindow.ShowDialog();
+                
+                var editResult = editWindow.ShowDialog();
+                
+                // 如果在ProjectEditWindow中保存成功，则设置DialogResult = true
+                if (editResult == true)
+                {
+                    DialogResult = true;
+                }
+                else
+                {
+                    DialogResult = false;
+                }
+            }
+            else
+            {
+                DialogResult = false;
             }
             
+            // 关闭新建项目窗口
             Close();
         }
         

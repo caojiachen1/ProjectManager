@@ -58,6 +58,9 @@ namespace ProjectManager.Models
         [ObservableProperty]
         private Dictionary<string, string> _environmentVariables = new();
 
+        [ObservableProperty]
+        private List<string> _gitRepositories = new();
+
         [JsonIgnore]
         public string StatusDisplay => Status switch
         {

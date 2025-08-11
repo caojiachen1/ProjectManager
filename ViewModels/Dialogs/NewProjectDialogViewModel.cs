@@ -12,6 +12,7 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private readonly IProjectSettingsWindowService _settingsWindowService;
+        private readonly IGitService _gitService;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -31,6 +32,18 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private bool _canProceed = false;
 
+        [ObservableProperty]
+        private bool _scanForGitRepositories = false;
+
+        [ObservableProperty]
+        private bool _isScanningGitRepositories = false;
+
+        [ObservableProperty]
+        private double _gitScanProgress = 0;
+
+        [ObservableProperty]
+        private string _gitScanStatusMessage = string.Empty;
+
         public ObservableCollection<string> AvailableFrameworks { get; } = new()
         {
             "ComfyUI",
@@ -43,10 +56,11 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler? DialogCancelled;
         public Project? CreatedProject { get; private set; }
 
-        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService)
+        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService, IGitService gitService)
         {
             _projectService = projectService;
             _settingsWindowService = settingsWindowService;
+            _gitService = gitService;
             
             // 监听属性变化
             PropertyChanged += OnPropertyChanged;
@@ -131,6 +145,12 @@ namespace ProjectManager.ViewModels.Dialogs
                     Tags = new List<string>()
                 };
 
+                // 如果启用了Git仓库扫描，扫描所有Git仓库
+                if (ScanForGitRepositories)
+                {
+                    await ScanGitRepositoriesAsync(project);
+                }
+
                 // 保存到JSON - 框架不可更改除非重新新增项目
                 var saveSuccess = await _projectService.SaveProjectAsync(project);
                 
@@ -149,6 +169,37 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 // TODO: 显示错误消息
                 System.Diagnostics.Debug.WriteLine($"创建项目失败: {ex.Message}");
+            }
+        }
+
+        private async Task ScanGitRepositoriesAsync(Project project)
+        {
+            try
+            {
+                IsScanningGitRepositories = true;
+                GitScanProgress = 0;
+                GitScanStatusMessage = "开始扫描Git仓库...";
+
+                var gitRepositories = await _gitService.ScanForGitRepositoriesAsync(
+                    project.LocalPath,
+                    new Progress<(double Progress, string Message)>(progress =>
+                    {
+                        GitScanProgress = progress.Progress;
+                        GitScanStatusMessage = progress.Message;
+                    }));
+
+                project.GitRepositories = gitRepositories;
+                GitScanStatusMessage = $"扫描完成，发现 {gitRepositories.Count} 个Git仓库";
+                await Task.Delay(1000); // 显示完成消息
+            }
+            catch (Exception ex)
+            {
+                GitScanStatusMessage = $"扫描失败: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"Git仓库扫描失败: {ex.Message}");
+            }
+            finally
+            {
+                IsScanningGitRepositories = false;
             }
         }
 

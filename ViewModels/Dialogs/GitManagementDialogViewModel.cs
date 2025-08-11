@@ -38,6 +38,18 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private ObservableCollection<string> _availableBranches = new();
 
+        [ObservableProperty]
+        private ObservableCollection<GitRepositoryInfo> _availableRepositories = new();
+
+        [ObservableProperty]
+        private GitRepositoryInfo? _selectedRepository;
+
+        [ObservableProperty]
+        private bool _hasMultipleRepositories = false;
+
+        [ObservableProperty]
+        private string _currentRepositoryPath = string.Empty;
+
         public event EventHandler<Project>? GitInfoUpdated;
 
         public GitManagementDialogViewModel(IGitService gitService, IContentDialogService contentDialogService)
@@ -49,13 +61,73 @@ namespace ProjectManager.ViewModels.Dialogs
         public async Task LoadProjectAsync(Project project)
         {
             Project = project;
+            await LoadAvailableRepositoriesAsync();
             await RefreshGitInfoAsync();
+        }
+
+        private async Task LoadAvailableRepositoriesAsync()
+        {
+            if (Project == null) return;
+
+            try
+            {
+                AvailableRepositories.Clear();
+
+                // 首先检查项目根目录是否是Git仓库
+                var projectRootGitInfo = await _gitService.GetGitInfoAsync(Project.LocalPath);
+                if (projectRootGitInfo.IsGitRepository)
+                {
+                    AvailableRepositories.Add(new GitRepositoryInfo(Project.LocalPath, Project.LocalPath));
+                }
+
+                // 添加项目中扫描到的其他Git仓库
+                if (Project.GitRepositories?.Count > 0)
+                {
+                    foreach (var repoPath in Project.GitRepositories)
+                    {
+                        // 避免重复添加项目根目录
+                        if (repoPath != Project.LocalPath)
+                        {
+                            AvailableRepositories.Add(new GitRepositoryInfo(repoPath, Project.LocalPath));
+                        }
+                    }
+                }
+
+                HasMultipleRepositories = AvailableRepositories.Count > 1;
+
+                // 设置默认选择的仓库（优先选择主仓库）
+                if (AvailableRepositories.Count > 0)
+                {
+                    var mainRepo = AvailableRepositories.FirstOrDefault(r => r.IsMainRepository);
+                    SelectedRepository = mainRepo ?? AvailableRepositories.First();
+                    CurrentRepositoryPath = SelectedRepository.Path;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载Git仓库列表失败: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task SwitchRepository()
+        {
+            if (SelectedRepository != null && SelectedRepository.Path != CurrentRepositoryPath)
+            {
+                CurrentRepositoryPath = SelectedRepository.Path;
+                await RefreshGitInfoAsync();
+            }
         }
 
         [RelayCommand]
         private async Task RefreshGitInfo()
         {
             await RefreshGitInfoAsync();
+        }
+
+        private string GetCurrentRepositoryPath()
+        {
+            return !string.IsNullOrEmpty(CurrentRepositoryPath) ? CurrentRepositoryPath : Project?.LocalPath ?? string.Empty;
         }
 
         [RelayCommand]
@@ -66,7 +138,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.InitializeRepositoryAsync(Project.LocalPath);
+                var success = await _gitService.InitializeRepositoryAsync(GetCurrentRepositoryPath());
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -91,7 +163,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.AddAllAsync(Project.LocalPath);
+                var success = await _gitService.AddAllAsync(GetCurrentRepositoryPath());
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -117,7 +189,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.CommitAsync(Project.LocalPath, CommitMessage);
+                var success = await _gitService.CommitAsync(GetCurrentRepositoryPath(), CommitMessage);
                 if (success)
                 {
                     CommitMessage = string.Empty;
@@ -143,7 +215,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.PushAsync(Project.LocalPath);
+                var success = await _gitService.PushAsync(GetCurrentRepositoryPath());
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -168,7 +240,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.PullAsync(Project.LocalPath);
+                var success = await _gitService.PullAsync(GetCurrentRepositoryPath());
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -194,7 +266,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.CreateBranchAsync(Project.LocalPath, NewBranchName);
+                var success = await _gitService.CreateBranchAsync(GetCurrentRepositoryPath(), NewBranchName);
                 if (success)
                 {
                     NewBranchName = string.Empty;
@@ -221,7 +293,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.SwitchBranchAsync(Project.LocalPath, SelectedBranch);
+                var success = await _gitService.SwitchBranchAsync(GetCurrentRepositoryPath(), SelectedBranch);
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -247,7 +319,7 @@ namespace ProjectManager.ViewModels.Dialogs
             IsLoading = true;
             try
             {
-                var success = await _gitService.SetRemoteUrlAsync(Project.LocalPath, RemoteUrl);
+                var success = await _gitService.SetRemoteUrlAsync(GetCurrentRepositoryPath(), RemoteUrl);
                 if (success)
                 {
                     await RefreshGitInfoAsync();
@@ -271,8 +343,17 @@ namespace ProjectManager.ViewModels.Dialogs
             try
             {
                 IsLoading = true;
-                GitInfo = await _gitService.GetGitInfoAsync(Project.LocalPath);
-                Project.GitInfo = GitInfo;
+                
+                // 使用当前选择的仓库路径，如果没有选择则使用项目路径
+                var repositoryPath = GetCurrentRepositoryPath();
+                
+                GitInfo = await _gitService.GetGitInfoAsync(repositoryPath);
+                
+                // 更新项目的Git信息（仅当是主仓库时）
+                if (repositoryPath == Project.LocalPath)
+                {
+                    Project.GitInfo = GitInfo;
+                }
 
                 if (GitInfo.IsGitRepository)
                 {

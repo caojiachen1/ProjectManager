@@ -21,6 +21,7 @@ public class PersistedProject
     public List<string> Tags { get; set; } = new();
     public bool AutoStart { get; set; }
     public Dictionary<string,string> EnvironmentVariables { get; set; } = new();
+    public List<string> GitRepositories { get; set; } = new();
 }
 
 internal static class ProjectPersistenceMapper
@@ -40,7 +41,8 @@ internal static class ProjectPersistenceMapper
         LogOutput = p.LogOutput,
         Tags = new List<string>(p.Tags),
         AutoStart = p.AutoStart,
-        EnvironmentVariables = new Dictionary<string,string>(p.EnvironmentVariables)
+        EnvironmentVariables = new Dictionary<string,string>(p.EnvironmentVariables),
+        GitRepositories = new List<string>(p.GitRepositories)
     };
 
     public static Project ToModel(PersistedProject dto)
@@ -60,7 +62,8 @@ internal static class ProjectPersistenceMapper
             LogOutput = dto.LogOutput,
             Tags = new List<string>(dto.Tags),
             AutoStart = dto.AutoStart,
-            EnvironmentVariables = new Dictionary<string,string>(dto.EnvironmentVariables)
+            EnvironmentVariables = new Dictionary<string,string>(dto.EnvironmentVariables),
+            GitRepositories = new List<string>(dto.GitRepositories ?? new())
         };
         return model;
     }

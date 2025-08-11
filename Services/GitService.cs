@@ -20,6 +20,7 @@ namespace ProjectManager.Services
         Task<(bool IsSuccess, string ErrorMessage)> CloneRepositoryAsync(string remoteUrl, string localPath, IProgress<string>? progress = null);
         Task<bool> IsValidGitUrlAsync(string url);
         Task<string> GetRepositoryNameFromUrlAsync(string url);
+        Task<List<string>> ScanForGitRepositoriesAsync(string rootPath, IProgress<(double Progress, string Message)>? progress = null);
     }
 
     public class GitService : IGitService
@@ -535,6 +536,154 @@ namespace ProjectManager.Services
             catch (Exception ex)
             {
                 return (false, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 扫描指定路径及其子文件夹中的所有Git仓库
+        /// </summary>
+        public async Task<List<string>> ScanForGitRepositoriesAsync(string rootPath, IProgress<(double Progress, string Message)>? progress = null)
+        {
+            var gitRepositories = new List<string>();
+
+            if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+            {
+                return gitRepositories;
+            }
+
+            try
+            {
+                progress?.Report((0, "准备扫描目录..."));
+
+                // 使用队列进行广度优先扫描，避免Directory.GetDirectories的权限问题
+                var directoriesToScan = new Queue<string>();
+                var scannedDirectories = new HashSet<string>();
+                var totalScanned = 0;
+                var skippedDueToPremissions = 0;
+
+                directoriesToScan.Enqueue(rootPath);
+
+                while (directoriesToScan.Count > 0)
+                {
+                    var currentDirectory = directoriesToScan.Dequeue();
+                    
+                    // 避免重复扫描
+                    if (scannedDirectories.Contains(currentDirectory))
+                        continue;
+                        
+                    scannedDirectories.Add(currentDirectory);
+                    totalScanned++;
+
+                    try
+                    {
+                        // 检查是否是Git仓库
+                        var gitDir = Path.Combine(currentDirectory, ".git");
+                        var isGitRepository = false;
+                        
+                        try
+                        {
+                            isGitRepository = Directory.Exists(gitDir) || File.Exists(gitDir);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // 无法访问.git目录，跳过此目录
+                            progress?.Report((
+                                (double)totalScanned / (totalScanned + directoriesToScan.Count) * 100,
+                                $"跳过无权限目录: {Path.GetFileName(currentDirectory)}"
+                            ));
+                            continue;
+                        }
+
+                        if (isGitRepository)
+                        {
+                            gitRepositories.Add(currentDirectory);
+                            progress?.Report((
+                                (double)totalScanned / (totalScanned + directoriesToScan.Count) * 100,
+                                $"发现Git仓库: {Path.GetFileName(currentDirectory)}"
+                            ));
+                            
+                            // 如果发现Git仓库，不再扫描其子目录
+                            continue;
+                        }
+
+                        // 获取子目录并加入扫描队列
+                        try
+                        {
+                            var subDirectories = Directory.GetDirectories(currentDirectory);
+                            foreach (var subDir in subDirectories)
+                            {
+                                if (!scannedDirectories.Contains(subDir))
+                                {
+                                    directoriesToScan.Enqueue(subDir);
+                                }
+                            }
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            skippedDueToPremissions++;
+                            progress?.Report((
+                                (double)totalScanned / (totalScanned + directoriesToScan.Count) * 100,
+                                $"跳过无权限目录: {Path.GetFileName(currentDirectory)} (已跳过 {skippedDueToPremissions} 个)"
+                            ));
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            // 目录不存在，可能被删除了，跳过
+                            continue;
+                        }
+                        catch (PathTooLongException)
+                        {
+                            // 路径太长，跳过
+                            progress?.Report((
+                                (double)totalScanned / (totalScanned + directoriesToScan.Count) * 100,
+                                $"跳过路径过长的目录: {Path.GetFileName(currentDirectory)}"
+                            ));
+                            continue;
+                        }
+                        catch (IOException ex)
+                        {
+                            // 其他IO异常，跳过
+                            System.Diagnostics.Debug.WriteLine($"扫描目录 {currentDirectory} 时遇到IO错误: {ex.Message}");
+                            continue;
+                        }
+
+                        // 更新进度
+                        if (totalScanned % 10 == 0)
+                        {
+                            var progressPercent = (double)totalScanned / Math.Max(totalScanned + directoriesToScan.Count, 1) * 100;
+                            progress?.Report((
+                                progressPercent,
+                                $"已扫描 {totalScanned} 个目录，发现 {gitRepositories.Count} 个Git仓库"
+                            ));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"扫描目录 {currentDirectory} 时出错: {ex.Message}");
+                        continue;
+                    }
+
+                    // 添加一些延时以避免UI冻结（对于大型目录结构）
+                    if (totalScanned % 50 == 0)
+                    {
+                        await Task.Delay(1);
+                    }
+                }
+
+                var finalMessage = $"扫描完成，发现 {gitRepositories.Count} 个Git仓库";
+                if (skippedDueToPremissions > 0)
+                {
+                    finalMessage += $"，跳过了 {skippedDueToPremissions} 个无权限目录";
+                }
+                
+                progress?.Report((100, finalMessage));
+                return gitRepositories;
+            }
+            catch (Exception ex)
+            {
+                progress?.Report((100, $"扫描失败: {ex.Message}"));
+                System.Diagnostics.Debug.WriteLine($"Git仓库扫描失败: {ex.Message}");
+                return gitRepositories;
             }
         }
 

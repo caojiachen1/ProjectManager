@@ -29,6 +29,7 @@
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <local:BooleanToInverseBooleanConverter x:Key="BooleanToInverseBooleanConverter"/>
             <converters:GitStatusToBadgeConverter x:Key="GitStatusToBadgeConverter"/>
+            <converters:HasGitRepositoryToVisibilityConverter x:Key="HasGitRepositoryToVisibilityConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         </ResourceDictionary>
