@@ -19,9 +19,10 @@
 
     <Page.Resources>
         <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
-            <ui:Card Margin="8" Padding="16" MinWidth="300" MaxWidth="350">
+            <ui:Card Margin="8" Padding="16" MinWidth="300" MaxWidth="400">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -31,8 +32,54 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 项目名称 -->
-                    <TextBlock Grid.Row="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <!-- 项目名称和菜单按钮 -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        
+                        <!-- 下拉菜单按钮 -->
+                        <ui:Button Grid.Column="1" 
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Right"
+                                   Padding="8"
+                                   Width="32"
+                                   Height="32"
+                                   Background="Transparent"
+                                   BorderThickness="0"
+                                   BorderBrush="Transparent"
+                                   Click="MenuButton_Click">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="MoreVertical20" FontSize="24"/>
+                            </ui:Button.Icon>
+                            <ui:Button.ContextMenu>
+                                <ContextMenu>
+                                    <!-- 基础操作 -->
+                                    <MenuItem Header="在资源管理器中打开" 
+                                              Command="{Binding OpenProjectInExplorerCommand}"
+                                              CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                        <MenuItem.Icon>
+                                            <ui:SymbolIcon Symbol="Folder24"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    
+                                    <Separator/>
+                                    
+                                    <!-- 删除操作 -->
+                                    <MenuItem Header="删除项目" 
+                                              Command="{Binding DeleteProjectCommand}"
+                                              CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                        <MenuItem.Icon>
+                                            <ui:SymbolIcon Symbol="Delete24" Foreground="Red"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </ui:Button.ContextMenu>
+                        </ui:Button>
+                    </Grid>
                     
                     <!-- 项目描述 -->
                     <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" MaxHeight="60"/>
@@ -64,7 +111,7 @@
                     <Grid Grid.Row="5"/>
                     
                     <!-- 操作按钮 -->
-                    <WrapPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Left">
+                    <WrapPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
                         <ui:Button 
                             Content="{Binding Status, Converter={StaticResource StatusToToggleButtonTextConverter}}" 
                             Appearance="{Binding Status, Converter={StaticResource StatusToToggleButtonAppearanceConverter}}"

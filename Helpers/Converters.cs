@@ -262,4 +262,40 @@ namespace ProjectManager.Helpers
             throw new NotImplementedException();
         }
     }
+
+    public class FrameworkToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string framework && parameter is string targetFramework)
+            {
+                return string.Equals(framework, targetFramework, StringComparison.OrdinalIgnoreCase) 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ProjectCommandParameterConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] is Project project && values[1] is string command)
+            {
+                return (project, command);
+            }
+            return DependencyProperty.UnsetValue;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

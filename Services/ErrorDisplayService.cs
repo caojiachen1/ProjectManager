@@ -94,7 +94,8 @@ namespace ProjectManager.Services
                 Content = message,
                 PrimaryButtonText = "确定",
                 SecondaryButtonText = "取消",
-                IsPrimaryButtonEnabled = true
+                IsPrimaryButtonEnabled = true,
+                IsSecondaryButtonEnabled = true
             };
 
             var result = await messageBox.ShowDialogAsync();

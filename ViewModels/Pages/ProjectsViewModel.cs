@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectManager.Models;
 using ProjectManager.Services;
@@ -262,6 +263,84 @@ namespace ProjectManager.ViewModels.Pages
         private async Task Refresh()
         {
             await LoadProjects();
+        }
+
+        // 框架相关命令
+        // [RelayCommand]
+        // private async Task ExecuteFrameworkCommand(object parameter)
+        // {
+        //     if (parameter is not (Project project, string command)) return;
+
+        //     try
+        //     {
+        //         var terminalViewModel = _serviceProvider.GetService<TerminalViewModel>();
+        //         if (terminalViewModel != null)
+        //         {
+        //             terminalViewModel.SetProjectPath(project.Name, project.LocalPath);
+        //             // 模拟命令执行 - 实际应该使用TerminalViewModel的方法
+        //             // 暂时导航到终端页面让用户手动执行
+        //         }
+                
+        //         _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         await ShowErrorMessage($"执行命令失败: {ex.Message}");
+        //     }
+        // }
+
+        [RelayCommand]
+        private void OpenProjectInExplorer(Project project)
+        {
+            if (project?.LocalPath != null && Directory.Exists(project.LocalPath))
+            {
+                System.Diagnostics.Debug.WriteLine($"Opening project in Explorer: {project.LocalPath}");
+                System.Diagnostics.Process.Start("explorer.exe", project.LocalPath);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Invalid project path or directory does not exist.");
+            }
+        }
+
+        [RelayCommand]
+        private void OpenProjectInVSCode(Project project)
+        {
+            if (project?.LocalPath != null && Directory.Exists(project.LocalPath))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start("code", $"\"{project.LocalPath}\"");
+                }
+                catch
+                {
+                    // 简化错误处理，不使用async
+                    System.Windows.MessageBox.Show("无法启动 VS Code，请确保已安装 VS Code 并添加到系统路径", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteProject(Project project)
+        {
+            if (project == null) return;
+
+            var confirmed = await _errorDisplayService.ShowConfirmationAsync(
+                $"确定要删除项目 '{project.Name}' 吗？\n\n注意：这只会从项目管理器中移除项目记录，不会删除实际文件。",
+                "确认删除");
+
+            if (confirmed)
+            {
+                try
+                {
+                    await _projectService.DeleteProjectAsync(project.Id);
+                    await LoadProjects();
+                }
+                catch (Exception ex)
+                {
+                    await _errorDisplayService.ShowErrorAsync($"删除项目失败: {ex.Message}");
+                }
+            }
         }
 
         private async Task LoadProjects()
