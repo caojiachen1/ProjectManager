@@ -18,8 +18,78 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <Thickness x:Key="CustomCardPadding">14,16,14,16</Thickness>
+        <Thickness x:Key="CustomCardBorderThickness">1</Thickness>
+        <CornerRadius x:Key="CustomCardCornerRadius">12</CornerRadius>
+
+        <Style x:Key="RoundedCardStyle" TargetType="ui:Card">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource CardForeground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{StaticResource CustomCardBorderThickness}" />
+            <Setter Property="Padding" Value="{StaticResource CustomCardPadding}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Border.CornerRadius" Value="{StaticResource CustomCardCornerRadius}" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ui:Card">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Border
+                                x:Name="ContentBorder"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
+
+                            <Border
+                                x:Name="FooterBorder"
+                                Grid.Row="1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{DynamicResource CardFooterBackground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="0,0,16,16"
+                                Visibility="Collapsed">
+                                <ContentPresenter x:Name="FooterContentPresenter" Content="{TemplateBinding Footer}" />
+                            </Border>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasFooter" Value="True">
+                                <Setter TargetName="FooterBorder" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="ContentBorder" Property="CornerRadius" Value="16,16,0,0" />
+                                <Setter TargetName="ContentBorder" Property="BorderThickness" Value="1,1,1,0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
-            <ui:Card Margin="8" Padding="16" MinWidth="300" MaxWidth="400">
+            <ui:Card Margin="0,0,4,0" Padding="12" MinWidth="300" MaxWidth="400" Style="{StaticResource RoundedCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -45,7 +115,6 @@
                         <ui:Button Grid.Column="1" 
                                    VerticalAlignment="Top"
                                    HorizontalAlignment="Right"
-                                   Padding="8"
                                    Width="32"
                                    Height="32"
                                    Background="Transparent"
