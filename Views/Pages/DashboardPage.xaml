@@ -130,7 +130,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" ToolTip="{Binding Name}" ToolTipService.Placement="Mouse"/>
                                             <TextBlock Text="{Binding Description}" Opacity="0.7" FontSize="12"/>
                                             <TextBlock Text="{Binding LastModifiedDisplay}" Opacity="0.5" FontSize="11"/>
                                         </StackPanel>

@@ -89,7 +89,7 @@
         </Style>
 
         <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
-            <ui:Card Margin="0,4,4,0" Padding="12" MinWidth="300" MaxWidth="400" Style="{StaticResource RoundedCardStyle}">
+            <ui:Card Margin="0,4,4,0" Padding="12" Width="450" Height="210" Style="{StaticResource RoundedCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -109,7 +109,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         
-                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="{Binding Name}" ToolTipService.Placement="Mouse"/>
                         
                         <!-- 下拉菜单按钮 -->
                         <ui:Button Grid.Column="1" 
