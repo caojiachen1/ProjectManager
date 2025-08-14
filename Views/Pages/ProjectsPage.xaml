@@ -89,7 +89,7 @@
         </Style>
 
         <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
-            <ui:Card Margin="0,0,4,0" Padding="12" MinWidth="300" MaxWidth="400" Style="{StaticResource RoundedCardStyle}">
+            <ui:Card Margin="0,4,4,0" Padding="12" MinWidth="300" MaxWidth="400" Style="{StaticResource RoundedCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
