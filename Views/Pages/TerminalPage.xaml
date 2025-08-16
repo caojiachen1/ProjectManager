@@ -21,6 +21,7 @@
         <!-- 转换器资源 -->
         <converters:BooleanToColorConverter x:Key="BooleanToColorConverter"/>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:ProportionalDimensionConverter x:Key="ProportionalDimensionConverter"/>
         
         <!-- 终端样式资源 -->
         <Style x:Key="TerminalTabStyle" TargetType="TabItem">
@@ -101,9 +102,18 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Margin="0,0,0,10">
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- 顶部工具栏 -->
+            <RowDefinition Height="Auto"/>
+            <!-- 可伸缩的终端区域 -->
+            <RowDefinition Height="*"/>
+            <!-- 底部状态栏（固定） -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <!-- 顶部工具栏 -->
-        <Border Background="#2D2D30" 
+        <Border Grid.Row="0" Background="#2D2D30" 
                 BorderBrush="#3F3F46" 
                 BorderThickness="0,0,0,1"
                 Padding="12,8">
@@ -138,7 +148,7 @@
         </Border>
 
         <!-- 主要内容区域 -->
-        <Grid Height="650">
+        <Grid Grid.Row="1" x:Name="TerminalContentGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -148,7 +158,8 @@
                         SelectedItem="{Binding ViewModel.SelectedSession}"
                         Background="#1E1E1E"
                         BorderThickness="0"
-                        ItemContainerStyle="{StaticResource TerminalTabStyle}">
+                        ItemContainerStyle="{StaticResource TerminalTabStyle}"
+                        Height="{Binding ActualHeight, ElementName=TerminalContentGrid, Converter={StaticResource ProportionalDimensionConverter}}">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -165,9 +176,7 @@
                 <TabControl.ContentTemplate>
                     <DataTemplate>
                         <Grid>
-                            <ScrollViewer Background="#1E1E1E" 
-                                          VerticalScrollBarVisibility="Auto" 
-                                          HorizontalScrollBarVisibility="Auto">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                 <ItemsControl ItemsSource="{Binding OutputLines}" Margin="0,0,0,20">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -219,7 +228,7 @@
         </Grid>
 
         <!-- 底部状态栏 -->
-        <Border Background="#2D2D30" 
+        <Border Grid.Row="2" Background="#2D2D30" 
                 BorderBrush="#3F3F46" 
                 BorderThickness="0,1,0,0"
                 Padding="12,6">
@@ -246,5 +255,5 @@
                 </StackPanel>
             </Grid>
         </Border>
-    </StackPanel>
+    </Grid>
 </Page>
