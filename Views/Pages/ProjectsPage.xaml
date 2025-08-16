@@ -275,17 +275,15 @@
         </Grid>
 
         <!-- 项目列表 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl 
-                ItemsSource="{Binding FilteredProjects}"
-                ItemTemplate="{StaticResource ProjectCardTemplate}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </ScrollViewer>
+        <ItemsControl Grid.Row="1"
+                      ItemsSource="{Binding FilteredProjects}"
+                      ItemTemplate="{StaticResource ProjectCardTemplate}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
 
         <!-- 空状态 -->
         <StackPanel Grid.Row="1" 
