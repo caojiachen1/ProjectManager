@@ -290,15 +290,18 @@ namespace ProjectManager.Services
                 process.StartInfo = new ProcessStartInfo
                 {
                     FileName = gitExe,
-                    Arguments = $"clone \"{remoteUrl}\" \"{localPath}\"",
+                    Arguments = $"clone --progress \"{remoteUrl}\" \"{localPath}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    StandardErrorEncoding = System.Text.Encoding.UTF8,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8
                 };
 
                 var output = new List<string>();
                 var error = new List<string>();
+                var lastProgressLine = string.Empty;
 
                 process.OutputDataReceived += (sender, e) =>
                 {
@@ -313,8 +316,27 @@ namespace ProjectManager.Services
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        error.Add(e.Data);
-                        progress?.Report(e.Data);
+                        // Git 进度信息通常输出到 stderr
+                        var line = e.Data.Trim();
+                        
+                        // 处理包含回车符的进度行（Git 使用 \r 来覆盖同一行）
+                        if (line.Contains('\r'))
+                        {
+                            var parts = line.Split('\r');
+                            foreach (var part in parts)
+                            {
+                                if (!string.IsNullOrWhiteSpace(part))
+                                {
+                                    lastProgressLine = part.Trim();
+                                    progress?.Report(lastProgressLine);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            error.Add(line);
+                            progress?.Report(line);
+                        }
                     }
                 };
 

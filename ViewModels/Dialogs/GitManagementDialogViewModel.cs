@@ -11,8 +11,9 @@ namespace ProjectManager.ViewModels.Dialogs
 {
     public partial class GitManagementDialogViewModel : ObservableObject
     {
-        private readonly IGitService _gitService;
-        private readonly IContentDialogService _contentDialogService;
+    private readonly IGitService _gitService;
+    private readonly IContentDialogService _contentDialogService;
+    private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
         private Project? _project;
@@ -52,10 +53,11 @@ namespace ProjectManager.ViewModels.Dialogs
 
         public event EventHandler<Project>? GitInfoUpdated;
 
-        public GitManagementDialogViewModel(IGitService gitService, IContentDialogService contentDialogService)
+        public GitManagementDialogViewModel(IGitService gitService, IContentDialogService contentDialogService, IErrorDisplayService errorDisplayService)
         {
             _gitService = gitService;
             _contentDialogService = contentDialogService;
+            _errorDisplayService = errorDisplayService;
         }
 
         public async Task LoadProjectAsync(Project project)
@@ -372,24 +374,13 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private async Task ShowSuccessMessage(string message)
         {
-            var dialog = new ContentDialog
-            {
-                Title = "成功",
-                Content = message,
-                PrimaryButtonText = "确定"
-            };
-            await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
+                // 使用统一的错误/信息显示服务
+                await _errorDisplayService.ShowInfoAsync(message, "成功");
         }
 
         private async Task ShowErrorMessage(string message)
         {
-            var dialog = new ContentDialog
-            {
-                Title = "错误",
-                Content = message,
-                PrimaryButtonText = "确定"
-            };
-            await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
+                await _errorDisplayService.ShowErrorAsync(message, "错误");
         }
     }
 }

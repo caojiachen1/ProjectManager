@@ -11,6 +11,7 @@ using ProjectManager.ViewModels.Pages;
 using ProjectManager.Views.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
+using System.Text.RegularExpressions;
 
 namespace ProjectManager.ViewModels.Dialogs
 {
@@ -175,17 +176,75 @@ namespace ProjectManager.ViewModels.Dialogs
 
                 var progress = new Progress<string>(message =>
                 {
-                    CloneProgress += message + "\n";
-                    CloneLog += message + "\n";
-                    CloneStatusMessage = message;
-                    
-                    // 简单的进度估算
-                    if (message.Contains("准备"))
-                        CloneProgressValue = 10;
-                    else if (message.Contains("克隆") || message.Contains("下载"))
-                        CloneProgressValue = 50;
-                    else if (message.Contains("成功") || message.Contains("完成"))
-                        CloneProgressValue = 100;
+                    // 确保在UI线程上更新
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        // 逐行追加原始输出，保持日志完整
+                        CloneProgress += message + "\n";
+                        CloneLog += message + "\n";
+                        CloneStatusMessage = message;
+
+                        // 解析 git clone 的各个阶段进度
+                        try
+                        {
+                            var progressUpdated = false;
+                            
+                            // 匹配 "Receiving objects: XX% (YY/ZZ)" 格式
+                            var receivingMatch = Regex.Match(message, @"Receiving objects:\s*(\d{1,3})%");
+                            if (receivingMatch.Success && int.TryParse(receivingMatch.Groups[1].Value, out var receivingPct))
+                            {
+                                // Receiving objects 阶段通常占总进度的 70%
+                                CloneProgressValue = Math.Min(70, receivingPct * 70 / 100);
+                                progressUpdated = true;
+                            }
+
+                            // 匹配 "Resolving deltas: XX% (YY/ZZ)" 格式  
+                            var resolvingMatch = Regex.Match(message, @"Resolving deltas:\s*(\d{1,3})%");
+                            if (resolvingMatch.Success && int.TryParse(resolvingMatch.Groups[1].Value, out var resolvingPct))
+                            {
+                                // Resolving deltas 阶段从 70% 开始到 95%
+                                CloneProgressValue = 70 + Math.Min(25, resolvingPct * 25 / 100);
+                                progressUpdated = true;
+                            }
+
+                            // 匹配其他包含百分比的输出（如 remote: Counting objects: 100%）
+                            if (!progressUpdated)
+                            {
+                                var generalMatch = Regex.Match(message, @"(\d{1,3})%");
+                                if (generalMatch.Success && int.TryParse(generalMatch.Groups[1].Value, out var generalPct))
+                                {
+                                    // 对于其他阶段，使用相对保守的进度更新
+                                    if (message.Contains("Counting") || message.Contains("Compressing"))
+                                    {
+                                        CloneProgressValue = Math.Max(CloneProgressValue, Math.Min(30, generalPct * 30 / 100));
+                                        progressUpdated = true;
+                                    }
+                                }
+                            }
+
+                            // 基于关键字的阶段性进度更新（作为兜底）
+                            if (!progressUpdated)
+                            {
+                                if (message.Contains("开始克隆") || message.Contains("Cloning into"))
+                                    CloneProgressValue = Math.Max(CloneProgressValue, 5);
+                                else if (message.Contains("remote:") && message.Contains("Enumerating"))
+                                    CloneProgressValue = Math.Max(CloneProgressValue, 10);
+                                else if (message.Contains("remote:") && message.Contains("Total"))
+                                    CloneProgressValue = Math.Max(CloneProgressValue, 35);
+                                else if (message.Contains("done") && !message.Contains("Resolving"))
+                                    CloneProgressValue = Math.Max(CloneProgressValue, 95);
+                                else if (message.Contains("克隆完成") || message.Contains("克隆成功"))
+                                    CloneProgressValue = 100;
+                            }
+
+                            // 确保进度值在合理范围内
+                            CloneProgressValue = Math.Max(0, Math.Min(100, CloneProgressValue));
+                        }
+                        catch
+                        {
+                            // 忽略解析错误，保持已有进度值
+                        }
+                    }));
                 });
 
                 var result = await _gitService.CloneRepositoryAsync(RepositoryUrl, finalLocalPath, progress);
@@ -195,6 +254,9 @@ namespace ProjectManager.ViewModels.Dialogs
                     CloneProgress += "克隆成功！\n";
                     CloneLog += "克隆成功！\n";
                     CloneStatusMessage = "克隆成功！";
+
+                    // 确保进度为 100%
+                    CloneProgressValue = 100;
 
                     if (AddToProjectManager)
                     {
@@ -207,6 +269,17 @@ namespace ProjectManager.ViewModels.Dialogs
                     CloneProgress += "完成！\n";
                     CloneLog += "完成！\n";
                     CloneStatusMessage = "完成！";
+
+                    // 使用错误显示服务显示信息窗口（表示操作完成）
+                    try
+                    {
+                        await _errorDisplayService.ShowInfoAsync($"仓库已成功克隆到：{finalLocalPath}", "克隆完成");
+                    }
+                    catch
+                    {
+                        // 忽略展示错误，不影响流程
+                    }
+
                     return true;
                 }
                 else

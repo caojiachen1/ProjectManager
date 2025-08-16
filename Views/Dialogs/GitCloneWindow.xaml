@@ -164,8 +164,11 @@
                   Header="克隆日志" 
                   Margin="0,0,0,15"
                   Style="{StaticResource DarkGroupBoxStyle}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <TextBlock Text="{Binding CloneLog}" 
+            <ScrollViewer x:Name="LogScrollViewer" 
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto">
+                <TextBlock x:Name="LogTextBlock"
+                           Text="{Binding CloneLog}" 
                            FontFamily="Consolas" 
                            FontSize="11" 
                            Style="{StaticResource DarkLogTextBlockStyle}"

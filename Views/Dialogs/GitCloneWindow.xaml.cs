@@ -1,6 +1,7 @@
 using System.Windows;
 using ProjectManager.ViewModels.Dialogs;
 using Wpf.Ui.Controls;
+using System.ComponentModel;
 
 namespace ProjectManager.Views.Dialogs
 {
@@ -23,6 +24,21 @@ namespace ProjectManager.Views.Dialogs
             
             // 订阅克隆完成事件
             viewModel.CloneCompleted += OnCloneCompleted;
+            
+            // 监听日志更新，自动滚动到底部
+            viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(GitCloneDialogViewModel.CloneLog))
+            {
+                // 在下一个UI循环中滚动到底部
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LogScrollViewer.ScrollToEnd();
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
         }
 
         private void OnCloneCompleted(object? sender, bool success)
@@ -46,6 +62,7 @@ namespace ProjectManager.Views.Dialogs
             if (ViewModel != null)
             {
                 ViewModel.CloneCompleted -= OnCloneCompleted;
+                ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             }
             base.OnClosed(e);
         }
