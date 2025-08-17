@@ -20,6 +20,3 @@ dotnet restore
 dotnet build
 dotnet run
 ```
-
-License
-This project is licensed under the MIT License — see `LICENSE` for details.
