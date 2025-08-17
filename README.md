@@ -1,116 +1,25 @@
-# 通用项目管理器
+## Universal Project Manager
 
-一个功能强大的跨平台项目管理工具，支持多种开发框架和技术栈。
+Universal Project Manager is a lightweight desktop application that helps developers create, run and monitor development projects from a single, unified interface.
 
-## 主要功能
+Built with WPF, the app provides an integrated terminal, project templates, smart detection of project types, and convenient project grouping and tagging.
 
-### 项目管理
-- 创建、编辑和删除项目
-- 支持多种开发框架（Python、Node.js、React、Vue、Django、Flask等）
-- 项目分类和标签管理
-- 项目状态监控
+Core features
+- Create, edit and remove projects.
+- Integrated terminal with real-time logs and multiple sessions.
+- Automatic project-type detection and recommended start commands.
+- Project grouping, tagging and status monitoring.
+- Modern WPF UI with theme support (via WPF-UI).
 
-### 终端控制台
-- 内置终端功能
-- 支持多个项目同时运行
-- 实时日志输出
-- 项目状态同步
+Build and run (Windows)
+1. Install .NET 9 SDK: https://dotnet.microsoft.com/
+2. From the repository root (cmd.exe):
 
-### 智能检测
-- 自动检测项目类型和框架
-- 智能推荐启动命令
-- 自动配置项目参数
+```bat
+dotnet restore
+dotnet build
+dotnet run
+```
 
-### 用户界面
-- 现代化的WPF界面
-- 深色/浅色主题切换
-- 响应式布局设计
-- 多语言支持（中文）
-
-## 支持的框架
-
-### Python生态
-- **深度学习**: PyTorch, TensorFlow, Keras
-- **Web开发**: Django, Flask, FastAPI, Streamlit
-- **数据科学**: Jupyter, Pandas, NumPy
-- **自动化**: Selenium, Scrapy
-
-### JavaScript生态
-- **前端框架**: React, Vue.js, Angular
-- **后端框架**: Node.js, Express.js, Nest.js
-- **构建工具**: Webpack, Vite, Parcel
-
-### 其他技术栈
-- **移动开发**: React Native, Flutter
-- **桌面应用**: Electron, Tauri
-- **数据库**: MongoDB, PostgreSQL, MySQL
-- **API开发**: GraphQL, REST API
-
-## 系统要求
-
-- Windows 10/11 (支持.NET 9.0)
-- 4GB RAM (推荐8GB)
-- 100MB 可用磁盘空间
-
-## 快速开始
-
-1. **创建新项目**
-   - 点击"新建项目"按钮
-   - 填写项目信息
-   - 选择对应的技术框架
-   - 设置启动命令
-
-2. **Git克隆项目**
-   - 点击"Git克隆"按钮
-   - 填写Git仓库地址
-   - 选择本地存储位置
-
-3. **运行项目**
-   - 在项目列表中点击"启动"按钮
-   - 在终端页面查看运行状态
-   - 查看实时日志输出
-
-## 特色功能
-
-### 🚀 一键启动
-支持预配置的启动命令，一键启动各种类型的项目。
-
-### 📊 状态监控
-实时监控项目运行状态，包括启动时间、端口占用等信息。
-
-### 🔧 自动配置
-智能检测项目结构，自动推荐最适合的启动命令和配置。
-
-### 📱 多项目管理
-同时管理多个项目，支持批量操作和状态同步。
-
-### 🎨 现代界面
-采用WPF-UI框架，提供现代化的用户界面体验。
-
-## 更新日志
-
-### v1.0.0
-- 初始版本发布
-- 支持基本的项目管理功能
-- 内置终端控制台
-- 多框架支持
-- 中文界面
-
-## 许可证
-
-此项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-
-- 创建 GitHub Issue
-- 发送邮件至项目维护者
-
----
-
-**通用项目管理器** - 让项目管理变得简单高效！
+License
+This project is licensed under the MIT License — see `LICENSE` for details.
