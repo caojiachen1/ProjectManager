@@ -56,11 +56,14 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler? DialogCancelled;
         public Project? CreatedProject { get; private set; }
 
-        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService, IGitService gitService)
+        private readonly IErrorDisplayService _errorDisplayService;
+
+        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService, IGitService gitService, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
             _settingsWindowService = settingsWindowService;
             _gitService = gitService;
+            _errorDisplayService = errorDisplayService;
             
             // 监听属性变化
             PropertyChanged += OnPropertyChanged;
@@ -161,13 +164,13 @@ namespace ProjectManager.ViewModels.Dialogs
                 }
                 else
                 {
-                    // TODO: 显示错误消息
+                    await _errorDisplayService.ShowErrorAsync("保存项目失败，请检查文件权限或路径。", "保存失败");
                     System.Diagnostics.Debug.WriteLine("保存项目失败");
                 }
             }
             catch (Exception ex)
             {
-                // TODO: 显示错误消息
+                await _errorDisplayService.ShowErrorAsync($"创建项目失败: {ex.Message}", "创建失败");
                 System.Diagnostics.Debug.WriteLine($"创建项目失败: {ex.Message}");
             }
         }

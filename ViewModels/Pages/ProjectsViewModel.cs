@@ -314,8 +314,8 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 catch
                 {
-                    // 简化错误处理，不使用async
-                    System.Windows.MessageBox.Show("无法启动 VS Code，请确保已安装 VS Code 并添加到系统路径", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    // 改为统一错误显示服务
+                    _ = Task.Run(async () => await _errorDisplayService.ShowWarningAsync("无法启动 VS Code，请确保已安装 VS Code 并添加到系统路径", "错误"));
                 }
             }
         }

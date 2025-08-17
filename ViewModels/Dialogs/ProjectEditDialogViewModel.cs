@@ -267,13 +267,16 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 try
                 {
-                    // TODO: 显示确认对话框
-                    await _projectService.DeleteProjectAsync(_originalProject.Id);
-                    ProjectDeleted?.Invoke(this, _originalProject.Id);
+                    var confirm = await _errorDisplayService.ShowConfirmationAsync($"确定要删除项目 '{_originalProject.Name}' 吗？\n此操作不可撤销。", "确认删除");
+                    if (confirm)
+                    {
+                        await _projectService.DeleteProjectAsync(_originalProject.Id);
+                        ProjectDeleted?.Invoke(this, _originalProject.Id);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // TODO: 显示错误消息
+                    await ShowErrorMessage($"删除项目失败: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"删除项目失败: {ex.Message}");
                 }
             }

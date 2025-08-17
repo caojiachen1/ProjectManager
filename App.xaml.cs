@@ -1,6 +1,7 @@
 ﻿﻿using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -115,6 +116,10 @@ namespace ProjectManager
         private async void OnStartup(object sender, StartupEventArgs e)
         {
             await _host.StartAsync();
+
+            // 注册全局未处理异常处理
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         }
 
         /// <summary>
@@ -132,7 +137,47 @@ namespace ProjectManager
         /// </summary>
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+            try
+            {
+                var errorService = Services.GetService(typeof(IErrorDisplayService)) as IErrorDisplayService;
+                if (errorService != null)
+                {
+                    _ = errorService.ShowExceptionAsync(e.Exception, "未处理UI异常");
+                }
+            }
+            catch { /* 忽略二次异常 */ }
+            // 默认不终止，让应用决定后续行为
+            e.Handled = true;
+        }
+
+        private void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                var errorService = Services.GetService(typeof(IErrorDisplayService)) as IErrorDisplayService;
+                if (errorService != null && e.ExceptionObject is Exception ex)
+                {
+                    _ = errorService.ShowExceptionAsync(ex, "未处理系统异常");
+                }
+            }
+            catch { }
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            try
+            {
+                var errorService = Services.GetService(typeof(IErrorDisplayService)) as IErrorDisplayService;
+                if (errorService != null)
+                {
+                    _ = errorService.ShowExceptionAsync(e.Exception, "未观察任务异常");
+                }
+            }
+            catch { }
+            finally
+            {
+                e.SetObserved();
+            }
         }
     }
 }
