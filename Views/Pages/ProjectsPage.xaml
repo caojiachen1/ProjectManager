@@ -15,7 +15,9 @@
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Loaded="ProjectsPage_Loaded"
+    Unloaded="ProjectsPage_Unloaded">
 
     <Page.Resources>
         <Thickness x:Key="CustomCardPadding">14,16,14,16</Thickness>
@@ -225,57 +227,11 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 顶部工具栏 -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:TextBox 
-                    x:Name="SearchBox"
-                    PlaceholderText="搜索项目..."
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                    MinWidth="280"
-                    Margin="0,0,16,0">
-                    <ui:TextBox.Icon>
-                        <ui:SymbolIcon Symbol="Search24"/>
-                    </ui:TextBox.Icon>
-                </ui:TextBox>
-                
-                <ComboBox 
-                    SelectedItem="{Binding SelectedStatusFilter}"
-                    ItemsSource="{Binding StatusFilters}"
-                    MinWidth="70"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <ui:Button 
-                    Content="新建项目" 
-                    Icon="{ui:SymbolIcon Add24}"
-                    Appearance="Primary"
-                    Command="{Binding CreateProjectCommand}"
-                    Margin="0,0,4,0"/>
-                <ui:Button 
-                    Content="Git克隆" 
-                    Icon="{ui:SymbolIcon Branch24}"
-                    Command="{Binding CloneFromGitCommand}"
-                    Margin="4,0,4,0"/>
-                <ui:Button 
-                    Content="刷新" 
-                    Icon="{ui:SymbolIcon ArrowSync24}"
-                    Command="{Binding RefreshCommand}"
-                    Margin="4,0,0,0"/>
-            </StackPanel>
-        </Grid>
-
         <!-- 项目列表 -->
-        <ItemsControl Grid.Row="1"
+        <ItemsControl Grid.Row="0"
                       ItemsSource="{Binding FilteredProjects}"
                       ItemTemplate="{StaticResource ProjectCardTemplate}">
             <ItemsControl.ItemsPanel>
@@ -286,7 +242,7 @@
         </ItemsControl>
 
         <!-- 空状态 -->
-        <StackPanel Grid.Row="1" 
+        <StackPanel Grid.Row="0" 
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Center"
                     Visibility="{Binding HasProjects, Converter={StaticResource InverseBooleanToVisibilityConverter}}">

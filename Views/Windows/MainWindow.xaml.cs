@@ -5,10 +5,11 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using System.Windows.Controls;
 
 namespace ProjectManager.Views.Windows
 {
-    public partial class MainWindow : INavigationWindow
+    public partial class MainWindow : FluentWindow, INavigationWindow
     {
         public MainWindowViewModel ViewModel { get; }
         private readonly ISettingsService _settingsService;
@@ -99,14 +100,6 @@ namespace ProjectManager.Views.Windows
             Application.Current.Shutdown();
         }
 
-        INavigationView INavigationWindow.GetNavigation()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetServiceProvider(IServiceProvider serviceProvider)
-        {
-            throw new NotImplementedException();
-        }
+    public void SetServiceProvider(IServiceProvider serviceProvider) { }
     }
 }

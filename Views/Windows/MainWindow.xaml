@@ -53,7 +53,16 @@
             PaneDisplayMode="Left"
             TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
             <ui:NavigationView.Header>
-                <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="42,32,42,20" />
+                <!-- 通用面包屑 + 页面可选专属工具栏容器（仅项目页面使用） -->
+                <Grid Margin="42,32,42,8" x:Name="HeaderRootGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:BreadcrumbBar x:Name="BreadcrumbBar" />
+                    <!-- 项目管理专属工具栏容器（动态注入 UserControl，默认隐藏） -->
+                    <Grid x:Name="ProjectsToolbarHost" Grid.Row="1" Visibility="Collapsed" Margin="0,12,0,0" />
+                </Grid>
             </ui:NavigationView.Header>
             <ui:NavigationView.AutoSuggestBox>
                 <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="搜索">
