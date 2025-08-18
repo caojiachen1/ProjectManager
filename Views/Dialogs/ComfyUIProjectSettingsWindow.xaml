@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:helpers="clr-namespace:ProjectManager.Helpers"
     Title="ComfyUI项目设置"
     Width="700"
     Height="800"
@@ -21,6 +22,10 @@
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
+
+    <ui:FluentWindow.Resources>
+        <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+    </ui:FluentWindow.Resources>
 
     <Grid>
         <ui:TitleBar
@@ -49,21 +54,14 @@
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding StartCommand}" 
+                            <ComboBox Text="{Binding StartCommand}" 
                                       IsEditable="True"
-                                      Text="{Binding StartCommand}">
-                                <ComboBoxItem Content="python main.py"/>
-                                <ComboBoxItem Content="python main.py --listen"/>
-                                <ComboBoxItem Content="python main.py --port 8188"/>
-                                <ComboBoxItem Content="python main.py --listen --port 8188"/>
-                                <ComboBoxItem Content="python main.py --cpu"/>
-                                <ComboBoxItem Content="python main.py --directml"/>
-                            </ComboBox>
+                                      ItemsSource="{Binding StartCommandSuggestions}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="服务端口" Margin="0,0,0,4"/>
-                            <ui:NumberBox Value="{Binding Port}" 
+                            <ui:NumberBox Value="{Binding Port, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="1024" 
                                           Maximum="65535"
                                           PlaceholderText="8188"/>
@@ -85,6 +83,12 @@
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowsePythonPathCommand}"/>
                             </Grid>
+                            <TextBlock Margin="0,4,0,0"
+                                       FontSize="10"
+                                       Foreground="#FF5555"
+                                       Visibility="{Binding IsPythonPathValid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <Run Text="⚠ 请输入有效的Python可执行文件路径 (python.exe)"/>
+                            </TextBlock>
                         </StackPanel>
 
                         <CheckBox Content="启动时监听所有网络接口 (--listen)" 
