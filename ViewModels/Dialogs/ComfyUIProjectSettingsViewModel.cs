@@ -31,7 +31,33 @@ namespace ProjectManager.ViewModels.Dialogs
             // 端口变化时立即更新启动命令
             if (!_isUpdatingCommand)
             {
+                // 验证端口号：必须在1-65535范围内，建议使用1024-65535
+                if (value < 1)
+                {
+                    Port = 8188; // 恢复默认值
+                    return;
+                }
+                if (value > 65535)
+                {
+                    Port = 65535; // 限制最大端口号
+                    return;
+                }
+                if (value < 1024)
+                {
+                    // 端口号小于1024需要管理员权限，显示警告但允许设置
+                    // 可以考虑在UI中显示警告信息
+                }
                 UpdateStartCommand();
+            }
+        }
+
+        partial void OnStartCommandChanged(string value)
+        {
+            // 启动命令手动修改时，解析并更新对应的设置选项
+            if (!_isUpdatingCommand)
+            {
+                ParseStartCommand(value);
+                UpdateStartCommandSuggestions();
             }
         }
 
@@ -113,21 +139,1018 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private bool _lowVramMode = false;
 
-        partial void OnLowVramModeChanged(bool value)
-        {
-            // 低显存模式变化时立即更新启动命令
-            if (!_isUpdatingCommand)
-            {
-                UpdateStartCommand();
-            }
-        }
-
         [ObservableProperty]
         private bool _cpuMode = false;
 
         partial void OnCpuModeChanged(bool value)
         {
             // CPU模式变化时立即更新启动命令
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // CPU模式互斥其他模式
+                    GpuOnly = false;
+                    HighVram = false;
+                    NormalVram = false;
+                    LowVramMode = false;
+                    NoVram = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // === 内存管理相关变化处理 ===
+        partial void OnGpuOnlyChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // GPU-only模式互斥其他模式
+                    HighVram = false;
+                    NormalVram = false;
+                    LowVramMode = false;
+                    NoVram = false;
+                    CpuMode = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnHighVramChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // High VRAM模式互斥其他模式
+                    GpuOnly = false;
+                    NormalVram = false;
+                    LowVramMode = false;
+                    NoVram = false;
+                    CpuMode = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnNormalVramChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // Normal VRAM模式互斥其他模式
+                    GpuOnly = false;
+                    HighVram = false;
+                    LowVramMode = false;
+                    NoVram = false;
+                    CpuMode = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnLowVramModeChanged(bool value)
+        {
+            // 低显存模式变化时立即更新启动命令
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // Low VRAM模式互斥其他模式
+                    GpuOnly = false;
+                    HighVram = false;
+                    NormalVram = false;
+                    NoVram = false;
+                    CpuMode = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnNoVramChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    // No VRAM模式互斥其他模式
+                    GpuOnly = false;
+                    HighVram = false;
+                    NormalVram = false;
+                    LowVramMode = false;
+                    CpuMode = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // === 精度设置变化处理 ===
+        partial void OnForceFp32Changed(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    ForceFp16 = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnForceFp16Changed(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    ForceFp32 = false;
+                    Fp16Unet = true; // 根据cli_args.py逻辑
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // UNet精度互斥组
+        partial void OnFp32UnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp64Unet = false;
+                    Bf16Unet = false;
+                    Fp16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E5M2Unet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp64UnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Bf16Unet = false;
+                    Fp16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E5M2Unet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnBf16UnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Fp64Unet = false;
+                    Fp16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E5M2Unet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp16UnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Fp64Unet = false;
+                    Bf16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E5M2Unet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp8E4M3FnUnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Fp64Unet = false;
+                    Bf16Unet = false;
+                    Fp16Unet = false;
+                    Fp8E5M2Unet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp8E5M2UnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Fp64Unet = false;
+                    Bf16Unet = false;
+                    Fp16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E8M0FnuUnet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp8E8M0FnuUnetChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Unet = false;
+                    Fp64Unet = false;
+                    Bf16Unet = false;
+                    Fp16Unet = false;
+                    Fp8E4M3FnUnet = false;
+                    Fp8E5M2Unet = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // VAE精度互斥组
+        partial void OnFp16VaeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp32Vae = false;
+                    Bf16Vae = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp32VaeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp16Vae = false;
+                    Bf16Vae = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnBf16VaeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    Fp16Vae = false;
+                    Fp32Vae = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // 文本编码器精度变化处理
+        partial void OnFp8E4M3FnTextEncChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp8E5M2TextEncChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp16TextEncChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFp32TextEncChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnBf16TextEncChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        // 缓存设置互斥组
+        partial void OnCacheClassicChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    CacheNone = false;
+                    CacheLru = 0;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCacheNoneChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    CacheClassic = false;
+                    CacheLru = 0;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCacheLruChanged(int value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证缓存LRU大小：必须大于等于0，建议不超过1000
+                if (value < 0)
+                {
+                    CacheLru = 0; // 恢复默认值
+                    return;
+                }
+                if (value > 1000)
+                {
+                    CacheLru = 1000; // 限制最大值
+                }
+                
+                if (value > 0)
+                {
+                    CacheClassic = false;
+                    CacheNone = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // 注意力机制互斥组
+        partial void OnUseSplitCrossAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    UseQuadCrossAttention = false;
+                    UsePytorchCrossAttention = false;
+                    UseSageAttention = false;
+                    UseFlashAttention = false;
+                    DisableXformers = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUseQuadCrossAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    UseSplitCrossAttention = false;
+                    UsePytorchCrossAttention = false;
+                    UseSageAttention = false;
+                    UseFlashAttention = false;
+                    DisableXformers = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUsePytorchCrossAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    UseSplitCrossAttention = false;
+                    UseQuadCrossAttention = false;
+                    UseSageAttention = false;
+                    UseFlashAttention = false;
+                    DisableXformers = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUseSageAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    UseSplitCrossAttention = false;
+                    UseQuadCrossAttention = false;
+                    UsePytorchCrossAttention = false;
+                    UseFlashAttention = false;
+                    DisableXformers = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUseFlashAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    UseSplitCrossAttention = false;
+                    UseQuadCrossAttention = false;
+                    UsePytorchCrossAttention = false;
+                    UseSageAttention = false;
+                    DisableXformers = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableXformersChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        // Upcast注意力互斥组
+        partial void OnForceUpcastAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    DontUpcastAttention = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDontUpcastAttentionChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    ForceUpcastAttention = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // CUDA malloc互斥组
+        partial void OnCudaMallocChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    DisableCudaMalloc = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableCudaMallocChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    CudaMalloc = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        // 其他重要设置变化处理
+        partial void OnListenAddressChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnAutoLaunchChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    DisableAutoLaunch = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableAutoLaunchChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                if (value)
+                {
+                    AutoLaunch = false;
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnBaseDirectoryChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnOutputDirectoryChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnTempDirectoryChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnInputDirectoryChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUserDirectoryChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnExtraModelPathsConfigChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnTlsKeyFileChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnTlsCertFileChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnEnableCorsHeaderChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCorsOriginChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnMaxUploadSizeChanged(float value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证最大上传大小：必须大于0，建议不超过10GB (10240MB)
+                if (value < 0)
+                {
+                    MaxUploadSize = 100; // 恢复默认值
+                    return;
+                }
+                if (value > 10240)
+                {
+                    MaxUploadSize = 10240; // 限制最大值为10GB
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCudaDeviceChanged(int? value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证CUDA设备ID：如果有值，必须大于等于0，建议不超过15
+                if (value.HasValue)
+                {
+                    if (value.Value < 0)
+                    {
+                        CudaDevice = null; // 清除无效值
+                        return;
+                    }
+                    if (value.Value > 15)
+                    {
+                        CudaDevice = 15; // 限制最大设备ID为15
+                    }
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDefaultDeviceChanged(int? value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证默认设备ID：如果有值，必须大于等于0，建议不超过15
+                if (value.HasValue)
+                {
+                    if (value.Value < 0)
+                    {
+                        DefaultDevice = null; // 清除无效值
+                        return;
+                    }
+                    if (value.Value > 15)
+                    {
+                        DefaultDevice = 15; // 限制最大设备ID为15
+                    }
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDirectmlDeviceChanged(int? value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证DirectML设备ID：如果有值，可以是-1(自动检测)或0-15的设备ID
+                if (value.HasValue)
+                {
+                    if (value.Value < -1)
+                    {
+                        DirectmlDevice = null; // 清除无效值
+                        return;
+                    }
+                    if (value.Value > 15)
+                    {
+                        DirectmlDevice = 15; // 限制最大设备ID为15
+                    }
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnOneApiDeviceSelectorChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableIpexOptimizeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnSupportsFp8ComputeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnPreviewMethodChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnPreviewSizeChanged(int value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证预览尺寸：必须大于0，建议在64-2048之间
+                if (value <= 0)
+                {
+                    PreviewSize = 512; // 恢复默认值
+                    return;
+                }
+                if (value < 64)
+                {
+                    PreviewSize = 64; // 最小值64
+                }
+                else if (value > 2048)
+                {
+                    PreviewSize = 2048; // 最大值2048
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnReserveVramChanged(float? value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 验证显存预留：如果有值，必须大于等于0，建议不超过32GB (32768MB)
+                if (value.HasValue)
+                {
+                    if (value.Value < 0)
+                    {
+                        ReserveVram = null; // 清除无效值
+                        return;
+                    }
+                    if (value.Value > 32768)
+                    {
+                        ReserveVram = 32768; // 限制最大值为32GB
+                    }
+                }
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnAsyncOffloadChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnForceNonBlockingChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableSmartMemoryChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCpuVaeChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnForceChannelsLastChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDeterministicChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFastFp16AccumulationChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFastFp8MatrixMultChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFastCublasOpsChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnMmapTorchFilesChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableMmapChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDefaultHashingFunctionChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnVerboseChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnLogStdoutChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDontPrintServerChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnQuickTestForCiChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnWindowsStandaloneBuildChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnMultiUserChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableMetadataChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableAllCustomNodesChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnWhitelistCustomNodesChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDisableApiNodesChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFrontEndVersionChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnFrontEndRootChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnEnableCompressResponseBodyChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnComfyApiBaseChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnDatabaseUrlChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnExtraArgsChanged(string value)
+        {
             if (!_isUpdatingCommand)
             {
                 UpdateStartCommand();
@@ -137,8 +1160,24 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private string _modelsPath = "./models";
 
+        partial void OnModelsPathChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
         [ObservableProperty]
         private string _outputPath = "./output";
+
+        partial void OnOutputPathChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
 
         [ObservableProperty]
         private string _extraArgs = string.Empty;
@@ -146,11 +1185,302 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private string _customNodesPath = "./custom_nodes";
 
+        partial void OnCustomNodesPathChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
         [ObservableProperty]
         private bool _autoLoadWorkflow = true;
 
+        partial void OnAutoLoadWorkflowChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
         [ObservableProperty]
         private bool _enableWorkflowSnapshots = false;
+
+        partial void OnEnableWorkflowSnapshotsChanged(bool value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
+        // === 基础设置 ===
+        [ObservableProperty]
+        private string _listenAddress = "127.0.0.1";
+
+        [ObservableProperty]
+        private string _tlsKeyFile = string.Empty;
+
+        [ObservableProperty]
+        private string _tlsCertFile = string.Empty;
+
+        [ObservableProperty]
+        private bool _enableCorsHeader = false;
+
+        [ObservableProperty]
+        private string _corsOrigin = "*";
+
+        [ObservableProperty]
+        private float _maxUploadSize = 100;
+
+        // === 目录设置 ===
+        [ObservableProperty]
+        private string _baseDirectory = string.Empty;
+
+        [ObservableProperty]
+        private string _outputDirectory = string.Empty;
+
+        [ObservableProperty]
+        private string _tempDirectory = string.Empty;
+
+        [ObservableProperty]
+        private string _inputDirectory = string.Empty;
+
+        [ObservableProperty]
+        private string _userDirectory = string.Empty;
+
+        [ObservableProperty]
+        private string _extraModelPathsConfig = string.Empty;
+
+        // === 启动设置 ===
+        [ObservableProperty]
+        private bool _autoLaunch = false;
+
+        [ObservableProperty]
+        private bool _disableAutoLaunch = false;
+
+        // === GPU/CUDA设置 ===
+        [ObservableProperty]
+        private int? _cudaDevice = null;
+
+        [ObservableProperty]
+        private int? _defaultDevice = null;
+
+        [ObservableProperty]
+        private bool _cudaMalloc = false;
+
+        [ObservableProperty]
+        private bool _disableCudaMalloc = false;
+
+        [ObservableProperty]
+        private int? _directmlDevice = null;
+
+        [ObservableProperty]
+        private string _oneApiDeviceSelector = string.Empty;
+
+        [ObservableProperty]
+        private bool _disableIpexOptimize = false;
+
+        [ObservableProperty]
+        private bool _supportsFp8Compute = false;
+
+        // === 精度设置 ===
+        [ObservableProperty]
+        private bool _forceFp32 = false;
+
+        [ObservableProperty]
+        private bool _forceFp16 = false;
+
+        [ObservableProperty]
+        private bool _fp32Unet = false;
+
+        [ObservableProperty]
+        private bool _fp64Unet = false;
+
+        [ObservableProperty]
+        private bool _bf16Unet = false;
+
+        [ObservableProperty]
+        private bool _fp16Unet = false;
+
+        [ObservableProperty]
+        private bool _fp8E4M3FnUnet = false;
+
+        [ObservableProperty]
+        private bool _fp8E5M2Unet = false;
+
+        [ObservableProperty]
+        private bool _fp8E8M0FnuUnet = false;
+
+        [ObservableProperty]
+        private bool _fp16Vae = false;
+
+        [ObservableProperty]
+        private bool _fp32Vae = false;
+
+        [ObservableProperty]
+        private bool _bf16Vae = false;
+
+        [ObservableProperty]
+        private bool _cpuVae = false;
+
+        [ObservableProperty]
+        private bool _fp8E4M3FnTextEnc = false;
+
+        [ObservableProperty]
+        private bool _fp8E5M2TextEnc = false;
+
+        [ObservableProperty]
+        private bool _fp16TextEnc = false;
+
+        [ObservableProperty]
+        private bool _fp32TextEnc = false;
+
+        [ObservableProperty]
+        private bool _bf16TextEnc = false;
+
+        [ObservableProperty]
+        private bool _forceChannelsLast = false;
+
+        // === 内存管理 ===
+        [ObservableProperty]
+        private bool _gpuOnly = false;
+
+        [ObservableProperty]
+        private bool _highVram = false;
+
+        [ObservableProperty]
+        private bool _normalVram = false;
+
+        [ObservableProperty]
+        private bool _noVram = false;
+
+        [ObservableProperty]
+        private float? _reserveVram = null;
+
+        [ObservableProperty]
+        private bool _asyncOffload = false;
+
+        [ObservableProperty]
+        private bool _forceNonBlocking = false;
+
+        [ObservableProperty]
+        private bool _disableSmartMemory = false;
+
+        // === 预览设置 ===
+        [ObservableProperty]
+        private string _previewMethod = "none";
+
+        [ObservableProperty]
+        private int _previewSize = 512;
+
+        // === 缓存设置 ===
+        [ObservableProperty]
+        private bool _cacheClassic = false;
+
+        [ObservableProperty]
+        private int _cacheLru = 0;
+
+        [ObservableProperty]
+        private bool _cacheNone = false;
+
+        // === 注意力机制设置 ===
+        [ObservableProperty]
+        private bool _useSplitCrossAttention = false;
+
+        [ObservableProperty]
+        private bool _useQuadCrossAttention = false;
+
+        [ObservableProperty]
+        private bool _usePytorchCrossAttention = false;
+
+        [ObservableProperty]
+        private bool _useSageAttention = false;
+
+        [ObservableProperty]
+        private bool _useFlashAttention = false;
+
+        [ObservableProperty]
+        private bool _disableXformers = false;
+
+        [ObservableProperty]
+        private bool _forceUpcastAttention = false;
+
+        [ObservableProperty]
+        private bool _dontUpcastAttention = false;
+
+        // === 性能设置 ===
+        [ObservableProperty]
+        private bool _deterministic = false;
+
+        [ObservableProperty]
+        private bool _fastFp16Accumulation = false;
+
+        [ObservableProperty]
+        private bool _fastFp8MatrixMult = false;
+
+        [ObservableProperty]
+        private bool _fastCublasOps = false;
+
+        [ObservableProperty]
+        private bool _mmapTorchFiles = false;
+
+        [ObservableProperty]
+        private bool _disableMmap = false;
+
+        // === 哈希设置 ===
+        [ObservableProperty]
+        private string _defaultHashingFunction = "sha256";
+
+        // === 调试和日志设置 ===
+        [ObservableProperty]
+        private bool _dontPrintServer = false;
+
+        [ObservableProperty]
+        private bool _quickTestForCi = false;
+
+        [ObservableProperty]
+        private bool _windowsStandaloneBuild = false;
+
+        [ObservableProperty]
+        private string _verbose = "INFO";
+
+        [ObservableProperty]
+        private bool _logStdout = false;
+
+        // === 元数据和自定义节点 ===
+        [ObservableProperty]
+        private bool _disableMetadata = false;
+
+        [ObservableProperty]
+        private bool _disableAllCustomNodes = false;
+
+        [ObservableProperty]
+        private string _whitelistCustomNodes = string.Empty;
+
+        [ObservableProperty]
+        private bool _disableApiNodes = false;
+
+        // === 多用户设置 ===
+        [ObservableProperty]
+        private bool _multiUser = false;
+
+        // === 前端设置 ===
+        [ObservableProperty]
+        private string _frontEndVersion = "comfyanonymous/ComfyUI@latest";
+
+        [ObservableProperty]
+        private string _frontEndRoot = string.Empty;
+
+        [ObservableProperty]
+        private bool _enableCompressResponseBody = false;
+
+        [ObservableProperty]
+        private string _comfyApiBase = "https://api.comfy.org";
+
+        [ObservableProperty]
+        private string _databaseUrl = string.Empty;
 
         [ObservableProperty]
         private string _tagsString = "AI绘画,图像生成,工作流,节点编辑";
@@ -209,74 +1539,178 @@ namespace ProjectManager.ViewModels.Dialogs
                 var pythonPattern = @"^(""?[^""]*?(?:python(?:\.exe)?))""?(\s+main\.py.*)$";
                 var pythonReplacement = $"{pythonCommand}$2";
                 currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, pythonPattern, pythonReplacement, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                
-                // 更新端口设置
-                if (Port != 8188)
+
+                // === 基础网络设置 ===
+                // 更新--listen参数
+                if (ListenAllInterfaces)
                 {
-                    // 如果已经有端口参数，更新它
-                    var portPattern = @"--port\s+\d+";
-                    if (System.Text.RegularExpressions.Regex.IsMatch(currentCommand, portPattern))
+                    // 如果设置了监听所有接口，添加--listen
+                    if (!string.IsNullOrEmpty(ListenAddress) && ListenAddress != "127.0.0.1")
                     {
-                        currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, portPattern, $"--port {Port}");
+                        // 如果指定了具体地址，使用该地址
+                        UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", true, $"--listen {ListenAddress}");
                     }
                     else
                     {
-                        // 如果没有端口参数，添加它
-                        currentCommand += $" --port {Port}";
+                        // 否则使用默认的所有接口
+                        UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", true, "--listen");
                     }
                 }
                 else
                 {
-                    // 如果端口是默认值8188，移除端口参数
-                    var portPattern = @"\s*--port\s+8188\b";
-                    currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, portPattern, "");
+                    // 移除--listen参数
+                    UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", false, "");
                 }
                 
-                // 更新--listen参数
-                var listenPattern = @"\s*--listen\b";
-                if (ListenAllInterfaces)
+                // 更新端口设置
+                UpdateArgument(ref currentCommand, @"\s*--port\s+\d+", Port != 8188, $"--port {Port}");
+
+                // TLS设置
+                UpdateArgument(ref currentCommand, @"\s*--tls-keyfile\s+\S+", !string.IsNullOrEmpty(TlsKeyFile), $"--tls-keyfile \"{TlsKeyFile}\"");
+                UpdateArgument(ref currentCommand, @"\s*--tls-certfile\s+\S+", !string.IsNullOrEmpty(TlsCertFile), $"--tls-certfile \"{TlsCertFile}\"");
+                
+                // CORS设置
+                UpdateArgument(ref currentCommand, @"\s*--enable-cors-header(?:\s+\S+)?", EnableCorsHeader, 
+                    !string.IsNullOrEmpty(CorsOrigin) && CorsOrigin != "*" ? $"--enable-cors-header {CorsOrigin}" : "--enable-cors-header");
+                
+                // 上传大小设置
+                UpdateArgument(ref currentCommand, @"\s*--max-upload-size\s+[\d.]+", MaxUploadSize != 100, $"--max-upload-size {MaxUploadSize}");
+
+                // === 目录设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--base-directory\s+\S+", !string.IsNullOrEmpty(BaseDirectory), $"--base-directory \"{BaseDirectory}\"");
+                UpdateArgument(ref currentCommand, @"\s*--output-directory\s+\S+", !string.IsNullOrEmpty(OutputDirectory), $"--output-directory \"{OutputDirectory}\"");
+                UpdateArgument(ref currentCommand, @"\s*--temp-directory\s+\S+", !string.IsNullOrEmpty(TempDirectory), $"--temp-directory \"{TempDirectory}\"");
+                UpdateArgument(ref currentCommand, @"\s*--input-directory\s+\S+", !string.IsNullOrEmpty(InputDirectory), $"--input-directory \"{InputDirectory}\"");
+                UpdateArgument(ref currentCommand, @"\s*--user-directory\s+\S+", !string.IsNullOrEmpty(UserDirectory), $"--user-directory \"{UserDirectory}\"");
+                UpdateArgument(ref currentCommand, @"\s*--extra-model-paths-config\s+\S+", !string.IsNullOrEmpty(ExtraModelPathsConfig), $"--extra-model-paths-config \"{ExtraModelPathsConfig}\"");
+
+                // === 启动设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--auto-launch\b", AutoLaunch, "--auto-launch");
+                UpdateArgument(ref currentCommand, @"\s*--disable-auto-launch\b", DisableAutoLaunch, "--disable-auto-launch");
+
+                // === GPU/CUDA设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--cuda-device\s+\d+", CudaDevice.HasValue, CudaDevice.HasValue ? $"--cuda-device {CudaDevice.Value}" : "");
+                UpdateArgument(ref currentCommand, @"\s*--default-device\s+\d+", DefaultDevice.HasValue, DefaultDevice.HasValue ? $"--default-device {DefaultDevice.Value}" : "");
+                UpdateArgument(ref currentCommand, @"\s*--cuda-malloc\b", CudaMalloc, "--cuda-malloc");
+                UpdateArgument(ref currentCommand, @"\s*--disable-cuda-malloc\b", DisableCudaMalloc, "--disable-cuda-malloc");
+                UpdateArgument(ref currentCommand, @"\s*--directml(?:\s+\d+)?\b", DirectmlDevice.HasValue, 
+                    DirectmlDevice.HasValue ? (DirectmlDevice.Value == -1 ? "--directml" : $"--directml {DirectmlDevice.Value}") : "");
+                UpdateArgument(ref currentCommand, @"\s*--oneapi-device-selector\s+\S+", !string.IsNullOrEmpty(OneApiDeviceSelector), $"--oneapi-device-selector {OneApiDeviceSelector}");
+                UpdateArgument(ref currentCommand, @"\s*--disable-ipex-optimize\b", DisableIpexOptimize, "--disable-ipex-optimize");
+                UpdateArgument(ref currentCommand, @"\s*--supports-fp8-compute\b", SupportsFp8Compute, "--supports-fp8-compute");
+
+                // === 精度设置（互斥组处理） ===
+                UpdateArgument(ref currentCommand, @"\s*--force-fp32\b", ForceFp32, "--force-fp32");
+                UpdateArgument(ref currentCommand, @"\s*--force-fp16\b", ForceFp16, "--force-fp16");
+                
+                // UNet精度（互斥组）
+                UpdateArgument(ref currentCommand, @"\s*--fp32-unet\b", Fp32Unet, "--fp32-unet");
+                UpdateArgument(ref currentCommand, @"\s*--fp64-unet\b", Fp64Unet, "--fp64-unet");
+                UpdateArgument(ref currentCommand, @"\s*--bf16-unet\b", Bf16Unet, "--bf16-unet");
+                UpdateArgument(ref currentCommand, @"\s*--fp16-unet\b", Fp16Unet, "--fp16-unet");
+                UpdateArgument(ref currentCommand, @"\s*--fp8_e4m3fn-unet\b", Fp8E4M3FnUnet, "--fp8_e4m3fn-unet");
+                UpdateArgument(ref currentCommand, @"\s*--fp8_e5m2-unet\b", Fp8E5M2Unet, "--fp8_e5m2-unet");
+                UpdateArgument(ref currentCommand, @"\s*--fp8_e8m0fnu-unet\b", Fp8E8M0FnuUnet, "--fp8_e8m0fnu-unet");
+                
+                // VAE精度（互斥组）
+                UpdateArgument(ref currentCommand, @"\s*--fp16-vae\b", Fp16Vae, "--fp16-vae");
+                UpdateArgument(ref currentCommand, @"\s*--fp32-vae\b", Fp32Vae, "--fp32-vae");
+                UpdateArgument(ref currentCommand, @"\s*--bf16-vae\b", Bf16Vae, "--bf16-vae");
+                UpdateArgument(ref currentCommand, @"\s*--cpu-vae\b", CpuVae, "--cpu-vae");
+                
+                // 文本编码器精度
+                UpdateArgument(ref currentCommand, @"\s*--fp8_e4m3fn-text-enc\b", Fp8E4M3FnTextEnc, "--fp8_e4m3fn-text-enc");
+                UpdateArgument(ref currentCommand, @"\s*--fp8_e5m2-text-enc\b", Fp8E5M2TextEnc, "--fp8_e5m2-text-enc");
+                UpdateArgument(ref currentCommand, @"\s*--fp16-text-enc\b", Fp16TextEnc, "--fp16-text-enc");
+                UpdateArgument(ref currentCommand, @"\s*--fp32-text-enc\b", Fp32TextEnc, "--fp32-text-enc");
+                UpdateArgument(ref currentCommand, @"\s*--bf16-text-enc\b", Bf16TextEnc, "--bf16-text-enc");
+                
+                UpdateArgument(ref currentCommand, @"\s*--force-channels-last\b", ForceChannelsLast, "--force-channels-last");
+
+                // === 内存管理（互斥组） ===
+                UpdateArgument(ref currentCommand, @"\s*--gpu-only\b", GpuOnly, "--gpu-only");
+                UpdateArgument(ref currentCommand, @"\s*--highvram\b", HighVram, "--highvram");
+                UpdateArgument(ref currentCommand, @"\s*--normalvram\b", NormalVram, "--normalvram");
+                UpdateArgument(ref currentCommand, @"\s*--lowvram\b", LowVramMode, "--lowvram");
+                UpdateArgument(ref currentCommand, @"\s*--novram\b", NoVram, "--novram");
+                UpdateArgument(ref currentCommand, @"\s*--cpu\b", CpuMode, "--cpu");
+                UpdateArgument(ref currentCommand, @"\s*--reserve-vram\s+[\d.]+", ReserveVram.HasValue, ReserveVram.HasValue ? $"--reserve-vram {ReserveVram.Value}" : "");
+                UpdateArgument(ref currentCommand, @"\s*--async-offload\b", AsyncOffload, "--async-offload");
+                UpdateArgument(ref currentCommand, @"\s*--force-non-blocking\b", ForceNonBlocking, "--force-non-blocking");
+                UpdateArgument(ref currentCommand, @"\s*--disable-smart-memory\b", DisableSmartMemory, "--disable-smart-memory");
+
+                // === 预览设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--preview-method\s+\w+", PreviewMethod != "none", $"--preview-method {PreviewMethod}");
+                UpdateArgument(ref currentCommand, @"\s*--preview-size\s+\d+", PreviewSize != 512, $"--preview-size {PreviewSize}");
+
+                // === 缓存设置（互斥组） ===
+                UpdateArgument(ref currentCommand, @"\s*--cache-classic\b", CacheClassic, "--cache-classic");
+                UpdateArgument(ref currentCommand, @"\s*--cache-lru\s+\d+", CacheLru > 0, $"--cache-lru {CacheLru}");
+                UpdateArgument(ref currentCommand, @"\s*--cache-none\b", CacheNone, "--cache-none");
+
+                // === 注意力机制（互斥组） ===
+                UpdateArgument(ref currentCommand, @"\s*--use-split-cross-attention\b", UseSplitCrossAttention, "--use-split-cross-attention");
+                UpdateArgument(ref currentCommand, @"\s*--use-quad-cross-attention\b", UseQuadCrossAttention, "--use-quad-cross-attention");
+                UpdateArgument(ref currentCommand, @"\s*--use-pytorch-cross-attention\b", UsePytorchCrossAttention, "--use-pytorch-cross-attention");
+                UpdateArgument(ref currentCommand, @"\s*--use-sage-attention\b", UseSageAttention, "--use-sage-attention");
+                UpdateArgument(ref currentCommand, @"\s*--use-flash-attention\b", UseFlashAttention, "--use-flash-attention");
+                UpdateArgument(ref currentCommand, @"\s*--disable-xformers\b", DisableXformers, "--disable-xformers");
+                UpdateArgument(ref currentCommand, @"\s*--force-upcast-attention\b", ForceUpcastAttention, "--force-upcast-attention");
+                UpdateArgument(ref currentCommand, @"\s*--dont-upcast-attention\b", DontUpcastAttention, "--dont-upcast-attention");
+
+                // === 性能设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--deterministic\b", Deterministic, "--deterministic");
+                
+                // Fast模式设置
+                var fastArgs = new List<string>();
+                if (FastFp16Accumulation) fastArgs.Add("fp16_accumulation");
+                if (FastFp8MatrixMult) fastArgs.Add("fp8_matrix_mult");
+                if (FastCublasOps) fastArgs.Add("cublas_ops");
+                
+                if (fastArgs.Any())
                 {
-                    if (!System.Text.RegularExpressions.Regex.IsMatch(currentCommand, listenPattern))
-                    {
-                        currentCommand += " --listen";
-                    }
+                    UpdateArgument(ref currentCommand, @"\s*--fast(?:\s+\S+)*", true, $"--fast {string.Join(" ", fastArgs)}");
                 }
                 else
                 {
-                    currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, listenPattern, "");
+                    UpdateArgument(ref currentCommand, @"\s*--fast(?:\s+\S+)*", false, "");
                 }
                 
-                // 更新CPU模式参数
-                var cpuPattern = @"\s*--cpu\b";
-                if (CpuMode)
+                UpdateArgument(ref currentCommand, @"\s*--mmap-torch-files\b", MmapTorchFiles, "--mmap-torch-files");
+                UpdateArgument(ref currentCommand, @"\s*--disable-mmap\b", DisableMmap, "--disable-mmap");
+
+                // === 哈希设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--default-hashing-function\s+\w+", DefaultHashingFunction != "sha256", $"--default-hashing-function {DefaultHashingFunction}");
+
+                // === 调试和日志设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--dont-print-server\b", DontPrintServer, "--dont-print-server");
+                UpdateArgument(ref currentCommand, @"\s*--quick-test-for-ci\b", QuickTestForCi, "--quick-test-for-ci");
+                UpdateArgument(ref currentCommand, @"\s*--windows-standalone-build\b", WindowsStandaloneBuild, "--windows-standalone-build");
+                UpdateArgument(ref currentCommand, @"\s*--verbose\s+\w+", Verbose != "INFO", $"--verbose {Verbose}");
+                UpdateArgument(ref currentCommand, @"\s*--log-stdout\b", LogStdout, "--log-stdout");
+
+                // === 元数据和自定义节点 ===
+                UpdateArgument(ref currentCommand, @"\s*--disable-metadata\b", DisableMetadata, "--disable-metadata");
+                UpdateArgument(ref currentCommand, @"\s*--disable-all-custom-nodes\b", DisableAllCustomNodes, "--disable-all-custom-nodes");
+                UpdateArgument(ref currentCommand, @"\s*--whitelist-custom-nodes\s+\S+", !string.IsNullOrEmpty(WhitelistCustomNodes), $"--whitelist-custom-nodes {WhitelistCustomNodes}");
+                UpdateArgument(ref currentCommand, @"\s*--disable-api-nodes\b", DisableApiNodes, "--disable-api-nodes");
+
+                // === 多用户设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--multi-user\b", MultiUser, "--multi-user");
+
+                // === 前端设置 ===
+                UpdateArgument(ref currentCommand, @"\s*--front-end-version\s+\S+", FrontEndVersion != "comfyanonymous/ComfyUI@latest", $"--front-end-version {FrontEndVersion}");
+                UpdateArgument(ref currentCommand, @"\s*--front-end-root\s+\S+", !string.IsNullOrEmpty(FrontEndRoot), $"--front-end-root \"{FrontEndRoot}\"");
+                UpdateArgument(ref currentCommand, @"\s*--enable-compress-response-body\b", EnableCompressResponseBody, "--enable-compress-response-body");
+                UpdateArgument(ref currentCommand, @"\s*--comfy-api-base\s+\S+", ComfyApiBase != "https://api.comfy.org", $"--comfy-api-base {ComfyApiBase}");
+                UpdateArgument(ref currentCommand, @"\s*--database-url\s+\S+", !string.IsNullOrEmpty(DatabaseUrl), $"--database-url \"{DatabaseUrl}\"");
+
+                // 添加额外参数（如果有）
+                if (!string.IsNullOrEmpty(ExtraArgs))
                 {
-                    if (!System.Text.RegularExpressions.Regex.IsMatch(currentCommand, cpuPattern))
-                    {
-                        currentCommand += " --cpu";
-                    }
-                    // 如果启用CPU模式，移除低显存模式
-                    var lowvramPattern = @"\s*--lowvram\b";
-                    currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, lowvramPattern, "");
+                    currentCommand += $" {ExtraArgs}";
                 }
-                else
-                {
-                    currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, cpuPattern, "");
-                }
-                
-                // 更新低显存模式参数
-                var lowvramPattern2 = @"\s*--lowvram\b";
-                if (LowVramMode && !CpuMode)
-                {
-                    if (!System.Text.RegularExpressions.Regex.IsMatch(currentCommand, lowvramPattern2))
-                    {
-                        currentCommand += " --lowvram";
-                    }
-                }
-                else if (!CpuMode)  // 只有在不是CPU模式时才移除
-                {
-                    currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, lowvramPattern2, "");
-                }
-                
+
                 // 清理多余的空格
                 currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, @"\s+", " ").Trim();
                 
@@ -289,6 +1723,25 @@ namespace ProjectManager.ViewModels.Dialogs
             
             // 在命令更新完成后更新建议
             UpdateStartCommandSuggestions();
+        }
+
+        private void UpdateArgument(ref string command, string pattern, bool condition, string argument)
+        {
+            if (condition)
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(command, pattern))
+                {
+                    command += $" {argument}";
+                }
+                else
+                {
+                    command = System.Text.RegularExpressions.Regex.Replace(command, pattern, $" {argument}");
+                }
+            }
+            else
+            {
+                command = System.Text.RegularExpressions.Regex.Replace(command, pattern, "");
+            }
         }
 
         public void LoadProject(Project project)
@@ -309,17 +1762,134 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 如果存在持久化的 ComfyUISettings，用其覆盖解析结果
                 if (project.ComfyUISettings != null)
                 {
-                    ListenAllInterfaces = project.ComfyUISettings.ListenAllInterfaces;
-                    LowVramMode = project.ComfyUISettings.LowVramMode;
-                    CpuMode = project.ComfyUISettings.CpuMode;
-                    Port = project.ComfyUISettings.Port;
-                    PythonPath = project.ComfyUISettings.PythonPath;
-                    ModelsPath = project.ComfyUISettings.ModelsPath;
-                    OutputPath = project.ComfyUISettings.OutputPath;
-                    ExtraArgs = project.ComfyUISettings.ExtraArgs;
-                    CustomNodesPath = project.ComfyUISettings.CustomNodesPath;
-                    AutoLoadWorkflow = project.ComfyUISettings.AutoLoadWorkflow;
-                    EnableWorkflowSnapshots = project.ComfyUISettings.EnableWorkflowSnapshots;
+                    var settings = project.ComfyUISettings;
+                    
+                    // 基础设置
+                    ListenAddress = settings.ListenAddress;
+                    ListenAllInterfaces = settings.ListenAllInterfaces;
+                    Port = settings.Port;
+                    TlsKeyFile = settings.TlsKeyFile;
+                    TlsCertFile = settings.TlsCertFile;
+                    EnableCorsHeader = settings.EnableCorsHeader;
+                    CorsOrigin = settings.CorsOrigin;
+                    MaxUploadSize = settings.MaxUploadSize;
+
+                    // 目录设置
+                    BaseDirectory = settings.BaseDirectory;
+                    OutputDirectory = settings.OutputDirectory;
+                    TempDirectory = settings.TempDirectory;
+                    InputDirectory = settings.InputDirectory;
+                    UserDirectory = settings.UserDirectory;
+                    ExtraModelPathsConfig = settings.ExtraModelPathsConfig;
+
+                    // 启动设置
+                    AutoLaunch = settings.AutoLaunch;
+                    DisableAutoLaunch = settings.DisableAutoLaunch;
+
+                    // GPU/CUDA设置
+                    CudaDevice = settings.CudaDevice;
+                    DefaultDevice = settings.DefaultDevice;
+                    CudaMalloc = settings.CudaMalloc;
+                    DisableCudaMalloc = settings.DisableCudaMalloc;
+                    DirectmlDevice = settings.DirectmlDevice;
+                    OneApiDeviceSelector = settings.OneApiDeviceSelector;
+                    DisableIpexOptimize = settings.DisableIpexOptimize;
+                    SupportsFp8Compute = settings.SupportsFp8Compute;
+
+                    // 精度设置
+                    ForceFp32 = settings.ForceFp32;
+                    ForceFp16 = settings.ForceFp16;
+                    Fp32Unet = settings.Fp32Unet;
+                    Fp64Unet = settings.Fp64Unet;
+                    Bf16Unet = settings.Bf16Unet;
+                    Fp16Unet = settings.Fp16Unet;
+                    Fp8E4M3FnUnet = settings.Fp8E4M3FnUnet;
+                    Fp8E5M2Unet = settings.Fp8E5M2Unet;
+                    Fp8E8M0FnuUnet = settings.Fp8E8M0FnuUnet;
+                    Fp16Vae = settings.Fp16Vae;
+                    Fp32Vae = settings.Fp32Vae;
+                    Bf16Vae = settings.Bf16Vae;
+                    CpuVae = settings.CpuVae;
+                    Fp8E4M3FnTextEnc = settings.Fp8E4M3FnTextEnc;
+                    Fp8E5M2TextEnc = settings.Fp8E5M2TextEnc;
+                    Fp16TextEnc = settings.Fp16TextEnc;
+                    Fp32TextEnc = settings.Fp32TextEnc;
+                    Bf16TextEnc = settings.Bf16TextEnc;
+                    ForceChannelsLast = settings.ForceChannelsLast;
+
+                    // 内存管理
+                    GpuOnly = settings.GpuOnly;
+                    HighVram = settings.HighVram;
+                    NormalVram = settings.NormalVram;
+                    LowVramMode = settings.LowVramMode;
+                    NoVram = settings.NoVram;
+                    CpuMode = settings.CpuMode;
+                    ReserveVram = settings.ReserveVram;
+                    AsyncOffload = settings.AsyncOffload;
+                    ForceNonBlocking = settings.ForceNonBlocking;
+                    DisableSmartMemory = settings.DisableSmartMemory;
+
+                    // 预览设置
+                    PreviewMethod = settings.PreviewMethod;
+                    PreviewSize = settings.PreviewSize;
+
+                    // 缓存设置
+                    CacheClassic = settings.CacheClassic;
+                    CacheLru = settings.CacheLru;
+                    CacheNone = settings.CacheNone;
+
+                    // 注意力机制设置
+                    UseSplitCrossAttention = settings.UseSplitCrossAttention;
+                    UseQuadCrossAttention = settings.UseQuadCrossAttention;
+                    UsePytorchCrossAttention = settings.UsePytorchCrossAttention;
+                    UseSageAttention = settings.UseSageAttention;
+                    UseFlashAttention = settings.UseFlashAttention;
+                    DisableXformers = settings.DisableXformers;
+                    ForceUpcastAttention = settings.ForceUpcastAttention;
+                    DontUpcastAttention = settings.DontUpcastAttention;
+
+                    // 性能设置
+                    Deterministic = settings.Deterministic;
+                    FastFp16Accumulation = settings.FastFp16Accumulation;
+                    FastFp8MatrixMult = settings.FastFp8MatrixMult;
+                    FastCublasOps = settings.FastCublasOps;
+                    MmapTorchFiles = settings.MmapTorchFiles;
+                    DisableMmap = settings.DisableMmap;
+
+                    // 哈希设置
+                    DefaultHashingFunction = settings.DefaultHashingFunction;
+
+                    // 调试和日志设置
+                    DontPrintServer = settings.DontPrintServer;
+                    QuickTestForCi = settings.QuickTestForCi;
+                    WindowsStandaloneBuild = settings.WindowsStandaloneBuild;
+                    Verbose = settings.Verbose;
+                    LogStdout = settings.LogStdout;
+
+                    // 元数据和自定义节点
+                    DisableMetadata = settings.DisableMetadata;
+                    DisableAllCustomNodes = settings.DisableAllCustomNodes;
+                    WhitelistCustomNodes = settings.WhitelistCustomNodes;
+                    DisableApiNodes = settings.DisableApiNodes;
+
+                    // 多用户设置
+                    MultiUser = settings.MultiUser;
+
+                    // 前端设置
+                    FrontEndVersion = settings.FrontEndVersion;
+                    FrontEndRoot = settings.FrontEndRoot;
+                    EnableCompressResponseBody = settings.EnableCompressResponseBody;
+                    ComfyApiBase = settings.ComfyApiBase;
+                    DatabaseUrl = settings.DatabaseUrl;
+
+                    // 路径设置（保留原有设置）
+                    PythonPath = settings.PythonPath;
+                    ModelsPath = settings.ModelsPath;
+                    OutputPath = settings.OutputPath;
+                    ExtraArgs = settings.ExtraArgs;
+                    CustomNodesPath = settings.CustomNodesPath;
+                    AutoLoadWorkflow = settings.AutoLoadWorkflow;
+                    EnableWorkflowSnapshots = settings.EnableWorkflowSnapshots;
                 }
                 
                 // 更新启动命令建议
@@ -333,48 +1903,394 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private void ParseStartCommand(string command)
         {
-            // 解析--listen参数
-            ListenAllInterfaces = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--listen\b");
-            
-            // 解析--cpu参数
-            CpuMode = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cpu\b");
-            
-            // 解析--lowvram参数
-            LowVramMode = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--lowvram\b");
-            
-            // 解析端口
-            var portMatch = System.Text.RegularExpressions.Regex.Match(command, @"--port\s+(\d+)");
-            if (portMatch.Success && int.TryParse(portMatch.Groups[1].Value, out int port))
+            // 设置解析标志，防止递归更新
+            _isUpdatingCommand = true;
+            try
             {
-                Port = port;
-            }
-            else
-            {
-                Port = 8188; // 默认端口
-            }
-            
-            // 解析Python路径
-            var pythonMatch = System.Text.RegularExpressions.Regex.Match(command, @"^""?([^""]+?)""?\s+main\.py", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (pythonMatch.Success)
-            {
-                var extractedPath = pythonMatch.Groups[1].Value.Trim('"');
-                // 如果路径不是简单的"python"，则认为是指定的Python路径
-                if (!extractedPath.Equals("python", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(command))
                 {
-                    PythonPath = extractedPath;
+                    ResetToDefaults();
+                    return;
+                }
+
+                // 解析Python路径
+                var pythonMatch = System.Text.RegularExpressions.Regex.Match(command, @"^""?([^""]+?)""?\s+main\.py", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (pythonMatch.Success)
+                {
+                    var extractedPath = pythonMatch.Groups[1].Value.Trim('"');
+                    if (!extractedPath.Equals("python", StringComparison.OrdinalIgnoreCase))
+                    {
+                        PythonPath = extractedPath;
+                    }
+                    else
+                    {
+                        PythonPath = string.Empty;
+                    }
+                }
+
+                // === 基础网络设置 ===
+                ListenAllInterfaces = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--listen\b");
+                
+                var listenMatch = System.Text.RegularExpressions.Regex.Match(command, @"--listen\s+([^\s]+)");
+                if (listenMatch.Success)
+                {
+                    ListenAddress = listenMatch.Groups[1].Value;
+                }
+                else if (ListenAllInterfaces)
+                {
+                    ListenAddress = "127.0.0.1"; // 默认值
+                }
+
+                var portMatch = System.Text.RegularExpressions.Regex.Match(command, @"--port\s+(\d+)");
+                Port = portMatch.Success && int.TryParse(portMatch.Groups[1].Value, out int port) ? port : 8188;
+
+                // TLS设置
+                var tlsKeyMatch = System.Text.RegularExpressions.Regex.Match(command, @"--tls-keyfile\s+""?([^""\s]+)""?");
+                TlsKeyFile = tlsKeyMatch.Success ? tlsKeyMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var tlsCertMatch = System.Text.RegularExpressions.Regex.Match(command, @"--tls-certfile\s+""?([^""\s]+)""?");
+                TlsCertFile = tlsCertMatch.Success ? tlsCertMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                EnableCorsHeader = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--enable-cors-header\b");
+                var corsMatch = System.Text.RegularExpressions.Regex.Match(command, @"--enable-cors-header\s+([^\s]+)");
+                CorsOrigin = corsMatch.Success ? corsMatch.Groups[1].Value : "*";
+
+                var maxUploadMatch = System.Text.RegularExpressions.Regex.Match(command, @"--max-upload-size\s+([\d.]+)");
+                MaxUploadSize = maxUploadMatch.Success && float.TryParse(maxUploadMatch.Groups[1].Value, out float maxUpload) ? maxUpload : 100;
+
+                // === 目录设置 ===
+                var baseDirMatch = System.Text.RegularExpressions.Regex.Match(command, @"--base-directory\s+""?([^""\s]+)""?");
+                BaseDirectory = baseDirMatch.Success ? baseDirMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var outputDirMatch = System.Text.RegularExpressions.Regex.Match(command, @"--output-directory\s+""?([^""\s]+)""?");
+                OutputDirectory = outputDirMatch.Success ? outputDirMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var tempDirMatch = System.Text.RegularExpressions.Regex.Match(command, @"--temp-directory\s+""?([^""\s]+)""?");
+                TempDirectory = tempDirMatch.Success ? tempDirMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var inputDirMatch = System.Text.RegularExpressions.Regex.Match(command, @"--input-directory\s+""?([^""\s]+)""?");
+                InputDirectory = inputDirMatch.Success ? inputDirMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var userDirMatch = System.Text.RegularExpressions.Regex.Match(command, @"--user-directory\s+""?([^""\s]+)""?");
+                UserDirectory = userDirMatch.Success ? userDirMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                var extraModelMatch = System.Text.RegularExpressions.Regex.Match(command, @"--extra-model-paths-config\s+""?([^""\s]+)""?");
+                ExtraModelPathsConfig = extraModelMatch.Success ? extraModelMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                // === 启动设置 ===
+                AutoLaunch = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--auto-launch\b");
+                DisableAutoLaunch = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-auto-launch\b");
+
+                // === GPU/CUDA设置 ===
+                var cudaDeviceMatch = System.Text.RegularExpressions.Regex.Match(command, @"--cuda-device\s+(\d+)");
+                CudaDevice = cudaDeviceMatch.Success && int.TryParse(cudaDeviceMatch.Groups[1].Value, out int cudaDev) ? cudaDev : null;
+
+                var defaultDeviceMatch = System.Text.RegularExpressions.Regex.Match(command, @"--default-device\s+(\d+)");
+                DefaultDevice = defaultDeviceMatch.Success && int.TryParse(defaultDeviceMatch.Groups[1].Value, out int defDev) ? defDev : null;
+
+                CudaMalloc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cuda-malloc\b");
+                DisableCudaMalloc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-cuda-malloc\b");
+
+                var directmlMatch = System.Text.RegularExpressions.Regex.Match(command, @"--directml(?:\s+(\d+))?\b");
+                if (directmlMatch.Success)
+                {
+                    DirectmlDevice = directmlMatch.Groups[1].Success && int.TryParse(directmlMatch.Groups[1].Value, out int dmlDev) ? dmlDev : -1;
                 }
                 else
                 {
-                    PythonPath = string.Empty;
+                    DirectmlDevice = null;
                 }
+
+                var oneApiMatch = System.Text.RegularExpressions.Regex.Match(command, @"--oneapi-device-selector\s+([^\s]+)");
+                OneApiDeviceSelector = oneApiMatch.Success ? oneApiMatch.Groups[1].Value : string.Empty;
+
+                DisableIpexOptimize = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-ipex-optimize\b");
+                SupportsFp8Compute = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--supports-fp8-compute\b");
+
+                // === 精度设置 ===
+                ForceFp32 = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--force-fp32\b");
+                ForceFp16 = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--force-fp16\b");
+
+                // UNet精度
+                Fp32Unet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp32-unet\b");
+                Fp64Unet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp64-unet\b");
+                Bf16Unet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--bf16-unet\b");
+                Fp16Unet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp16-unet\b");
+                Fp8E4M3FnUnet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp8_e4m3fn-unet\b");
+                Fp8E5M2Unet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp8_e5m2-unet\b");
+                Fp8E8M0FnuUnet = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp8_e8m0fnu-unet\b");
+
+                // VAE精度
+                Fp16Vae = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp16-vae\b");
+                Fp32Vae = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp32-vae\b");
+                Bf16Vae = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--bf16-vae\b");
+                CpuVae = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cpu-vae\b");
+
+                // 文本编码器精度
+                Fp8E4M3FnTextEnc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp8_e4m3fn-text-enc\b");
+                Fp8E5M2TextEnc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp8_e5m2-text-enc\b");
+                Fp16TextEnc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp16-text-enc\b");
+                Fp32TextEnc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--fp32-text-enc\b");
+                Bf16TextEnc = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--bf16-text-enc\b");
+
+                ForceChannelsLast = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--force-channels-last\b");
+
+                // === 内存管理 ===
+                GpuOnly = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--gpu-only\b");
+                HighVram = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--highvram\b");
+                NormalVram = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--normalvram\b");
+                LowVramMode = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--lowvram\b");
+                NoVram = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--novram\b");
+                CpuMode = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cpu\b");
+
+                var reserveVramMatch = System.Text.RegularExpressions.Regex.Match(command, @"--reserve-vram\s+([\d.]+)");
+                ReserveVram = reserveVramMatch.Success && float.TryParse(reserveVramMatch.Groups[1].Value, out float reserveVram) ? reserveVram : null;
+
+                AsyncOffload = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--async-offload\b");
+                ForceNonBlocking = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--force-non-blocking\b");
+                DisableSmartMemory = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-smart-memory\b");
+
+                // === 预览设置 ===
+                var previewMethodMatch = System.Text.RegularExpressions.Regex.Match(command, @"--preview-method\s+(\w+)");
+                PreviewMethod = previewMethodMatch.Success ? previewMethodMatch.Groups[1].Value : "none";
+
+                var previewSizeMatch = System.Text.RegularExpressions.Regex.Match(command, @"--preview-size\s+(\d+)");
+                PreviewSize = previewSizeMatch.Success && int.TryParse(previewSizeMatch.Groups[1].Value, out int previewSize) ? previewSize : 512;
+
+                // === 缓存设置 ===
+                CacheClassic = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cache-classic\b");
+                CacheNone = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--cache-none\b");
+
+                var cacheLruMatch = System.Text.RegularExpressions.Regex.Match(command, @"--cache-lru\s+(\d+)");
+                CacheLru = cacheLruMatch.Success && int.TryParse(cacheLruMatch.Groups[1].Value, out int cacheLru) ? cacheLru : 0;
+
+                // === 注意力机制 ===
+                UseSplitCrossAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--use-split-cross-attention\b");
+                UseQuadCrossAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--use-quad-cross-attention\b");
+                UsePytorchCrossAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--use-pytorch-cross-attention\b");
+                UseSageAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--use-sage-attention\b");
+                UseFlashAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--use-flash-attention\b");
+                DisableXformers = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-xformers\b");
+                ForceUpcastAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--force-upcast-attention\b");
+                DontUpcastAttention = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--dont-upcast-attention\b");
+
+                // === 性能设置 ===
+                Deterministic = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--deterministic\b");
+
+                // Fast模式解析
+                var fastMatch = System.Text.RegularExpressions.Regex.Match(command, @"--fast\s+(.+?)(?:\s+--|\s*$)");
+                if (fastMatch.Success)
+                {
+                    var fastArgs = fastMatch.Groups[1].Value;
+                    FastFp16Accumulation = fastArgs.Contains("fp16_accumulation");
+                    FastFp8MatrixMult = fastArgs.Contains("fp8_matrix_mult");
+                    FastCublasOps = fastArgs.Contains("cublas_ops");
+                }
+                else
+                {
+                    FastFp16Accumulation = false;
+                    FastFp8MatrixMult = false;
+                    FastCublasOps = false;
+                }
+
+                MmapTorchFiles = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--mmap-torch-files\b");
+                DisableMmap = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-mmap\b");
+
+                // === 哈希设置 ===
+                var hashFunctionMatch = System.Text.RegularExpressions.Regex.Match(command, @"--default-hashing-function\s+(\w+)");
+                DefaultHashingFunction = hashFunctionMatch.Success ? hashFunctionMatch.Groups[1].Value : "sha256";
+
+                // === 调试和日志设置 ===
+                DontPrintServer = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--dont-print-server\b");
+                QuickTestForCi = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--quick-test-for-ci\b");
+                WindowsStandaloneBuild = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--windows-standalone-build\b");
+
+                var verboseMatch = System.Text.RegularExpressions.Regex.Match(command, @"--verbose\s+(\w+)");
+                Verbose = verboseMatch.Success ? verboseMatch.Groups[1].Value : "INFO";
+
+                LogStdout = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--log-stdout\b");
+
+                // === 元数据和自定义节点 ===
+                DisableMetadata = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-metadata\b");
+                DisableAllCustomNodes = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-all-custom-nodes\b");
+
+                var whitelistMatch = System.Text.RegularExpressions.Regex.Match(command, @"--whitelist-custom-nodes\s+([^\s]+)");
+                WhitelistCustomNodes = whitelistMatch.Success ? whitelistMatch.Groups[1].Value : string.Empty;
+
+                DisableApiNodes = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--disable-api-nodes\b");
+
+                // === 多用户设置 ===
+                MultiUser = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--multi-user\b");
+
+                // === 前端设置 ===
+                var frontEndVersionMatch = System.Text.RegularExpressions.Regex.Match(command, @"--front-end-version\s+([^\s]+)");
+                FrontEndVersion = frontEndVersionMatch.Success ? frontEndVersionMatch.Groups[1].Value : "comfyanonymous/ComfyUI@latest";
+
+                var frontEndRootMatch = System.Text.RegularExpressions.Regex.Match(command, @"--front-end-root\s+""?([^""\s]+)""?");
+                FrontEndRoot = frontEndRootMatch.Success ? frontEndRootMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                EnableCompressResponseBody = System.Text.RegularExpressions.Regex.IsMatch(command, @"\b--enable-compress-response-body\b");
+
+                var comfyApiMatch = System.Text.RegularExpressions.Regex.Match(command, @"--comfy-api-base\s+([^\s]+)");
+                ComfyApiBase = comfyApiMatch.Success ? comfyApiMatch.Groups[1].Value : "https://api.comfy.org";
+
+                var databaseUrlMatch = System.Text.RegularExpressions.Regex.Match(command, @"--database-url\s+""?([^""\s]+)""?");
+                DatabaseUrl = databaseUrlMatch.Success ? databaseUrlMatch.Groups[1].Value.Trim('"') : string.Empty;
+
+                // 解析剩余的参数作为ExtraArgs
+                ParseExtraArgs(command);
+
+                // 更新Python路径有效性状态
+                IsPythonPathValid = IsValidPythonPath(PythonPath);
             }
-            else
+            finally
             {
-                PythonPath = string.Empty;
+                _isUpdatingCommand = false;
+            }
+        }
+
+        private void ResetToDefaults()
+        {
+            // 重置所有设置到默认值
+            ListenAllInterfaces = false;
+            ListenAddress = "127.0.0.1";
+            Port = 8188;
+            TlsKeyFile = string.Empty;
+            TlsCertFile = string.Empty;
+            EnableCorsHeader = false;
+            CorsOrigin = "*";
+            MaxUploadSize = 100;
+            BaseDirectory = string.Empty;
+            OutputDirectory = string.Empty;
+            TempDirectory = string.Empty;
+            InputDirectory = string.Empty;
+            UserDirectory = string.Empty;
+            ExtraModelPathsConfig = string.Empty;
+            AutoLaunch = false;
+            DisableAutoLaunch = false;
+            CudaDevice = null;
+            DefaultDevice = null;
+            CudaMalloc = false;
+            DisableCudaMalloc = false;
+            DirectmlDevice = null;
+            OneApiDeviceSelector = string.Empty;
+            DisableIpexOptimize = false;
+            SupportsFp8Compute = false;
+            ForceFp32 = false;
+            ForceFp16 = false;
+            Fp32Unet = false;
+            Fp64Unet = false;
+            Bf16Unet = false;
+            Fp16Unet = false;
+            Fp8E4M3FnUnet = false;
+            Fp8E5M2Unet = false;
+            Fp8E8M0FnuUnet = false;
+            Fp16Vae = false;
+            Fp32Vae = false;
+            Bf16Vae = false;
+            CpuVae = false;
+            Fp8E4M3FnTextEnc = false;
+            Fp8E5M2TextEnc = false;
+            Fp16TextEnc = false;
+            Fp32TextEnc = false;
+            Bf16TextEnc = false;
+            ForceChannelsLast = false;
+            GpuOnly = false;
+            HighVram = false;
+            NormalVram = false;
+            LowVramMode = false;
+            NoVram = false;
+            CpuMode = false;
+            ReserveVram = null;
+            AsyncOffload = false;
+            ForceNonBlocking = false;
+            DisableSmartMemory = false;
+            PreviewMethod = "none";
+            PreviewSize = 512;
+            CacheClassic = false;
+            CacheLru = 0;
+            CacheNone = false;
+            UseSplitCrossAttention = false;
+            UseQuadCrossAttention = false;
+            UsePytorchCrossAttention = false;
+            UseSageAttention = false;
+            UseFlashAttention = false;
+            DisableXformers = false;
+            ForceUpcastAttention = false;
+            DontUpcastAttention = false;
+            Deterministic = false;
+            FastFp16Accumulation = false;
+            FastFp8MatrixMult = false;
+            FastCublasOps = false;
+            MmapTorchFiles = false;
+            DisableMmap = false;
+            DefaultHashingFunction = "sha256";
+            DontPrintServer = false;
+            QuickTestForCi = false;
+            WindowsStandaloneBuild = false;
+            Verbose = "INFO";
+            LogStdout = false;
+            DisableMetadata = false;
+            DisableAllCustomNodes = false;
+            WhitelistCustomNodes = string.Empty;
+            DisableApiNodes = false;
+            MultiUser = false;
+            FrontEndVersion = "comfyanonymous/ComfyUI@latest";
+            FrontEndRoot = string.Empty;
+            EnableCompressResponseBody = false;
+            ComfyApiBase = "https://api.comfy.org";
+            DatabaseUrl = string.Empty;
+            ExtraArgs = string.Empty;
+        }
+
+        private void ParseExtraArgs(string command)
+        {
+            // 提取所有已知的CLI参数，剩余的作为ExtraArgs
+            var knownArgs = new[]
+            {
+                @"--listen(?:\s+[^\s]+)?", @"--port\s+\d+", @"--tls-keyfile\s+\S+", @"--tls-certfile\s+\S+",
+                @"--enable-cors-header(?:\s+\S+)?", @"--max-upload-size\s+[\d.]+",
+                @"--base-directory\s+\S+", @"--output-directory\s+\S+", @"--temp-directory\s+\S+",
+                @"--input-directory\s+\S+", @"--user-directory\s+\S+", @"--extra-model-paths-config\s+\S+",
+                @"--auto-launch", @"--disable-auto-launch",
+                @"--cuda-device\s+\d+", @"--default-device\s+\d+", @"--cuda-malloc", @"--disable-cuda-malloc",
+                @"--directml(?:\s+\d+)?", @"--oneapi-device-selector\s+\S+", @"--disable-ipex-optimize", @"--supports-fp8-compute",
+                @"--force-fp32", @"--force-fp16",
+                @"--fp32-unet", @"--fp64-unet", @"--bf16-unet", @"--fp16-unet",
+                @"--fp8_e4m3fn-unet", @"--fp8_e5m2-unet", @"--fp8_e8m0fnu-unet",
+                @"--fp16-vae", @"--fp32-vae", @"--bf16-vae", @"--cpu-vae",
+                @"--fp8_e4m3fn-text-enc", @"--fp8_e5m2-text-enc", @"--fp16-text-enc", @"--fp32-text-enc", @"--bf16-text-enc",
+                @"--force-channels-last",
+                @"--gpu-only", @"--highvram", @"--normalvram", @"--lowvram", @"--novram", @"--cpu",
+                @"--reserve-vram\s+[\d.]+", @"--async-offload", @"--force-non-blocking", @"--disable-smart-memory",
+                @"--preview-method\s+\w+", @"--preview-size\s+\d+",
+                @"--cache-classic", @"--cache-lru\s+\d+", @"--cache-none",
+                @"--use-split-cross-attention", @"--use-quad-cross-attention", @"--use-pytorch-cross-attention",
+                @"--use-sage-attention", @"--use-flash-attention", @"--disable-xformers",
+                @"--force-upcast-attention", @"--dont-upcast-attention",
+                @"--deterministic", @"--fast(?:\s+\S+)*", @"--mmap-torch-files", @"--disable-mmap",
+                @"--default-hashing-function\s+\w+",
+                @"--dont-print-server", @"--quick-test-for-ci", @"--windows-standalone-build",
+                @"--verbose\s+\w+", @"--log-stdout",
+                @"--disable-metadata", @"--disable-all-custom-nodes", @"--whitelist-custom-nodes\s+\S+", @"--disable-api-nodes",
+                @"--multi-user",
+                @"--front-end-version\s+\S+", @"--front-end-root\s+\S+", @"--enable-compress-response-body",
+                @"--comfy-api-base\s+\S+", @"--database-url\s+\S+"
+            };
+
+            var remainingCommand = command;
+            
+            // 移除Python路径和main.py部分
+            remainingCommand = System.Text.RegularExpressions.Regex.Replace(remainingCommand, @"^""?[^""]+?""?\s+main\.py\s*", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            
+            // 移除所有已知参数
+            foreach (var knownArg in knownArgs)
+            {
+                remainingCommand = System.Text.RegularExpressions.Regex.Replace(remainingCommand, knownArg, "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             }
             
-            // 更新Python路径有效性状态
-            IsPythonPathValid = IsValidPythonPath(PythonPath);
+            // 清理多余空格并设置ExtraArgs
+            ExtraArgs = System.Text.RegularExpressions.Regex.Replace(remainingCommand, @"\s+", " ").Trim();
         }
 
         [RelayCommand]
@@ -424,6 +2340,87 @@ namespace ProjectManager.ViewModels.Dialogs
             BrowseFolderPath("选择自定义节点文件夹", path => CustomNodesPath = path);
         }
 
+        [RelayCommand]
+        private void BrowseBaseDirectory()
+        {
+            BrowseFolderPath("选择基础目录", path => BaseDirectory = path);
+        }
+
+        [RelayCommand]
+        private void BrowseInputDirectory()
+        {
+            BrowseFolderPath("选择输入文件夹", path => InputDirectory = path);
+        }
+
+        [RelayCommand]
+        private void BrowseTempDirectory()
+        {
+            BrowseFolderPath("选择临时文件夹", path => TempDirectory = path);
+        }
+
+        [RelayCommand]
+        private void BrowseUserDirectory()
+        {
+            BrowseFolderPath("选择用户目录", path => UserDirectory = path);
+        }
+
+        [RelayCommand]
+        private void BrowseExtraModelPathsConfig()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "选择额外模型路径配置文件",
+                Filter = "YAML文件 (*.yaml)|*.yaml|所有文件 (*.*)|*.*",
+                CheckFileExists = true,
+                CheckPathExists = true
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                ExtraModelPathsConfig = dialog.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseTlsKeyFile()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "选择TLS密钥文件",
+                Filter = "密钥文件 (*.key)|*.key|所有文件 (*.*)|*.*",
+                CheckFileExists = true,
+                CheckPathExists = true
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                TlsKeyFile = dialog.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseTlsCertFile()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "选择TLS证书文件",
+                Filter = "证书文件 (*.crt;*.pem)|*.crt;*.pem|所有文件 (*.*)|*.*",
+                CheckFileExists = true,
+                CheckPathExists = true
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                TlsCertFile = dialog.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseFrontEndRoot()
+        {
+            BrowseFolderPath("选择前端根目录", path => FrontEndRoot = path);
+        }
+
         private void BrowseFolderPath(string title, Action<string> setPath)
         {
             var dialog = new OpenFileDialog
@@ -460,10 +2457,125 @@ namespace ProjectManager.ViewModels.Dialogs
                 {
                     _project.ComfyUISettings = new ComfyUISettings
                     {
+                        // 基础设置
+                        ListenAddress = ListenAddress,
                         ListenAllInterfaces = ListenAllInterfaces,
-                        LowVramMode = LowVramMode,
-                        CpuMode = CpuMode,
                         Port = Port,
+                        TlsKeyFile = TlsKeyFile,
+                        TlsCertFile = TlsCertFile,
+                        EnableCorsHeader = EnableCorsHeader,
+                        CorsOrigin = CorsOrigin,
+                        MaxUploadSize = MaxUploadSize,
+
+                        // 目录设置
+                        BaseDirectory = BaseDirectory,
+                        OutputDirectory = OutputDirectory,
+                        TempDirectory = TempDirectory,
+                        InputDirectory = InputDirectory,
+                        UserDirectory = UserDirectory,
+                        ExtraModelPathsConfig = ExtraModelPathsConfig,
+
+                        // 启动设置
+                        AutoLaunch = AutoLaunch,
+                        DisableAutoLaunch = DisableAutoLaunch,
+
+                        // GPU/CUDA设置
+                        CudaDevice = CudaDevice,
+                        DefaultDevice = DefaultDevice,
+                        CudaMalloc = CudaMalloc,
+                        DisableCudaMalloc = DisableCudaMalloc,
+                        DirectmlDevice = DirectmlDevice,
+                        OneApiDeviceSelector = OneApiDeviceSelector,
+                        DisableIpexOptimize = DisableIpexOptimize,
+                        SupportsFp8Compute = SupportsFp8Compute,
+
+                        // 精度设置
+                        ForceFp32 = ForceFp32,
+                        ForceFp16 = ForceFp16,
+                        Fp32Unet = Fp32Unet,
+                        Fp64Unet = Fp64Unet,
+                        Bf16Unet = Bf16Unet,
+                        Fp16Unet = Fp16Unet,
+                        Fp8E4M3FnUnet = Fp8E4M3FnUnet,
+                        Fp8E5M2Unet = Fp8E5M2Unet,
+                        Fp8E8M0FnuUnet = Fp8E8M0FnuUnet,
+                        Fp16Vae = Fp16Vae,
+                        Fp32Vae = Fp32Vae,
+                        Bf16Vae = Bf16Vae,
+                        CpuVae = CpuVae,
+                        Fp8E4M3FnTextEnc = Fp8E4M3FnTextEnc,
+                        Fp8E5M2TextEnc = Fp8E5M2TextEnc,
+                        Fp16TextEnc = Fp16TextEnc,
+                        Fp32TextEnc = Fp32TextEnc,
+                        Bf16TextEnc = Bf16TextEnc,
+                        ForceChannelsLast = ForceChannelsLast,
+
+                        // 内存管理
+                        GpuOnly = GpuOnly,
+                        HighVram = HighVram,
+                        NormalVram = NormalVram,
+                        LowVramMode = LowVramMode,
+                        NoVram = NoVram,
+                        CpuMode = CpuMode,
+                        ReserveVram = ReserveVram,
+                        AsyncOffload = AsyncOffload,
+                        ForceNonBlocking = ForceNonBlocking,
+                        DisableSmartMemory = DisableSmartMemory,
+
+                        // 预览设置
+                        PreviewMethod = PreviewMethod,
+                        PreviewSize = PreviewSize,
+
+                        // 缓存设置
+                        CacheClassic = CacheClassic,
+                        CacheLru = CacheLru,
+                        CacheNone = CacheNone,
+
+                        // 注意力机制设置
+                        UseSplitCrossAttention = UseSplitCrossAttention,
+                        UseQuadCrossAttention = UseQuadCrossAttention,
+                        UsePytorchCrossAttention = UsePytorchCrossAttention,
+                        UseSageAttention = UseSageAttention,
+                        UseFlashAttention = UseFlashAttention,
+                        DisableXformers = DisableXformers,
+                        ForceUpcastAttention = ForceUpcastAttention,
+                        DontUpcastAttention = DontUpcastAttention,
+
+                        // 性能设置
+                        Deterministic = Deterministic,
+                        FastFp16Accumulation = FastFp16Accumulation,
+                        FastFp8MatrixMult = FastFp8MatrixMult,
+                        FastCublasOps = FastCublasOps,
+                        MmapTorchFiles = MmapTorchFiles,
+                        DisableMmap = DisableMmap,
+
+                        // 哈希设置
+                        DefaultHashingFunction = DefaultHashingFunction,
+
+                        // 调试和日志设置
+                        DontPrintServer = DontPrintServer,
+                        QuickTestForCi = QuickTestForCi,
+                        WindowsStandaloneBuild = WindowsStandaloneBuild,
+                        Verbose = Verbose,
+                        LogStdout = LogStdout,
+
+                        // 元数据和自定义节点
+                        DisableMetadata = DisableMetadata,
+                        DisableAllCustomNodes = DisableAllCustomNodes,
+                        WhitelistCustomNodes = WhitelistCustomNodes,
+                        DisableApiNodes = DisableApiNodes,
+
+                        // 多用户设置
+                        MultiUser = MultiUser,
+
+                        // 前端设置
+                        FrontEndVersion = FrontEndVersion,
+                        FrontEndRoot = FrontEndRoot,
+                        EnableCompressResponseBody = EnableCompressResponseBody,
+                        ComfyApiBase = ComfyApiBase,
+                        DatabaseUrl = DatabaseUrl,
+
+                        // 路径设置（保留原有设置）
                         PythonPath = PythonPath,
                         ModelsPath = ModelsPath,
                         OutputPath = OutputPath,

@@ -50,7 +50,7 @@
                 </ui:Card>
 
                 <!-- ComfyUI特定配置 -->
-                <Expander Header="ComfyUI配置" IsExpanded="True" Margin="0,0,0,16">
+                <Expander Header="基础配置" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>
@@ -62,9 +62,15 @@
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="服务端口" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding Port, UpdateSourceTrigger=PropertyChanged}" 
-                                          Minimum="1024" 
+                                          Minimum="1" 
                                           Maximum="65535"
                                           PlaceholderText="8188"/>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="监听地址" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding ListenAddress, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="127.0.0.1"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
@@ -94,17 +100,257 @@
                         <CheckBox Content="启动时监听所有网络接口 (--listen)" 
                                   IsChecked="{Binding ListenAllInterfaces}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用低显存模式 (--lowvram)" 
+                        <CheckBox Content="自动启动浏览器 (--auto-launch)" 
+                                  IsChecked="{Binding AutoLaunch}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用自动启动浏览器 (--disable-auto-launch)" 
+                                  IsChecked="{Binding DisableAutoLaunch}" 
+                                  Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 内存和GPU设置 -->
+                <Expander Header="内存和GPU设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="内存管理模式（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="仅使用GPU (--gpu-only)" 
+                                  IsChecked="{Binding GpuOnly}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="高显存模式 (--highvram)" 
+                                  IsChecked="{Binding HighVram}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="标准显存模式 (--normalvram)" 
+                                  IsChecked="{Binding NormalVram}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="低显存模式 (--lowvram)" 
                                   IsChecked="{Binding LowVramMode}" 
                                   Margin="0,0,0,8"/>
+                        <CheckBox Content="无显存模式 (--novram)" 
+                                  IsChecked="{Binding NoVram}" 
+                                  Margin="0,0,0,8"/>
                         <CheckBox Content="使用CPU运行 (--cpu)" 
-                                  IsChecked="{Binding CpuMode}"/>
+                                  IsChecked="{Binding CpuMode}"
+                                  Margin="0,0,0,12"/>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="预留显存 (GB)" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding ReserveVram, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="0" 
+                                          Maximum="32768"
+                                          PlaceholderText="留空使用默认"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="CUDA设备ID" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding CudaDevice, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="0" 
+                                          Maximum="15"
+                                          PlaceholderText="留空使用默认"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="DirectML设备ID" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding DirectmlDevice, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="-1" 
+                                          Maximum="15"
+                                          PlaceholderText="-1表示自动检测"/>
+                        </StackPanel>
+
+                        <CheckBox Content="异步卸载 (--async-offload)" 
+                                  IsChecked="{Binding AsyncOffload}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="强制非阻塞操作 (--force-non-blocking)" 
+                                  IsChecked="{Binding ForceNonBlocking}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用智能内存管理 (--disable-smart-memory)" 
+                                  IsChecked="{Binding DisableSmartMemory}"
+                                  Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 精度设置 -->
+                <Expander Header="精度设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="全局精度设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="强制FP32 (--force-fp32)" 
+                                  IsChecked="{Binding ForceFp32}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="强制FP16 (--force-fp16)" 
+                                  IsChecked="{Binding ForceFp16}" 
+                                  Margin="0,0,0,12"/>
+
+                        <TextBlock Text="UNet模型精度（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="FP32 UNet (--fp32-unet)" 
+                                  IsChecked="{Binding Fp32Unet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP64 UNet (--fp64-unet)" 
+                                  IsChecked="{Binding Fp64Unet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="BF16 UNet (--bf16-unet)" 
+                                  IsChecked="{Binding Bf16Unet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP16 UNet (--fp16-unet)" 
+                                  IsChecked="{Binding Fp16Unet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP8 E4M3FN UNet (--fp8_e4m3fn-unet)" 
+                                  IsChecked="{Binding Fp8E4M3FnUnet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP8 E5M2 UNet (--fp8_e5m2-unet)" 
+                                  IsChecked="{Binding Fp8E5M2Unet}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP8 E8M0FNU UNet (--fp8_e8m0fnu-unet)" 
+                                  IsChecked="{Binding Fp8E8M0FnuUnet}" 
+                                  Margin="0,0,0,12"/>
+
+                        <TextBlock Text="VAE模型精度（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="FP16 VAE (--fp16-vae)" 
+                                  IsChecked="{Binding Fp16Vae}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP32 VAE (--fp32-vae)" 
+                                  IsChecked="{Binding Fp32Vae}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="BF16 VAE (--bf16-vae)" 
+                                  IsChecked="{Binding Bf16Vae}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="CPU VAE (--cpu-vae)" 
+                                  IsChecked="{Binding CpuVae}" 
+                                  Margin="0,0,0,12"/>
+
+                        <TextBlock Text="文本编码器精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)" 
+                                  IsChecked="{Binding Fp8E4M3FnTextEnc}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP8 E5M2 Text Encoder (--fp8_e5m2-text-enc)" 
+                                  IsChecked="{Binding Fp8E5M2TextEnc}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP16 Text Encoder (--fp16-text-enc)" 
+                                  IsChecked="{Binding Fp16TextEnc}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="FP32 Text Encoder (--fp32-text-enc)" 
+                                  IsChecked="{Binding Fp32TextEnc}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="BF16 Text Encoder (--bf16-text-enc)" 
+                                  IsChecked="{Binding Bf16TextEnc}" 
+                                  Margin="0,0,0,8"/>
+
+                        <CheckBox Content="强制通道在最后 (--force-channels-last)" 
+                                  IsChecked="{Binding ForceChannelsLast}"
+                                  Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 注意力机制设置 -->
+                <Expander Header="注意力机制设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="注意力算法（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="使用分割交叉注意力 (--use-split-cross-attention)" 
+                                  IsChecked="{Binding UseSplitCrossAttention}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="使用四元交叉注意力 (--use-quad-cross-attention)" 
+                                  IsChecked="{Binding UseQuadCrossAttention}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="使用PyTorch交叉注意力 (--use-pytorch-cross-attention)" 
+                                  IsChecked="{Binding UsePytorchCrossAttention}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="使用Sage注意力 (--use-sage-attention)" 
+                                  IsChecked="{Binding UseSageAttention}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="使用Flash注意力 (--use-flash-attention)" 
+                                  IsChecked="{Binding UseFlashAttention}" 
+                                  Margin="0,0,0,12"/>
+
+                        <TextBlock Text="其他注意力设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用Xformers (--disable-xformers)" 
+                                  IsChecked="{Binding DisableXformers}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="强制上变换注意力 (--force-upcast-attention)" 
+                                  IsChecked="{Binding ForceUpcastAttention}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用上变换注意力 (--dont-upcast-attention)" 
+                                  IsChecked="{Binding DontUpcastAttention}"
+                                  Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 缓存和性能设置 -->
+                <Expander Header="缓存和性能设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="缓存模式（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="经典缓存 (--cache-classic)" 
+                                  IsChecked="{Binding CacheClassic}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="无缓存 (--cache-none)" 
+                                  IsChecked="{Binding CacheNone}" 
+                                  Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="LRU缓存大小" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding CacheLru, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="0" 
+                                          Maximum="1000"
+                                          PlaceholderText="0表示禁用"/>
+                        </StackPanel>
+
+                        <TextBlock Text="预览设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="预览方法" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding PreviewMethod}">
+                                <ComboBoxItem Content="none"/>
+                                <ComboBoxItem Content="auto"/>
+                                <ComboBoxItem Content="latent2rgb"/>
+                                <ComboBoxItem Content="taesd"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="预览大小" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding PreviewSize, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="64" 
+                                          Maximum="2048"
+                                          PlaceholderText="512"/>
+                        </StackPanel>
+
+                        <TextBlock Text="性能优化" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="确定性算法 (--deterministic)" 
+                                  IsChecked="{Binding Deterministic}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="快速FP16累积 (--fast fp16_accumulation)" 
+                                  IsChecked="{Binding FastFp16Accumulation}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="快速FP8矩阵乘法 (--fast fp8_matrix_mult)" 
+                                  IsChecked="{Binding FastFp8MatrixMult}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="快速CUBLAS操作 (--fast cublas_ops)" 
+                                  IsChecked="{Binding FastCublasOps}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="内存映射Torch文件 (--mmap-torch-files)" 
+                                  IsChecked="{Binding MmapTorchFiles}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用内存映射 (--disable-mmap)" 
+                                  IsChecked="{Binding DisableMmap}"
+                                  Margin="0,0,0,8"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 模型配置 -->
-                <Expander Header="模型配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="目录和模型配置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="基础目录" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding BaseDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="留空使用默认"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseBaseDirectoryCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="模型文件夹路径" Margin="0,0,0,4"/>
                             <Grid>
@@ -141,17 +387,141 @@
                             </Grid>
                         </StackPanel>
 
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="输入文件夹路径" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding InputDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="留空使用默认"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseInputDirectoryCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="临时文件夹路径" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding TempDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="留空使用默认"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseTempDirectoryCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="用户目录路径" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding UserDirectory, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="留空使用默认"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseUserDirectoryCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
                         <StackPanel>
-                            <TextBlock Text="额外启动参数" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding ExtraArgs, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="例如: --preview-method auto"
-                                        TextWrapping="Wrap"/>
+                            <TextBlock Text="额外模型路径配置文件" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding ExtraModelPathsConfig, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="extra_model_paths.yaml"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseExtraModelPathsConfigCommand}"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 网络和安全设置 -->
+                <Expander Header="网络和安全设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="最大上传大小 (MB)" Margin="0,0,0,4"/>
+                            <ui:NumberBox Value="{Binding MaxUploadSize, UpdateSourceTrigger=PropertyChanged}" 
+                                          Minimum="1" 
+                                          Maximum="10240"
+                                          PlaceholderText="100"/>
+                        </StackPanel>
+
+                        <CheckBox Content="启用CORS (--enable-cors-header)" 
+                                  IsChecked="{Binding EnableCorsHeader}" 
+                                  Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="CORS来源" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding CorsOrigin, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="*"/>
+                        </StackPanel>
+
+                        <TextBlock Text="TLS/SSL设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="TLS密钥文件" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding TlsKeyFile, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="server.key"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseTlsKeyFileCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="TLS证书文件" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding TlsCertFile, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="server.crt"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseTlsCertFileCommand}"/>
+                            </Grid>
                         </StackPanel>
                     </StackPanel>
                 </Expander>
 
                 <!-- 工作流配置 -->
-                <Expander Header="工作流配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="工作流和自定义节点配置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="自定义节点文件夹" Margin="0,0,0,4"/>
@@ -175,7 +545,99 @@
                                   IsChecked="{Binding AutoLoadWorkflow}" 
                                   Margin="0,0,0,8"/>
                         <CheckBox Content="启用工作流快照保存" 
-                                  IsChecked="{Binding EnableWorkflowSnapshots}"/>
+                                  IsChecked="{Binding EnableWorkflowSnapshots}"
+                                  Margin="0,0,0,8"/>
+
+                        <TextBlock Text="自定义节点管理" FontWeight="SemiBold" Margin="0,12,0,8"/>
+                        <CheckBox Content="禁用所有自定义节点 (--disable-all-custom-nodes)" 
+                                  IsChecked="{Binding DisableAllCustomNodes}" 
+                                  Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="白名单自定义节点" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding WhitelistCustomNodes, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="用空格分隔节点文件夹名称"/>
+                        </StackPanel>
+                        <CheckBox Content="禁用API节点 (--disable-api-nodes)" 
+                                  IsChecked="{Binding DisableApiNodes}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="禁用元数据 (--disable-metadata)" 
+                                  IsChecked="{Binding DisableMetadata}"
+                                  Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- 高级设置 -->
+                <Expander Header="高级设置" IsExpanded="False" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="日志和调试" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="日志级别" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding Verbose}">
+                                <ComboBoxItem Content="DEBUG"/>
+                                <ComboBoxItem Content="INFO"/>
+                                <ComboBoxItem Content="WARNING"/>
+                                <ComboBoxItem Content="ERROR"/>
+                                <ComboBoxItem Content="CRITICAL"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="哈希函数" Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding DefaultHashingFunction}">
+                                <ComboBoxItem Content="md5"/>
+                                <ComboBoxItem Content="sha1"/>
+                                <ComboBoxItem Content="sha256"/>
+                                <ComboBoxItem Content="sha512"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <CheckBox Content="输出日志到标准输出 (--log-stdout)" 
+                                  IsChecked="{Binding LogStdout}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="不打印服务器输出 (--dont-print-server)" 
+                                  IsChecked="{Binding DontPrintServer}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="Windows独立构建 (--windows-standalone-build)" 
+                                  IsChecked="{Binding WindowsStandaloneBuild}" 
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="多用户模式 (--multi-user)" 
+                                  IsChecked="{Binding MultiUser}" 
+                                  Margin="0,0,0,12"/>
+
+                        <TextBlock Text="前端设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="前端版本" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding FrontEndVersion, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="comfyanonymous/ComfyUI@latest"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="前端根目录" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                            Text="{Binding FrontEndRoot, UpdateSourceTrigger=PropertyChanged}" 
+                                            PlaceholderText="留空使用默认"
+                                            Margin="0,0,8,0"/>
+                                <ui:Button Grid.Column="1" 
+                                           Content="浏览" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Command="{Binding BrowseFrontEndRootCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <CheckBox Content="启用响应体压缩 (--enable-compress-response-body)" 
+                                  IsChecked="{Binding EnableCompressResponseBody}" 
+                                  Margin="0,0,0,8"/>
+
+                        <StackPanel>
+                            <TextBlock Text="额外启动参数" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding ExtraArgs, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="其他未包含的启动参数"
+                                        TextWrapping="Wrap"/>
+                        </StackPanel>
                     </StackPanel>
                 </Expander>
 
