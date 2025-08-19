@@ -115,6 +115,24 @@ namespace ProjectManager.ViewModels.Dialogs
             
             // 解析Node.js特定的启动参数
             ParseStartCommand(project.StartCommand ?? "npm start");
+
+            // 如果已有持久化设置，覆盖解析值
+            if (project.NodeJSSettings != null)
+            {
+                Port = project.NodeJSSettings.Port;
+                NodeVersion = project.NodeJSSettings.NodeVersion;
+                PackageManager = project.NodeJSSettings.PackageManager;
+                DevelopmentMode = project.NodeJSSettings.DevelopmentMode;
+                HotReload = project.NodeJSSettings.HotReload;
+                DebugMode = project.NodeJSSettings.DebugMode;
+                BuildCommand = project.NodeJSSettings.BuildCommand;
+                TestCommand = project.NodeJSSettings.TestCommand;
+                BuildOutputPath = project.NodeJSSettings.BuildOutputPath;
+                RunTestsBeforeBuild = project.NodeJSSettings.RunTestsBeforeBuild;
+                MinifyOutput = project.NodeJSSettings.MinifyOutput;
+                EnvironmentFile = project.NodeJSSettings.EnvironmentFile;
+                CustomEnvironmentVars = project.NodeJSSettings.CustomEnvironmentVars;
+            }
         }
 
         private void ParseStartCommand(string command)
@@ -184,6 +202,27 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 更新项目信息
                 _project.StartCommand = StartCommand;
                 _project.LastModified = DateTime.Now;
+
+                // 写入 Node.js 设置
+                if (_project.Framework.Equals("Node.js", StringComparison.OrdinalIgnoreCase))
+                {
+                    _project.NodeJSSettings = new NodeJSSettings
+                    {
+                        Port = Port,
+                        NodeVersion = NodeVersion,
+                        PackageManager = PackageManager,
+                        DevelopmentMode = DevelopmentMode,
+                        HotReload = HotReload,
+                        DebugMode = DebugMode,
+                        BuildCommand = BuildCommand,
+                        TestCommand = TestCommand,
+                        BuildOutputPath = BuildOutputPath,
+                        RunTestsBeforeBuild = RunTestsBeforeBuild,
+                        MinifyOutput = MinifyOutput,
+                        EnvironmentFile = EnvironmentFile,
+                        CustomEnvironmentVars = CustomEnvironmentVars
+                    };
+                }
                 
                 // 解析标签
                 if (!string.IsNullOrWhiteSpace(TagsString))

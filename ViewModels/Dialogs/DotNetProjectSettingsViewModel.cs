@@ -127,6 +127,30 @@ namespace ProjectManager.ViewModels.Dialogs
             
             // 解析.NET特定的启动参数
             ParseStartCommand(project.StartCommand ?? "dotnet run");
+
+            // 如果已有持久化设置，覆盖解析值
+            if (project.DotNetSettings != null)
+            {
+                TargetFramework = project.DotNetSettings.TargetFramework;
+                ProjectType = project.DotNetSettings.ProjectType;
+                Port = project.DotNetSettings.Port;
+                EnableHotReload = project.DotNetSettings.EnableHotReload;
+                EnableHttpsRedirection = project.DotNetSettings.EnableHttpsRedirection;
+                EnableDeveloperExceptionPage = project.DotNetSettings.EnableDeveloperExceptionPage;
+                BuildConfiguration = project.DotNetSettings.BuildConfiguration;
+                BuildCommand = project.DotNetSettings.BuildCommand;
+                TestCommand = project.DotNetSettings.TestCommand;
+                OutputPath = project.DotNetSettings.OutputPath;
+                RunTestsBeforeBuild = project.DotNetSettings.RunTestsBeforeBuild;
+                EnableCodeAnalysis = project.DotNetSettings.EnableCodeAnalysis;
+                TreatWarningsAsErrors = project.DotNetSettings.TreatWarningsAsErrors;
+                PublishCommand = project.DotNetSettings.PublishCommand;
+                TargetRuntime = project.DotNetSettings.TargetRuntime;
+                PublishPath = project.DotNetSettings.PublishPath;
+                SingleFilePublish = project.DotNetSettings.SingleFilePublish;
+                SelfContainedPublish = project.DotNetSettings.SelfContainedPublish;
+                EnableReadyToRun = project.DotNetSettings.EnableReadyToRun;
+            }
         }
 
         private void ParseStartCommand(string command)
@@ -184,6 +208,33 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 更新项目信息
                 _project.StartCommand = StartCommand;
                 _project.LastModified = DateTime.Now;
+
+                // 写入 .NET 设置
+                if (_project.Framework.Equals(".NET", StringComparison.OrdinalIgnoreCase))
+                {
+                    _project.DotNetSettings = new DotNetSettings
+                    {
+                        TargetFramework = TargetFramework,
+                        ProjectType = ProjectType,
+                        Port = Port,
+                        EnableHotReload = EnableHotReload,
+                        EnableHttpsRedirection = EnableHttpsRedirection,
+                        EnableDeveloperExceptionPage = EnableDeveloperExceptionPage,
+                        BuildConfiguration = BuildConfiguration,
+                        BuildCommand = BuildCommand,
+                        TestCommand = TestCommand,
+                        OutputPath = OutputPath,
+                        RunTestsBeforeBuild = RunTestsBeforeBuild,
+                        EnableCodeAnalysis = EnableCodeAnalysis,
+                        TreatWarningsAsErrors = TreatWarningsAsErrors,
+                        PublishCommand = PublishCommand,
+                        TargetRuntime = TargetRuntime,
+                        PublishPath = PublishPath,
+                        SingleFilePublish = SingleFilePublish,
+                        SelfContainedPublish = SelfContainedPublish,
+                        EnableReadyToRun = EnableReadyToRun
+                    };
+                }
                 
                 // 解析标签
                 if (!string.IsNullOrWhiteSpace(TagsString))

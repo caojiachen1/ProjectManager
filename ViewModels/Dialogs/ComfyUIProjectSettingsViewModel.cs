@@ -303,8 +303,24 @@ namespace ProjectManager.ViewModels.Dialogs
                 StartCommand = project.StartCommand ?? "python main.py";
                 TagsString = project.Tags != null ? string.Join(", ", project.Tags) : "AI绘画,图像生成,工作流,节点编辑";
                 
-                // 解析ComfyUI特定的启动参数
+                // 解析ComfyUI特定的启动参数（用于兼容老数据）
                 ParseStartCommand(project.StartCommand ?? "python main.py");
+
+                // 如果存在持久化的 ComfyUISettings，用其覆盖解析结果
+                if (project.ComfyUISettings != null)
+                {
+                    ListenAllInterfaces = project.ComfyUISettings.ListenAllInterfaces;
+                    LowVramMode = project.ComfyUISettings.LowVramMode;
+                    CpuMode = project.ComfyUISettings.CpuMode;
+                    Port = project.ComfyUISettings.Port;
+                    PythonPath = project.ComfyUISettings.PythonPath;
+                    ModelsPath = project.ComfyUISettings.ModelsPath;
+                    OutputPath = project.ComfyUISettings.OutputPath;
+                    ExtraArgs = project.ComfyUISettings.ExtraArgs;
+                    CustomNodesPath = project.ComfyUISettings.CustomNodesPath;
+                    AutoLoadWorkflow = project.ComfyUISettings.AutoLoadWorkflow;
+                    EnableWorkflowSnapshots = project.ComfyUISettings.EnableWorkflowSnapshots;
+                }
                 
                 // 更新启动命令建议
                 UpdateStartCommandSuggestions();
@@ -438,6 +454,25 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 更新项目信息
                 _project.StartCommand = StartCommand;
                 _project.LastModified = DateTime.Now;
+
+                // 更新 ComfyUI 设置持久化（仅在框架为 ComfyUI 时）
+                if (_project.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+                {
+                    _project.ComfyUISettings = new ComfyUISettings
+                    {
+                        ListenAllInterfaces = ListenAllInterfaces,
+                        LowVramMode = LowVramMode,
+                        CpuMode = CpuMode,
+                        Port = Port,
+                        PythonPath = PythonPath,
+                        ModelsPath = ModelsPath,
+                        OutputPath = OutputPath,
+                        ExtraArgs = ExtraArgs,
+                        CustomNodesPath = CustomNodesPath,
+                        AutoLoadWorkflow = AutoLoadWorkflow,
+                        EnableWorkflowSnapshots = EnableWorkflowSnapshots
+                    };
+                }
                 
                 // 解析标签
                 if (!string.IsNullOrWhiteSpace(TagsString))

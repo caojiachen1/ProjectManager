@@ -61,6 +61,18 @@ namespace ProjectManager.Models
         [ObservableProperty]
         private List<string> _gitRepositories = new();
 
+        // ComfyUI 专用设置（可为空以保持向后兼容）
+        [ObservableProperty]
+        private ComfyUISettings? _comfyUISettings;
+
+        // Node.js 设置（可为空）
+        [ObservableProperty]
+        private NodeJSSettings? _nodeJSSettings;
+
+        // .NET 设置（可为空）
+        [ObservableProperty]
+        private DotNetSettings? _dotNetSettings;
+
         [JsonIgnore]
         public string StatusDisplay => Status switch
         {
