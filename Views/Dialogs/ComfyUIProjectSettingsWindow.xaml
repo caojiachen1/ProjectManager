@@ -121,12 +121,15 @@
                         <CheckBox Content="启动时监听所有网络接口 (--listen)" 
                                   IsChecked="{Binding ListenAllInterfaces}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="自动启动浏览器 (--auto-launch)" 
-                                  IsChecked="{Binding AutoLaunch}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用自动启动浏览器 (--disable-auto-launch)" 
-                                  IsChecked="{Binding DisableAutoLaunch}" 
-                                  Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="浏览器启动模式" FontWeight="SemiBold" Margin="0,4,0,8"/>
+                        <ComboBox SelectedValue="{Binding BrowserAutoLaunchMode}" 
+                                  SelectedValuePath="Tag" 
+                                  Margin="0,0,0,8">
+                            <ComboBoxItem Content="默认行为" Tag="Default"/>
+                            <ComboBoxItem Content="自动启动浏览器 (--auto-launch)" Tag="AutoLaunch"/>
+                            <ComboBoxItem Content="禁用自动启动浏览器 (--disable-auto-launch)" Tag="DisableAutoLaunch"/>
+                        </ComboBox>
                     </StackPanel>
                 </Expander>
 
@@ -182,6 +185,16 @@
                                           LargeChange="1"/>
                         </StackPanel>
 
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="CUDA内存分配器" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <ComboBox SelectedValue="{Binding CudaMemoryAllocatorMode}" 
+                                      SelectedValuePath="Tag">
+                                <ComboBoxItem Content="默认分配器" Tag="Default"/>
+                                <ComboBoxItem Content="使用CUDA分配器 (--cuda-malloc)" Tag="CudaMalloc"/>
+                                <ComboBoxItem Content="禁用CUDA分配器 (--disable-cuda-malloc)" Tag="DisableCudaMalloc"/>
+                            </ComboBox>
+                        </StackPanel>
+
                         <CheckBox Content="异步卸载 (--async-offload)" 
                                   IsChecked="{Binding AsyncOffload}" 
                                   Margin="0,0,0,8"/>
@@ -198,12 +211,13 @@
                 <Expander Header="精度设置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="全局精度设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="强制FP32 (--force-fp32)" 
-                                  IsChecked="{Binding ForceFp32}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="强制FP16 (--force-fp16)" 
-                                  IsChecked="{Binding ForceFp16}" 
-                                  Margin="0,0,0,12"/>
+                        <ComboBox SelectedValue="{Binding GlobalPrecisionForceMode}" 
+                                  SelectedValuePath="Tag" 
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="不强制（默认）" Tag="None"/>
+                            <ComboBoxItem Content="强制FP32 (--force-fp32)" Tag="ForceFP32"/>
+                            <ComboBoxItem Content="强制FP16 (--force-fp16)" Tag="ForceFP16"/>
+                        </ComboBox>
 
                         <TextBlock Text="UNet模型精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding UnetPrecisionMode}"
@@ -231,21 +245,16 @@
                         </ComboBox>
 
                         <TextBlock Text="文本编码器精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)" 
-                                  IsChecked="{Binding Fp8E4M3FnTextEnc}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP8 E5M2 Text Encoder (--fp8_e5m2-text-enc)" 
-                                  IsChecked="{Binding Fp8E5M2TextEnc}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP16 Text Encoder (--fp16-text-enc)" 
-                                  IsChecked="{Binding Fp16TextEnc}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP32 Text Encoder (--fp32-text-enc)" 
-                                  IsChecked="{Binding Fp32TextEnc}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="BF16 Text Encoder (--bf16-text-enc)" 
-                                  IsChecked="{Binding Bf16TextEnc}" 
-                                  Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding TextEncoderPrecisionMode}" 
+                                  SelectedValuePath="Tag" 
+                                  Margin="0,0,0,8">
+                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
+                            <ComboBoxItem Content="FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)" Tag="FP8_E4M3FN"/>
+                            <ComboBoxItem Content="FP8 E5M2 Text Encoder (--fp8_e5m2-text-enc)" Tag="FP8_E5M2"/>
+                            <ComboBoxItem Content="FP16 Text Encoder (--fp16-text-enc)" Tag="FP16"/>
+                            <ComboBoxItem Content="FP32 Text Encoder (--fp32-text-enc)" Tag="FP32"/>
+                            <ComboBoxItem Content="BF16 Text Encoder (--bf16-text-enc)" Tag="BF16"/>
+                        </ComboBox>
 
                         <CheckBox Content="强制通道在最后 (--force-channels-last)" 
                                   IsChecked="{Binding ForceChannelsLast}"
@@ -272,12 +281,15 @@
                         <CheckBox Content="禁用Xformers (--disable-xformers)" 
                                   IsChecked="{Binding DisableXformers}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="强制上变换注意力 (--force-upcast-attention)" 
-                                  IsChecked="{Binding ForceUpcastAttention}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用上变换注意力 (--dont-upcast-attention)" 
-                                  IsChecked="{Binding DontUpcastAttention}"
-                                  Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="注意力上投模式" FontWeight="SemiBold" Margin="0,4,0,8"/>
+                        <ComboBox SelectedValue="{Binding AttentionUpcastMode}" 
+                                  SelectedValuePath="Tag" 
+                                  Margin="0,0,0,8">
+                            <ComboBoxItem Content="默认行为" Tag="Default"/>
+                            <ComboBoxItem Content="强制上变换注意力 (--force-upcast-attention)" Tag="ForceUpcast"/>
+                            <ComboBoxItem Content="禁用上变换注意力 (--dont-upcast-attention)" Tag="DontUpcast"/>
+                        </ComboBox>
                     </StackPanel>
                 </Expander>
 
@@ -306,7 +318,7 @@
                         <TextBlock Text="预览设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="预览方法" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding PreviewMethod}">
+                            <ComboBox SelectedValue="{Binding PreviewMethod}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="none"/>
                                 <ComboBoxItem Content="auto"/>
                                 <ComboBoxItem Content="latent2rgb"/>

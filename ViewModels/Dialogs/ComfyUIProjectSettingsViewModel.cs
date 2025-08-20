@@ -287,6 +287,74 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
+        partial void OnTextEncoderPrecisionModeChanged(TextEncoderPrecisionMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                Fp8E4M3FnTextEnc = value == TextEncoderPrecisionMode.FP8_E4M3FN;
+                Fp8E5M2TextEnc = value == TextEncoderPrecisionMode.FP8_E5M2;
+                Fp16TextEnc = value == TextEncoderPrecisionMode.FP16;
+                Fp32TextEnc = value == TextEncoderPrecisionMode.FP32;
+                Bf16TextEnc = value == TextEncoderPrecisionMode.BF16;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnGlobalPrecisionForceModeChanged(GlobalPrecisionForceMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                ForceFp32 = value == GlobalPrecisionForceMode.ForceFP32;
+                ForceFp16 = value == GlobalPrecisionForceMode.ForceFP16;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCudaMemoryAllocatorModeChanged(CudaMemoryAllocatorMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                CudaMalloc = value == CudaMemoryAllocatorMode.CudaMalloc;
+                DisableCudaMalloc = value == CudaMemoryAllocatorMode.DisableCudaMalloc;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnAttentionUpcastModeChanged(AttentionUpcastMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                ForceUpcastAttention = value == AttentionUpcastMode.ForceUpcast;
+                DontUpcastAttention = value == AttentionUpcastMode.DontUpcast;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnBrowserAutoLaunchModeChanged(BrowserAutoLaunchMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                AutoLaunch = value == BrowserAutoLaunchMode.AutoLaunch;
+                DisableAutoLaunch = value == BrowserAutoLaunchMode.DisableAutoLaunch;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
         /// <summary>
         /// 根据布尔属性的当前值同步设置枚举值（用于加载项目后保证一致性）
         /// </summary>
@@ -331,6 +399,34 @@ namespace ProjectManager.ViewModels.Dialogs
             else if (CacheNone) CacheMode = CacheMode.None;
             else if (CacheLru > 0) CacheMode = CacheMode.LRU;
             else CacheMode = CacheMode.Default;
+
+            // 同步文本编码器精度模式
+            if (Fp8E4M3FnTextEnc) TextEncoderPrecisionMode = TextEncoderPrecisionMode.FP8_E4M3FN;
+            else if (Fp8E5M2TextEnc) TextEncoderPrecisionMode = TextEncoderPrecisionMode.FP8_E5M2;
+            else if (Fp16TextEnc) TextEncoderPrecisionMode = TextEncoderPrecisionMode.FP16;
+            else if (Fp32TextEnc) TextEncoderPrecisionMode = TextEncoderPrecisionMode.FP32;
+            else if (Bf16TextEnc) TextEncoderPrecisionMode = TextEncoderPrecisionMode.BF16;
+            else TextEncoderPrecisionMode = TextEncoderPrecisionMode.None;
+
+            // 同步全局精度强制模式
+            if (ForceFp32) GlobalPrecisionForceMode = GlobalPrecisionForceMode.ForceFP32;
+            else if (ForceFp16) GlobalPrecisionForceMode = GlobalPrecisionForceMode.ForceFP16;
+            else GlobalPrecisionForceMode = GlobalPrecisionForceMode.None;
+
+            // 同步CUDA内存分配器模式
+            if (CudaMalloc) CudaMemoryAllocatorMode = CudaMemoryAllocatorMode.CudaMalloc;
+            else if (DisableCudaMalloc) CudaMemoryAllocatorMode = CudaMemoryAllocatorMode.DisableCudaMalloc;
+            else CudaMemoryAllocatorMode = CudaMemoryAllocatorMode.Default;
+
+            // 同步注意力上投模式
+            if (ForceUpcastAttention) AttentionUpcastMode = AttentionUpcastMode.ForceUpcast;
+            else if (DontUpcastAttention) AttentionUpcastMode = AttentionUpcastMode.DontUpcast;
+            else AttentionUpcastMode = AttentionUpcastMode.Default;
+
+            // 同步浏览器自动启动模式
+            if (AutoLaunch) BrowserAutoLaunchMode = BrowserAutoLaunchMode.AutoLaunch;
+            else if (DisableAutoLaunch) BrowserAutoLaunchMode = BrowserAutoLaunchMode.DisableAutoLaunch;
+            else BrowserAutoLaunchMode = BrowserAutoLaunchMode.Default;
         }
 
         [ObservableProperty]
@@ -1083,6 +1179,20 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             if (!_isUpdatingCommand)
             {
+                if (!string.IsNullOrEmpty(value) && value.Contains("ComboBoxItem:"))
+                {
+                    var idx = value.LastIndexOf(':');
+                    if (idx >= 0 && idx < value.Length - 1)
+                    {
+                        var cleaned = value[(idx + 1)..].Trim();
+                        if (!string.Equals(cleaned, value, StringComparison.Ordinal))
+                        {
+                            _isUpdatingCommand = true;
+                            try { PreviewMethod = cleaned; }
+                            finally { _isUpdatingCommand = false; }
+                        }
+                    }
+                }
                 UpdateStartCommand();
             }
         }
@@ -1633,6 +1743,22 @@ namespace ProjectManager.ViewModels.Dialogs
 
         [ObservableProperty]
         private bool _forceUpcastAttention = false;
+
+        // === 新增的枚举属性（互斥选项组） ===
+        [ObservableProperty]
+        private TextEncoderPrecisionMode _textEncoderPrecisionMode = TextEncoderPrecisionMode.None;
+
+        [ObservableProperty]
+        private GlobalPrecisionForceMode _globalPrecisionForceMode = GlobalPrecisionForceMode.None;
+
+        [ObservableProperty]
+        private CudaMemoryAllocatorMode _cudaMemoryAllocatorMode = CudaMemoryAllocatorMode.Default;
+
+        [ObservableProperty]
+        private AttentionUpcastMode _attentionUpcastMode = AttentionUpcastMode.Default;
+
+        [ObservableProperty]
+        private BrowserAutoLaunchMode _browserAutoLaunchMode = BrowserAutoLaunchMode.Default;
 
         [ObservableProperty]
         private bool _dontUpcastAttention = false;

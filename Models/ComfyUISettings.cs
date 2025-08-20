@@ -24,6 +24,11 @@ public class ComfyUISettings
     public VAEPrecisionMode VAEPrecisionMode { get; set; } = VAEPrecisionMode.None;
     public AttentionAlgorithmMode AttentionAlgorithmMode { get; set; } = AttentionAlgorithmMode.None;
     public CacheMode CacheMode { get; set; } = CacheMode.Default;
+    public TextEncoderPrecisionMode TextEncoderPrecisionMode { get; set; } = TextEncoderPrecisionMode.None;
+    public GlobalPrecisionForceMode GlobalPrecisionForceMode { get; set; } = GlobalPrecisionForceMode.None;
+    public CudaMemoryAllocatorMode CudaMemoryAllocatorMode { get; set; } = CudaMemoryAllocatorMode.Default;
+    public AttentionUpcastMode AttentionUpcastMode { get; set; } = AttentionUpcastMode.Default;
+    public BrowserAutoLaunchMode BrowserAutoLaunchMode { get; set; } = BrowserAutoLaunchMode.Default;
 
     // 目录设置
     public string BaseDirectory { get; set; } = string.Empty;

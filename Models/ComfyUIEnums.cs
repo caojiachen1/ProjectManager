@@ -179,3 +179,123 @@ public enum CacheMode
     /// </summary>
     LRU
 }
+
+/// <summary>
+/// ComfyUI 文本编码器精度枚举
+/// </summary>
+public enum TextEncoderPrecisionMode
+{
+    /// <summary>
+    /// 不设置特定精度（默认）
+    /// </summary>
+    None,
+    
+    /// <summary>
+    /// FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)
+    /// </summary>
+    FP8_E4M3FN,
+    
+    /// <summary>
+    /// FP8 E5M2 Text Encoder (--fp8_e5m2-text-enc)
+    /// </summary>
+    FP8_E5M2,
+    
+    /// <summary>
+    /// FP16 Text Encoder (--fp16-text-enc)
+    /// </summary>
+    FP16,
+    
+    /// <summary>
+    /// FP32 Text Encoder (--fp32-text-enc)
+    /// </summary>
+    FP32,
+    
+    /// <summary>
+    /// BF16 Text Encoder (--bf16-text-enc)
+    /// </summary>
+    BF16
+}
+
+/// <summary>
+/// ComfyUI 全局精度强制模式枚举
+/// </summary>
+public enum GlobalPrecisionForceMode
+{
+    /// <summary>
+    /// 不强制特定精度（默认）
+    /// </summary>
+    None,
+    
+    /// <summary>
+    /// 强制FP32 (--force-fp32)
+    /// </summary>
+    ForceFP32,
+    
+    /// <summary>
+    /// 强制FP16 (--force-fp16)
+    /// </summary>
+    ForceFP16
+}
+
+/// <summary>
+/// ComfyUI CUDA内存分配器模式枚举
+/// </summary>
+public enum CudaMemoryAllocatorMode
+{
+    /// <summary>
+    /// 默认分配器
+    /// </summary>
+    Default,
+    
+    /// <summary>
+    /// 使用CUDA分配器 (--cuda-malloc)
+    /// </summary>
+    CudaMalloc,
+    
+    /// <summary>
+    /// 禁用CUDA分配器 (--disable-cuda-malloc)
+    /// </summary>
+    DisableCudaMalloc
+}
+
+/// <summary>
+/// ComfyUI 注意力上投模式枚举
+/// </summary>
+public enum AttentionUpcastMode
+{
+    /// <summary>
+    /// 默认行为
+    /// </summary>
+    Default,
+    
+    /// <summary>
+    /// 强制上变换注意力 (--force-upcast-attention)
+    /// </summary>
+    ForceUpcast,
+    
+    /// <summary>
+    /// 禁用上变换注意力 (--dont-upcast-attention)
+    /// </summary>
+    DontUpcast
+}
+
+/// <summary>
+/// ComfyUI 浏览器自动启动模式枚举
+/// </summary>
+public enum BrowserAutoLaunchMode
+{
+    /// <summary>
+    /// 默认行为
+    /// </summary>
+    Default,
+    
+    /// <summary>
+    /// 自动启动浏览器 (--auto-launch)
+    /// </summary>
+    AutoLaunch,
+    
+    /// <summary>
+    /// 禁用自动启动浏览器 (--disable-auto-launch)
+    /// </summary>
+    DisableAutoLaunch
+}
