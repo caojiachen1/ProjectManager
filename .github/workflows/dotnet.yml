@@ -70,10 +70,27 @@ jobs:
           $latestTag = $null
         }
 
-        # Obtain commit message (may be empty for some event types)
-        $commitMessage = "${{ github.event.head_commit.message }}"
-        if ([string]::IsNullOrWhiteSpace($commitMessage)) {
-          try { $commitMessage = (git log -1 --pretty=%B) } catch { $commitMessage = "Update" }
+        # Obtain commit message safely from GitHub event JSON to support quotes and special chars
+        # GITHUB_EVENT_PATH points to the JSON file for the triggering event
+        $commitMessage = $null
+        if ($env:GITHUB_EVENT_PATH -and (Test-Path $env:GITHUB_EVENT_PATH)) {
+          try {
+            $eventJson = Get-Content $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json -ErrorAction Stop
+            # Try known locations for the commit message
+            if ($eventJson.head_commit -and $eventJson.head_commit.message) { $commitMessage = $eventJson.head_commit.message }
+            elseif ($eventJson.commits -and $eventJson.commits[-1].message) { $commitMessage = $eventJson.commits[-1].message }
+          } catch {
+            Write-Host "Warning: could not parse GITHUB_EVENT_PATH JSON: $_"
+          }
+        }
+
+        # Fallback to github context or git log if empty
+        if (-not $commitMessage -or [string]::IsNullOrWhiteSpace($commitMessage)) {
+          # Try to use the github context substitution (may be empty for some events)
+          try { $commitMessage = "${{ github.event.head_commit.message }}" } catch { $commitMessage = $null }
+          if (-not $commitMessage -or [string]::IsNullOrWhiteSpace($commitMessage)) {
+            try { $commitMessage = (git log -1 --pretty=%B) } catch { $commitMessage = "Update" }
+          }
         }
         Write-Host "Raw commit message:`n$commitMessage"
 
