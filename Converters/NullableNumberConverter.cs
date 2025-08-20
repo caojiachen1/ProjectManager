@@ -55,4 +55,54 @@ namespace ProjectManager.Converters
             return null;
         }
     }
+
+    /// <summary>
+    /// 专门用于可选数值设置的转换器，null值显示为空，从0开始调整
+    /// </summary>
+    public class OptionalNumberConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            // null值返回null，让NumberBox显示为空白而不是NaN
+            if (value == null)
+                return null;
+            
+            if (value is float floatValue)
+                return (double)floatValue;
+            
+            if (value is int intValue)
+                return (double)intValue;
+            
+            if (value is double doubleValue)
+                return doubleValue;
+            
+            // 尝试解析字符串
+            if (value is string stringValue && double.TryParse(stringValue, out double parsedValue))
+                return parsedValue;
+            
+            return null;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            // 空值或NaN都转换为null
+            if (value == null || (value is double d && (double.IsNaN(d) || double.IsInfinity(d))))
+                return null;
+            
+            if (value is double doubleValue)
+            {
+                // 根据目标类型转换
+                if (targetType == typeof(float?) || targetType == typeof(float))
+                    return (float)doubleValue;
+                
+                if (targetType == typeof(int?) || targetType == typeof(int))
+                    return (int)Math.Round(doubleValue);
+                
+                if (targetType == typeof(double?) || targetType == typeof(double))
+                    return doubleValue;
+            }
+            
+            return null;
+        }
+    }
 }

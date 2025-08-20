@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:helpers="clr-namespace:ProjectManager.Helpers"
+    xmlns:converters="clr-namespace:ProjectManager.Converters"
     Title="ComfyUI项目设置"
     Width="700"
     Height="800"
@@ -25,6 +26,8 @@
 
     <ui:FluentWindow.Resources>
         <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <converters:NullableToDoubleConverter x:Key="NullableToDoubleConverter"/>
+        <converters:OptionalNumberConverter x:Key="OptionalNumberConverter"/>
     </ui:FluentWindow.Resources>
 
     <Grid>
@@ -61,10 +64,12 @@
                         
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="服务端口" Margin="0,0,0,4"/>
-                            <ui:NumberBox Value="{Binding Port, UpdateSourceTrigger=PropertyChanged}" 
+                            <ui:NumberBox Value="{Binding Port, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NullableToDoubleConverter}}" 
                                           Minimum="1" 
                                           Maximum="65535"
-                                          PlaceholderText="8188"/>
+                                          PlaceholderText="8188"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
@@ -95,6 +100,17 @@
                                        Visibility="{Binding IsPythonPathValid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <Run Text="⚠ 请输入有效的Python可执行文件路径 (python.exe)"/>
                             </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="启动脚本文件" Margin="0,0,0,4"/>
+                            <ui:TextBox Text="{Binding StartupScript, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="main.py"
+                                        Margin="0,0,0,0"/>
+                            <TextBlock Margin="0,4,0,0"
+                                       FontSize="10"
+                                       Foreground="#666666"
+                                       Text="指定要执行的Python脚本文件，支持相对路径和绝对路径"/>
                         </StackPanel>
 
                         <CheckBox Content="启动时监听所有网络接口 (--listen)" 
@@ -134,26 +150,38 @@
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="预留显存 (GB)" Margin="0,0,0,4"/>
-                            <ui:NumberBox Value="{Binding ReserveVram, UpdateSourceTrigger=PropertyChanged}" 
+                            <ui:NumberBox Value="{Binding ReserveVram, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="0" 
                                           Maximum="32768"
-                                          PlaceholderText="留空使用默认"/>
+                                          PlaceholderText="留空使用默认"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"
+                                          SmallChange="0.5"
+                                          LargeChange="1"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="CUDA设备ID" Margin="0,0,0,4"/>
-                            <ui:NumberBox Value="{Binding CudaDevice, UpdateSourceTrigger=PropertyChanged}" 
+                            <ui:NumberBox Value="{Binding CudaDevice, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="0" 
                                           Maximum="15"
-                                          PlaceholderText="留空使用默认"/>
+                                          PlaceholderText="留空使用默认"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"
+                                          SmallChange="1"
+                                          LargeChange="1"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="DirectML设备ID" Margin="0,0,0,4"/>
-                            <ui:NumberBox Value="{Binding DirectmlDevice, UpdateSourceTrigger=PropertyChanged}" 
+                            <ui:NumberBox Value="{Binding DirectmlDevice, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="-1" 
                                           Maximum="15"
-                                          PlaceholderText="-1表示自动检测"/>
+                                          PlaceholderText="-1表示自动检测"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"
+                                          SmallChange="1"
+                                          LargeChange="1"/>
                         </StackPanel>
 
                         <CheckBox Content="异步卸载 (--async-offload)" 
@@ -287,7 +315,9 @@
                             <ui:NumberBox Value="{Binding CacheLru, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="0" 
                                           Maximum="1000"
-                                          PlaceholderText="0表示禁用"/>
+                                          PlaceholderText="0表示禁用"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
                         <TextBlock Text="预览设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
@@ -305,7 +335,9 @@
                             <ui:NumberBox Value="{Binding PreviewSize, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="64" 
                                           Maximum="2048"
-                                          PlaceholderText="512"/>
+                                          PlaceholderText="512"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
                         <TextBlock Text="性能优化" FontWeight="SemiBold" Margin="0,0,0,8"/>
@@ -469,7 +501,9 @@
                             <ui:NumberBox Value="{Binding MaxUploadSize, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="1" 
                                           Maximum="10240"
-                                          PlaceholderText="100"/>
+                                          PlaceholderText="100"
+                                          ValidationMode="InvalidInputOverwritten"
+                                          SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
                         <CheckBox Content="启用CORS (--enable-cors-header)" 

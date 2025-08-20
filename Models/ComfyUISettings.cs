@@ -15,6 +15,9 @@ public class ComfyUISettings
     public string CorsOrigin { get; set; } = "*";
     public float MaxUploadSize { get; set; } = 100;
 
+    // Python和脚本设置
+    public string StartupScript { get; set; } = "main.py";
+
     // 目录设置
     public string BaseDirectory { get; set; } = string.Empty;
     public string OutputDirectory { get; set; } = string.Empty;

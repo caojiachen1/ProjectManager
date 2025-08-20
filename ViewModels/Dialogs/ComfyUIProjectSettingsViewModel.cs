@@ -24,25 +24,90 @@ namespace ProjectManager.ViewModels.Dialogs
         private string _startCommand = "python main.py";
 
         [ObservableProperty]
-        private int _port = 8188;
+        private string _runCommand = "python main.py";
 
-        partial void OnPortChanged(int value)
+        [ObservableProperty]
+        private string _commandLineArguments = string.Empty;
+
+        [ObservableProperty]
+        private string _startupScript = "main.py";
+
+        partial void OnStartupScriptChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateRunCommand();
+                UpdateCompleteStartCommand();
+            }
+        }
+
+        partial void OnRunCommandChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateCompleteStartCommand();
+            }
+        }
+
+        partial void OnCommandLineArgumentsChanged(string value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                UpdateCompleteStartCommand();
+            }
+        }
+
+        /// <summary>
+        /// 更新完整的启动命令（运行命令 + 命令行参数）
+        /// </summary>
+        private void UpdateCompleteStartCommand()
+        {
+            _isUpdatingCommand = true;
+            try
+            {
+                var runCmd = string.IsNullOrWhiteSpace(RunCommand) ? "python main.py" : RunCommand.Trim();
+                var args = string.IsNullOrWhiteSpace(CommandLineArguments) ? "" : CommandLineArguments.Trim();
+                
+                StartCommand = string.IsNullOrWhiteSpace(args) ? runCmd : $"{runCmd} {args}";
+                OnPropertyChanged(nameof(StartCommand));
+            }
+            finally
+            {
+                _isUpdatingCommand = false;
+            }
+        }
+
+        [ObservableProperty]
+        private int? _port = 8188;
+
+        partial void OnPortChanged(int? value)
         {
             // 端口变化时立即更新启动命令
             if (!_isUpdatingCommand)
             {
+                // 如果端口为空，设置为默认值8188
+                if (!value.HasValue)
+                {
+                    _port = 8188;
+                    OnPropertyChanged(nameof(Port));
+                    UpdateStartCommand();
+                    return;
+                }
+
+                var portValue = value.Value;
+                
                 // 验证端口号：必须在1-65535范围内，建议使用1024-65535
-                if (value < 1)
+                if (portValue < 1)
                 {
                     Port = 8188; // 恢复默认值
                     return;
                 }
-                if (value > 65535)
+                if (portValue > 65535)
                 {
                     Port = 65535; // 限制最大端口号
                     return;
                 }
-                if (value < 1024)
+                if (portValue < 1024)
                 {
                     // 端口号小于1024需要管理员权限，显示警告但允许设置
                     // 可以考虑在UI中显示警告信息
@@ -1527,139 +1592,231 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private void UpdateStartCommand()
         {
+            UpdateRunCommand();
+            UpdateCommandLineArguments();
+            UpdateCompleteStartCommand();
+        }
+
+        /// <summary>
+        /// 更新运行命令部分
+        /// </summary>
+        private void UpdateRunCommand()
+        {
             _isUpdatingCommand = true;
             try
             {
-                var currentCommand = StartCommand ?? "python main.py";
-                
                 // 使用正则表达式更新Python路径，只有有效路径才使用
                 var pythonCommand = string.IsNullOrEmpty(PythonPath) || !IsValidPythonPath(PythonPath) ? "python" : $"\"{PythonPath}\"";
                 
-                // 更新Python可执行文件路径 (支持带引号和不带引号的路径)
-                var pythonPattern = @"^(""?[^""]*?(?:python(?:\.exe)?))""?(\s+main\.py.*)$";
-                var pythonReplacement = $"{pythonCommand}$2";
-                currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, pythonPattern, pythonReplacement, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                // 使用可配置的启动脚本，默认为 main.py
+                var scriptPath = string.IsNullOrWhiteSpace(StartupScript) ? "main.py" : StartupScript.Trim();
+                
+                RunCommand = $"{pythonCommand} {scriptPath}";
+                OnPropertyChanged(nameof(RunCommand));
+            }
+            finally
+            {
+                _isUpdatingCommand = false;
+            }
+        }
+
+        /// <summary>
+        /// 更新命令行参数部分
+        /// </summary>
+        private void UpdateCommandLineArguments()
+        {
+            _isUpdatingCommand = true;
+            try
+            {
+                var arguments = new List<string>();
 
                 // === 基础网络设置 ===
-                // 更新--listen参数
+                // --listen参数
                 if (ListenAllInterfaces)
                 {
-                    // 如果设置了监听所有接口，添加--listen
                     if (!string.IsNullOrEmpty(ListenAddress) && ListenAddress != "127.0.0.1")
                     {
-                        // 如果指定了具体地址，使用该地址
-                        UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", true, $"--listen {ListenAddress}");
+                        arguments.Add($"--listen {ListenAddress}");
                     }
                     else
                     {
-                        // 否则使用默认的所有接口
-                        UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", true, "--listen");
+                        arguments.Add("--listen");
                     }
                 }
-                else
-                {
-                    // 移除--listen参数
-                    UpdateArgument(ref currentCommand, @"\s*--listen(?:\s+[^\s]+)?", false, "");
-                }
                 
-                // 更新端口设置
-                UpdateArgument(ref currentCommand, @"\s*--port\s+\d+", Port != 8188, $"--port {Port}");
+                // 端口设置
+                var portValue = Port ?? 8188;
+                if (portValue != 8188)
+                {
+                    arguments.Add($"--port {portValue}");
+                }
 
                 // TLS设置
-                UpdateArgument(ref currentCommand, @"\s*--tls-keyfile\s+\S+", !string.IsNullOrEmpty(TlsKeyFile), $"--tls-keyfile \"{TlsKeyFile}\"");
-                UpdateArgument(ref currentCommand, @"\s*--tls-certfile\s+\S+", !string.IsNullOrEmpty(TlsCertFile), $"--tls-certfile \"{TlsCertFile}\"");
+                if (!string.IsNullOrEmpty(TlsKeyFile))
+                    arguments.Add($"--tls-keyfile \"{TlsKeyFile}\"");
+                if (!string.IsNullOrEmpty(TlsCertFile))
+                    arguments.Add($"--tls-certfile \"{TlsCertFile}\"");
                 
                 // CORS设置
-                UpdateArgument(ref currentCommand, @"\s*--enable-cors-header(?:\s+\S+)?", EnableCorsHeader, 
-                    !string.IsNullOrEmpty(CorsOrigin) && CorsOrigin != "*" ? $"--enable-cors-header {CorsOrigin}" : "--enable-cors-header");
+                if (EnableCorsHeader)
+                {
+                    if (!string.IsNullOrEmpty(CorsOrigin) && CorsOrigin != "*")
+                        arguments.Add($"--enable-cors-header {CorsOrigin}");
+                    else
+                        arguments.Add("--enable-cors-header");
+                }
                 
                 // 上传大小设置
-                UpdateArgument(ref currentCommand, @"\s*--max-upload-size\s+[\d.]+", MaxUploadSize != 100, $"--max-upload-size {MaxUploadSize}");
+                if (MaxUploadSize != 100)
+                    arguments.Add($"--max-upload-size {MaxUploadSize}");
 
                 // === 目录设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--base-directory\s+\S+", !string.IsNullOrEmpty(BaseDirectory), $"--base-directory \"{BaseDirectory}\"");
-                UpdateArgument(ref currentCommand, @"\s*--output-directory\s+\S+", !string.IsNullOrEmpty(OutputDirectory), $"--output-directory \"{OutputDirectory}\"");
-                UpdateArgument(ref currentCommand, @"\s*--temp-directory\s+\S+", !string.IsNullOrEmpty(TempDirectory), $"--temp-directory \"{TempDirectory}\"");
-                UpdateArgument(ref currentCommand, @"\s*--input-directory\s+\S+", !string.IsNullOrEmpty(InputDirectory), $"--input-directory \"{InputDirectory}\"");
-                UpdateArgument(ref currentCommand, @"\s*--user-directory\s+\S+", !string.IsNullOrEmpty(UserDirectory), $"--user-directory \"{UserDirectory}\"");
-                UpdateArgument(ref currentCommand, @"\s*--extra-model-paths-config\s+\S+", !string.IsNullOrEmpty(ExtraModelPathsConfig), $"--extra-model-paths-config \"{ExtraModelPathsConfig}\"");
+                if (!string.IsNullOrEmpty(BaseDirectory))
+                    arguments.Add($"--base-directory \"{BaseDirectory}\"");
+                if (!string.IsNullOrEmpty(OutputDirectory))
+                    arguments.Add($"--output-directory \"{OutputDirectory}\"");
+                if (!string.IsNullOrEmpty(TempDirectory))
+                    arguments.Add($"--temp-directory \"{TempDirectory}\"");
+                if (!string.IsNullOrEmpty(InputDirectory))
+                    arguments.Add($"--input-directory \"{InputDirectory}\"");
+                if (!string.IsNullOrEmpty(UserDirectory))
+                    arguments.Add($"--user-directory \"{UserDirectory}\"");
+                if (!string.IsNullOrEmpty(ExtraModelPathsConfig))
+                    arguments.Add($"--extra-model-paths-config \"{ExtraModelPathsConfig}\"");
 
                 // === 启动设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--auto-launch\b", AutoLaunch, "--auto-launch");
-                UpdateArgument(ref currentCommand, @"\s*--disable-auto-launch\b", DisableAutoLaunch, "--disable-auto-launch");
+                if (AutoLaunch)
+                    arguments.Add("--auto-launch");
+                if (DisableAutoLaunch)
+                    arguments.Add("--disable-auto-launch");
 
                 // === GPU/CUDA设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--cuda-device\s+\d+", CudaDevice.HasValue, CudaDevice.HasValue ? $"--cuda-device {CudaDevice.Value}" : "");
-                UpdateArgument(ref currentCommand, @"\s*--default-device\s+\d+", DefaultDevice.HasValue, DefaultDevice.HasValue ? $"--default-device {DefaultDevice.Value}" : "");
-                UpdateArgument(ref currentCommand, @"\s*--cuda-malloc\b", CudaMalloc, "--cuda-malloc");
-                UpdateArgument(ref currentCommand, @"\s*--disable-cuda-malloc\b", DisableCudaMalloc, "--disable-cuda-malloc");
-                UpdateArgument(ref currentCommand, @"\s*--directml(?:\s+\d+)?\b", DirectmlDevice.HasValue, 
-                    DirectmlDevice.HasValue ? (DirectmlDevice.Value == -1 ? "--directml" : $"--directml {DirectmlDevice.Value}") : "");
-                UpdateArgument(ref currentCommand, @"\s*--oneapi-device-selector\s+\S+", !string.IsNullOrEmpty(OneApiDeviceSelector), $"--oneapi-device-selector {OneApiDeviceSelector}");
-                UpdateArgument(ref currentCommand, @"\s*--disable-ipex-optimize\b", DisableIpexOptimize, "--disable-ipex-optimize");
-                UpdateArgument(ref currentCommand, @"\s*--supports-fp8-compute\b", SupportsFp8Compute, "--supports-fp8-compute");
+                if (CudaDevice.HasValue)
+                    arguments.Add($"--cuda-device {CudaDevice.Value}");
+                if (DefaultDevice.HasValue)
+                    arguments.Add($"--default-device {DefaultDevice.Value}");
+                if (CudaMalloc)
+                    arguments.Add("--cuda-malloc");
+                if (DisableCudaMalloc)
+                    arguments.Add("--disable-cuda-malloc");
+                if (DirectmlDevice.HasValue)
+                {
+                    if (DirectmlDevice.Value == -1)
+                        arguments.Add("--directml");
+                    else
+                        arguments.Add($"--directml {DirectmlDevice.Value}");
+                }
+                if (!string.IsNullOrEmpty(OneApiDeviceSelector))
+                    arguments.Add($"--oneapi-device-selector {OneApiDeviceSelector}");
+                if (DisableIpexOptimize)
+                    arguments.Add("--disable-ipex-optimize");
+                if (SupportsFp8Compute)
+                    arguments.Add("--supports-fp8-compute");
 
-                // === 精度设置（互斥组处理） ===
-                UpdateArgument(ref currentCommand, @"\s*--force-fp32\b", ForceFp32, "--force-fp32");
-                UpdateArgument(ref currentCommand, @"\s*--force-fp16\b", ForceFp16, "--force-fp16");
+                // === 精度设置 ===
+                if (ForceFp32)
+                    arguments.Add("--force-fp32");
+                if (ForceFp16)
+                    arguments.Add("--force-fp16");
                 
-                // UNet精度（互斥组）
-                UpdateArgument(ref currentCommand, @"\s*--fp32-unet\b", Fp32Unet, "--fp32-unet");
-                UpdateArgument(ref currentCommand, @"\s*--fp64-unet\b", Fp64Unet, "--fp64-unet");
-                UpdateArgument(ref currentCommand, @"\s*--bf16-unet\b", Bf16Unet, "--bf16-unet");
-                UpdateArgument(ref currentCommand, @"\s*--fp16-unet\b", Fp16Unet, "--fp16-unet");
-                UpdateArgument(ref currentCommand, @"\s*--fp8_e4m3fn-unet\b", Fp8E4M3FnUnet, "--fp8_e4m3fn-unet");
-                UpdateArgument(ref currentCommand, @"\s*--fp8_e5m2-unet\b", Fp8E5M2Unet, "--fp8_e5m2-unet");
-                UpdateArgument(ref currentCommand, @"\s*--fp8_e8m0fnu-unet\b", Fp8E8M0FnuUnet, "--fp8_e8m0fnu-unet");
+                // UNet精度
+                if (Fp32Unet)
+                    arguments.Add("--fp32-unet");
+                if (Fp64Unet)
+                    arguments.Add("--fp64-unet");
+                if (Bf16Unet)
+                    arguments.Add("--bf16-unet");
+                if (Fp16Unet)
+                    arguments.Add("--fp16-unet");
+                if (Fp8E4M3FnUnet)
+                    arguments.Add("--fp8_e4m3fn-unet");
+                if (Fp8E5M2Unet)
+                    arguments.Add("--fp8_e5m2-unet");
+                if (Fp8E8M0FnuUnet)
+                    arguments.Add("--fp8_e8m0fnu-unet");
                 
-                // VAE精度（互斥组）
-                UpdateArgument(ref currentCommand, @"\s*--fp16-vae\b", Fp16Vae, "--fp16-vae");
-                UpdateArgument(ref currentCommand, @"\s*--fp32-vae\b", Fp32Vae, "--fp32-vae");
-                UpdateArgument(ref currentCommand, @"\s*--bf16-vae\b", Bf16Vae, "--bf16-vae");
-                UpdateArgument(ref currentCommand, @"\s*--cpu-vae\b", CpuVae, "--cpu-vae");
+                // VAE精度
+                if (Fp16Vae)
+                    arguments.Add("--fp16-vae");
+                if (Fp32Vae)
+                    arguments.Add("--fp32-vae");
+                if (Bf16Vae)
+                    arguments.Add("--bf16-vae");
+                if (CpuVae)
+                    arguments.Add("--cpu-vae");
                 
                 // 文本编码器精度
-                UpdateArgument(ref currentCommand, @"\s*--fp8_e4m3fn-text-enc\b", Fp8E4M3FnTextEnc, "--fp8_e4m3fn-text-enc");
-                UpdateArgument(ref currentCommand, @"\s*--fp8_e5m2-text-enc\b", Fp8E5M2TextEnc, "--fp8_e5m2-text-enc");
-                UpdateArgument(ref currentCommand, @"\s*--fp16-text-enc\b", Fp16TextEnc, "--fp16-text-enc");
-                UpdateArgument(ref currentCommand, @"\s*--fp32-text-enc\b", Fp32TextEnc, "--fp32-text-enc");
-                UpdateArgument(ref currentCommand, @"\s*--bf16-text-enc\b", Bf16TextEnc, "--bf16-text-enc");
+                if (Fp8E4M3FnTextEnc)
+                    arguments.Add("--fp8_e4m3fn-text-enc");
+                if (Fp8E5M2TextEnc)
+                    arguments.Add("--fp8_e5m2-text-enc");
+                if (Fp16TextEnc)
+                    arguments.Add("--fp16-text-enc");
+                if (Fp32TextEnc)
+                    arguments.Add("--fp32-text-enc");
+                if (Bf16TextEnc)
+                    arguments.Add("--bf16-text-enc");
                 
-                UpdateArgument(ref currentCommand, @"\s*--force-channels-last\b", ForceChannelsLast, "--force-channels-last");
+                if (ForceChannelsLast)
+                    arguments.Add("--force-channels-last");
 
-                // === 内存管理（互斥组） ===
-                UpdateArgument(ref currentCommand, @"\s*--gpu-only\b", GpuOnly, "--gpu-only");
-                UpdateArgument(ref currentCommand, @"\s*--highvram\b", HighVram, "--highvram");
-                UpdateArgument(ref currentCommand, @"\s*--normalvram\b", NormalVram, "--normalvram");
-                UpdateArgument(ref currentCommand, @"\s*--lowvram\b", LowVramMode, "--lowvram");
-                UpdateArgument(ref currentCommand, @"\s*--novram\b", NoVram, "--novram");
-                UpdateArgument(ref currentCommand, @"\s*--cpu\b", CpuMode, "--cpu");
-                UpdateArgument(ref currentCommand, @"\s*--reserve-vram\s+[\d.]+", ReserveVram.HasValue, ReserveVram.HasValue ? $"--reserve-vram {ReserveVram.Value}" : "");
-                UpdateArgument(ref currentCommand, @"\s*--async-offload\b", AsyncOffload, "--async-offload");
-                UpdateArgument(ref currentCommand, @"\s*--force-non-blocking\b", ForceNonBlocking, "--force-non-blocking");
-                UpdateArgument(ref currentCommand, @"\s*--disable-smart-memory\b", DisableSmartMemory, "--disable-smart-memory");
+                // === 内存管理 ===
+                if (GpuOnly)
+                    arguments.Add("--gpu-only");
+                if (HighVram)
+                    arguments.Add("--highvram");
+                if (NormalVram)
+                    arguments.Add("--normalvram");
+                if (LowVramMode)
+                    arguments.Add("--lowvram");
+                if (NoVram)
+                    arguments.Add("--novram");
+                if (CpuMode)
+                    arguments.Add("--cpu");
+                if (ReserveVram.HasValue)
+                    arguments.Add($"--reserve-vram {ReserveVram.Value}");
+                if (AsyncOffload)
+                    arguments.Add("--async-offload");
+                if (ForceNonBlocking)
+                    arguments.Add("--force-non-blocking");
+                if (DisableSmartMemory)
+                    arguments.Add("--disable-smart-memory");
 
                 // === 预览设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--preview-method\s+\w+", PreviewMethod != "none", $"--preview-method {PreviewMethod}");
-                UpdateArgument(ref currentCommand, @"\s*--preview-size\s+\d+", PreviewSize != 512, $"--preview-size {PreviewSize}");
+                if (PreviewMethod != "none")
+                    arguments.Add($"--preview-method {PreviewMethod}");
+                if (PreviewSize != 512)
+                    arguments.Add($"--preview-size {PreviewSize}");
 
-                // === 缓存设置（互斥组） ===
-                UpdateArgument(ref currentCommand, @"\s*--cache-classic\b", CacheClassic, "--cache-classic");
-                UpdateArgument(ref currentCommand, @"\s*--cache-lru\s+\d+", CacheLru > 0, $"--cache-lru {CacheLru}");
-                UpdateArgument(ref currentCommand, @"\s*--cache-none\b", CacheNone, "--cache-none");
+                // === 缓存设置 ===
+                if (CacheClassic)
+                    arguments.Add("--cache-classic");
+                if (CacheLru > 0)
+                    arguments.Add($"--cache-lru {CacheLru}");
+                if (CacheNone)
+                    arguments.Add("--cache-none");
 
-                // === 注意力机制（互斥组） ===
-                UpdateArgument(ref currentCommand, @"\s*--use-split-cross-attention\b", UseSplitCrossAttention, "--use-split-cross-attention");
-                UpdateArgument(ref currentCommand, @"\s*--use-quad-cross-attention\b", UseQuadCrossAttention, "--use-quad-cross-attention");
-                UpdateArgument(ref currentCommand, @"\s*--use-pytorch-cross-attention\b", UsePytorchCrossAttention, "--use-pytorch-cross-attention");
-                UpdateArgument(ref currentCommand, @"\s*--use-sage-attention\b", UseSageAttention, "--use-sage-attention");
-                UpdateArgument(ref currentCommand, @"\s*--use-flash-attention\b", UseFlashAttention, "--use-flash-attention");
-                UpdateArgument(ref currentCommand, @"\s*--disable-xformers\b", DisableXformers, "--disable-xformers");
-                UpdateArgument(ref currentCommand, @"\s*--force-upcast-attention\b", ForceUpcastAttention, "--force-upcast-attention");
-                UpdateArgument(ref currentCommand, @"\s*--dont-upcast-attention\b", DontUpcastAttention, "--dont-upcast-attention");
+                // === 注意力机制 ===
+                if (UseSplitCrossAttention)
+                    arguments.Add("--use-split-cross-attention");
+                if (UseQuadCrossAttention)
+                    arguments.Add("--use-quad-cross-attention");
+                if (UsePytorchCrossAttention)
+                    arguments.Add("--use-pytorch-cross-attention");
+                if (UseSageAttention)
+                    arguments.Add("--use-sage-attention");
+                if (UseFlashAttention)
+                    arguments.Add("--use-flash-attention");
+                if (DisableXformers)
+                    arguments.Add("--disable-xformers");
+                if (ForceUpcastAttention)
+                    arguments.Add("--force-upcast-attention");
+                if (DontUpcastAttention)
+                    arguments.Add("--dont-upcast-attention");
 
                 // === 性能设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--deterministic\b", Deterministic, "--deterministic");
+                if (Deterministic)
+                    arguments.Add("--deterministic");
                 
                 // Fast模式设置
                 var fastArgs = new List<string>();
@@ -1668,61 +1825,67 @@ namespace ProjectManager.ViewModels.Dialogs
                 if (FastCublasOps) fastArgs.Add("cublas_ops");
                 
                 if (fastArgs.Any())
-                {
-                    UpdateArgument(ref currentCommand, @"\s*--fast(?:\s+\S+)*", true, $"--fast {string.Join(" ", fastArgs)}");
-                }
-                else
-                {
-                    UpdateArgument(ref currentCommand, @"\s*--fast(?:\s+\S+)*", false, "");
-                }
+                    arguments.Add($"--fast {string.Join(" ", fastArgs)}");
                 
-                UpdateArgument(ref currentCommand, @"\s*--mmap-torch-files\b", MmapTorchFiles, "--mmap-torch-files");
-                UpdateArgument(ref currentCommand, @"\s*--disable-mmap\b", DisableMmap, "--disable-mmap");
+                if (MmapTorchFiles)
+                    arguments.Add("--mmap-torch-files");
+                if (DisableMmap)
+                    arguments.Add("--disable-mmap");
 
                 // === 哈希设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--default-hashing-function\s+\w+", DefaultHashingFunction != "sha256", $"--default-hashing-function {DefaultHashingFunction}");
+                if (DefaultHashingFunction != "sha256")
+                    arguments.Add($"--default-hashing-function {DefaultHashingFunction}");
 
                 // === 调试和日志设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--dont-print-server\b", DontPrintServer, "--dont-print-server");
-                UpdateArgument(ref currentCommand, @"\s*--quick-test-for-ci\b", QuickTestForCi, "--quick-test-for-ci");
-                UpdateArgument(ref currentCommand, @"\s*--windows-standalone-build\b", WindowsStandaloneBuild, "--windows-standalone-build");
-                UpdateArgument(ref currentCommand, @"\s*--verbose\s+\w+", Verbose != "INFO", $"--verbose {Verbose}");
-                UpdateArgument(ref currentCommand, @"\s*--log-stdout\b", LogStdout, "--log-stdout");
+                if (DontPrintServer)
+                    arguments.Add("--dont-print-server");
+                if (QuickTestForCi)
+                    arguments.Add("--quick-test-for-ci");
+                if (WindowsStandaloneBuild)
+                    arguments.Add("--windows-standalone-build");
+                if (Verbose != "INFO")
+                    arguments.Add($"--verbose {Verbose}");
+                if (LogStdout)
+                    arguments.Add("--log-stdout");
 
                 // === 元数据和自定义节点 ===
-                UpdateArgument(ref currentCommand, @"\s*--disable-metadata\b", DisableMetadata, "--disable-metadata");
-                UpdateArgument(ref currentCommand, @"\s*--disable-all-custom-nodes\b", DisableAllCustomNodes, "--disable-all-custom-nodes");
-                UpdateArgument(ref currentCommand, @"\s*--whitelist-custom-nodes\s+\S+", !string.IsNullOrEmpty(WhitelistCustomNodes), $"--whitelist-custom-nodes {WhitelistCustomNodes}");
-                UpdateArgument(ref currentCommand, @"\s*--disable-api-nodes\b", DisableApiNodes, "--disable-api-nodes");
+                if (DisableMetadata)
+                    arguments.Add("--disable-metadata");
+                if (DisableAllCustomNodes)
+                    arguments.Add("--disable-all-custom-nodes");
+                if (!string.IsNullOrEmpty(WhitelistCustomNodes))
+                    arguments.Add($"--whitelist-custom-nodes {WhitelistCustomNodes}");
+                if (DisableApiNodes)
+                    arguments.Add("--disable-api-nodes");
 
                 // === 多用户设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--multi-user\b", MultiUser, "--multi-user");
+                if (MultiUser)
+                    arguments.Add("--multi-user");
 
                 // === 前端设置 ===
-                UpdateArgument(ref currentCommand, @"\s*--front-end-version\s+\S+", FrontEndVersion != "comfyanonymous/ComfyUI@latest", $"--front-end-version {FrontEndVersion}");
-                UpdateArgument(ref currentCommand, @"\s*--front-end-root\s+\S+", !string.IsNullOrEmpty(FrontEndRoot), $"--front-end-root \"{FrontEndRoot}\"");
-                UpdateArgument(ref currentCommand, @"\s*--enable-compress-response-body\b", EnableCompressResponseBody, "--enable-compress-response-body");
-                UpdateArgument(ref currentCommand, @"\s*--comfy-api-base\s+\S+", ComfyApiBase != "https://api.comfy.org", $"--comfy-api-base {ComfyApiBase}");
-                UpdateArgument(ref currentCommand, @"\s*--database-url\s+\S+", !string.IsNullOrEmpty(DatabaseUrl), $"--database-url \"{DatabaseUrl}\"");
+                if (FrontEndVersion != "comfyanonymous/ComfyUI@latest")
+                    arguments.Add($"--front-end-version {FrontEndVersion}");
+                if (!string.IsNullOrEmpty(FrontEndRoot))
+                    arguments.Add($"--front-end-root \"{FrontEndRoot}\"");
+                if (EnableCompressResponseBody)
+                    arguments.Add("--enable-compress-response-body");
+                if (ComfyApiBase != "https://api.comfy.org")
+                    arguments.Add($"--comfy-api-base {ComfyApiBase}");
+                if (!string.IsNullOrEmpty(DatabaseUrl))
+                    arguments.Add($"--database-url \"{DatabaseUrl}\"");
 
                 // 添加额外参数（如果有）
                 if (!string.IsNullOrEmpty(ExtraArgs))
-                {
-                    currentCommand += $" {ExtraArgs}";
-                }
+                    arguments.Add(ExtraArgs.Trim());
 
-                // 清理多余的空格
-                currentCommand = System.Text.RegularExpressions.Regex.Replace(currentCommand, @"\s+", " ").Trim();
-                
-                StartCommand = currentCommand;
+                // 生成最终的命令行参数字符串
+                CommandLineArguments = string.Join(" ", arguments);
+                OnPropertyChanged(nameof(CommandLineArguments));
             }
             finally
             {
                 _isUpdatingCommand = false;
             }
-            
-            // 在命令更新完成后更新建议
-            UpdateStartCommandSuggestions();
         }
 
         private void UpdateArgument(ref string command, string pattern, bool condition, string argument)
@@ -1773,6 +1936,9 @@ namespace ProjectManager.ViewModels.Dialogs
                     EnableCorsHeader = settings.EnableCorsHeader;
                     CorsOrigin = settings.CorsOrigin;
                     MaxUploadSize = settings.MaxUploadSize;
+
+                    // Python和脚本设置
+                    StartupScript = settings.StartupScript;
 
                     // 目录设置
                     BaseDirectory = settings.BaseDirectory;
@@ -2460,12 +2626,15 @@ namespace ProjectManager.ViewModels.Dialogs
                         // 基础设置
                         ListenAddress = ListenAddress,
                         ListenAllInterfaces = ListenAllInterfaces,
-                        Port = Port,
+                        Port = Port ?? 8188, // 如果为空则使用默认值
                         TlsKeyFile = TlsKeyFile,
                         TlsCertFile = TlsCertFile,
                         EnableCorsHeader = EnableCorsHeader,
                         CorsOrigin = CorsOrigin,
                         MaxUploadSize = MaxUploadSize,
+
+                        // Python和脚本设置
+                        StartupScript = StartupScript,
 
                         // 目录设置
                         BaseDirectory = BaseDirectory,
