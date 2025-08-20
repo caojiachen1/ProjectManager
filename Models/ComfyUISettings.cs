@@ -18,6 +18,13 @@ public class ComfyUISettings
     // Python和脚本设置
     public string StartupScript { get; set; } = "main.py";
 
+    // 互斥选项组（下拉菜单）
+    public MemoryManagementMode MemoryManagementMode { get; set; } = MemoryManagementMode.None;
+    public UNetPrecisionMode UNetPrecisionMode { get; set; } = UNetPrecisionMode.None;
+    public VAEPrecisionMode VAEPrecisionMode { get; set; } = VAEPrecisionMode.None;
+    public AttentionAlgorithmMode AttentionAlgorithmMode { get; set; } = AttentionAlgorithmMode.None;
+    public CacheMode CacheMode { get; set; } = CacheMode.Default;
+
     // 目录设置
     public string BaseDirectory { get; set; } = string.Empty;
     public string OutputDirectory { get; set; } = string.Empty;

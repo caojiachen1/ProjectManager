@@ -28,6 +28,11 @@
         <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <converters:NullableToDoubleConverter x:Key="NullableToDoubleConverter"/>
         <converters:OptionalNumberConverter x:Key="OptionalNumberConverter"/>
+        <converters:MemoryManagementModeConverter x:Key="MemoryManagementModeConverter"/>
+        <converters:UNetPrecisionModeConverter x:Key="UNetPrecisionModeConverter"/>
+        <converters:VAEPrecisionModeConverter x:Key="VAEPrecisionModeConverter"/>
+        <converters:AttentionAlgorithmModeConverter x:Key="AttentionAlgorithmModeConverter"/>
+        <converters:CacheModeConverter x:Key="CacheModeConverter"/>
     </ui:FluentWindow.Resources>
 
     <Grid>
@@ -128,25 +133,18 @@
                 <!-- 内存和GPU设置 -->
                 <Expander Header="内存和GPU设置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="内存管理模式（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="仅使用GPU (--gpu-only)" 
-                                  IsChecked="{Binding GpuOnly}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="高显存模式 (--highvram)" 
-                                  IsChecked="{Binding HighVram}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="标准显存模式 (--normalvram)" 
-                                  IsChecked="{Binding NormalVram}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="低显存模式 (--lowvram)" 
-                                  IsChecked="{Binding LowVramMode}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="无显存模式 (--novram)" 
-                                  IsChecked="{Binding NoVram}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="使用CPU运行 (--cpu)" 
-                                  IsChecked="{Binding CpuMode}"
-                                  Margin="0,0,0,12"/>
+                        <TextBlock Text="内存管理模式" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding MemoryManagementMode}"
+                                  SelectedValuePath="Tag"
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
+                            <ComboBoxItem Content="仅使用GPU (--gpu-only)" Tag="GpuOnly"/>
+                            <ComboBoxItem Content="高显存模式 (--highvram)" Tag="HighVram"/>
+                            <ComboBoxItem Content="标准显存模式 (--normalvram)" Tag="NormalVram"/>
+                            <ComboBoxItem Content="低显存模式 (--lowvram)" Tag="LowVram"/>
+                            <ComboBoxItem Content="无显存模式 (--novram)" Tag="NoVram"/>
+                            <ComboBoxItem Content="使用CPU运行 (--cpu)" Tag="CpuMode"/>
+                        </ComboBox>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="预留显存 (GB)" Margin="0,0,0,4"/>
@@ -207,42 +205,30 @@
                                   IsChecked="{Binding ForceFp16}" 
                                   Margin="0,0,0,12"/>
 
-                        <TextBlock Text="UNet模型精度（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="FP32 UNet (--fp32-unet)" 
-                                  IsChecked="{Binding Fp32Unet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP64 UNet (--fp64-unet)" 
-                                  IsChecked="{Binding Fp64Unet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="BF16 UNet (--bf16-unet)" 
-                                  IsChecked="{Binding Bf16Unet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP16 UNet (--fp16-unet)" 
-                                  IsChecked="{Binding Fp16Unet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP8 E4M3FN UNet (--fp8_e4m3fn-unet)" 
-                                  IsChecked="{Binding Fp8E4M3FnUnet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP8 E5M2 UNet (--fp8_e5m2-unet)" 
-                                  IsChecked="{Binding Fp8E5M2Unet}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP8 E8M0FNU UNet (--fp8_e8m0fnu-unet)" 
-                                  IsChecked="{Binding Fp8E8M0FnuUnet}" 
-                                  Margin="0,0,0,12"/>
+                        <TextBlock Text="UNet模型精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding UnetPrecisionMode}"
+                                  SelectedValuePath="Tag"
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
+                            <ComboBoxItem Content="FP32 UNet (--fp32-unet)" Tag="FP32"/>
+                            <ComboBoxItem Content="FP64 UNet (--fp64-unet)" Tag="FP64"/>
+                            <ComboBoxItem Content="BF16 UNet (--bf16-unet)" Tag="BF16"/>
+                            <ComboBoxItem Content="FP16 UNet (--fp16-unet)" Tag="FP16"/>
+                            <ComboBoxItem Content="FP8 E4M3FN UNet (--fp8_e4m3fn-unet)" Tag="FP8_E4M3FN"/>
+                            <ComboBoxItem Content="FP8 E5M2 UNet (--fp8_e5m2-unet)" Tag="FP8_E5M2"/>
+                            <ComboBoxItem Content="FP8 E8M0FNU UNet (--fp8_e8m0fnu-unet)" Tag="FP8_E8M0FNU"/>
+                        </ComboBox>
 
-                        <TextBlock Text="VAE模型精度（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="FP16 VAE (--fp16-vae)" 
-                                  IsChecked="{Binding Fp16Vae}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="FP32 VAE (--fp32-vae)" 
-                                  IsChecked="{Binding Fp32Vae}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="BF16 VAE (--bf16-vae)" 
-                                  IsChecked="{Binding Bf16Vae}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="CPU VAE (--cpu-vae)" 
-                                  IsChecked="{Binding CpuVae}" 
-                                  Margin="0,0,0,12"/>
+                        <TextBlock Text="VAE模型精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding VaePrecisionMode}"
+                                  SelectedValuePath="Tag"
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
+                            <ComboBoxItem Content="FP16 VAE (--fp16-vae)" Tag="FP16"/>
+                            <ComboBoxItem Content="FP32 VAE (--fp32-vae)" Tag="FP32"/>
+                            <ComboBoxItem Content="BF16 VAE (--bf16-vae)" Tag="BF16"/>
+                            <ComboBoxItem Content="CPU VAE (--cpu-vae)" Tag="CPU"/>
+                        </ComboBox>
 
                         <TextBlock Text="文本编码器精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <CheckBox Content="FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)" 
@@ -270,22 +256,17 @@
                 <!-- 注意力机制设置 -->
                 <Expander Header="注意力机制设置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="注意力算法（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="使用分割交叉注意力 (--use-split-cross-attention)" 
-                                  IsChecked="{Binding UseSplitCrossAttention}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="使用四元交叉注意力 (--use-quad-cross-attention)" 
-                                  IsChecked="{Binding UseQuadCrossAttention}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="使用PyTorch交叉注意力 (--use-pytorch-cross-attention)" 
-                                  IsChecked="{Binding UsePytorchCrossAttention}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="使用Sage注意力 (--use-sage-attention)" 
-                                  IsChecked="{Binding UseSageAttention}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="使用Flash注意力 (--use-flash-attention)" 
-                                  IsChecked="{Binding UseFlashAttention}" 
-                                  Margin="0,0,0,12"/>
+                        <TextBlock Text="注意力算法" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding AttentionAlgorithmMode}"
+                                  SelectedValuePath="Tag"
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
+                            <ComboBoxItem Content="分割交叉注意力 (--use-split-cross-attention)" Tag="SplitCrossAttention"/>
+                            <ComboBoxItem Content="四元交叉注意力 (--use-quad-cross-attention)" Tag="QuadCrossAttention"/>
+                            <ComboBoxItem Content="PyTorch交叉注意力 (--use-pytorch-cross-attention)" Tag="PytorchCrossAttention"/>
+                            <ComboBoxItem Content="Sage注意力 (--use-sage-attention)" Tag="SageAttention"/>
+                            <ComboBoxItem Content="Flash注意力 (--use-flash-attention)" Tag="FlashAttention"/>
+                        </ComboBox>
 
                         <TextBlock Text="其他注意力设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <CheckBox Content="禁用Xformers (--disable-xformers)" 
@@ -303,15 +284,17 @@
                 <!-- 缓存和性能设置 -->
                 <Expander Header="缓存和性能设置" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="缓存模式（互斥选择）" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="经典缓存 (--cache-classic)" 
-                                  IsChecked="{Binding CacheClassic}" 
-                                  Margin="0,0,0,8"/>
-                        <CheckBox Content="无缓存 (--cache-none)" 
-                                  IsChecked="{Binding CacheNone}" 
-                                  Margin="0,0,0,8"/>
+                        <TextBlock Text="缓存模式" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedValue="{Binding CacheMode}"
+                                  SelectedValuePath="Tag"
+                                  Margin="0,0,0,8">
+                            <ComboBoxItem Content="默认缓存模式" Tag="Default"/>
+                            <ComboBoxItem Content="经典缓存 (--cache-classic)" Tag="Classic"/>
+                            <ComboBoxItem Content="无缓存 (--cache-none)" Tag="None"/>
+                            <ComboBoxItem Content="LRU缓存 (--cache-lru)" Tag="LRU"/>
+                        </ComboBox>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="LRU缓存大小" Margin="0,0,0,4"/>
+                            <TextBlock Text="LRU缓存大小（当选择LRU缓存时）" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding CacheLru, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="0" 
                                           Maximum="1000"
@@ -606,7 +589,7 @@
                         <TextBlock Text="日志和调试" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="日志级别" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding Verbose}">
+                            <ComboBox SelectedValue="{Binding Verbose}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="DEBUG"/>
                                 <ComboBoxItem Content="INFO"/>
                                 <ComboBoxItem Content="WARNING"/>
@@ -617,7 +600,7 @@
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="哈希函数" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding DefaultHashingFunction}">
+                            <ComboBox SelectedValue="{Binding DefaultHashingFunction}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="md5"/>
                                 <ComboBoxItem Content="sha1"/>
                                 <ComboBoxItem Content="sha256"/>

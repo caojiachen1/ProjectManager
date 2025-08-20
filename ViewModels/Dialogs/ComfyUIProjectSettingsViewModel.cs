@@ -201,6 +201,138 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
+        // === 枚举属性变更处理 ===
+        partial void OnMemoryManagementModeChanged(MemoryManagementMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                GpuOnly = value == MemoryManagementMode.GpuOnly;
+                HighVram = value == MemoryManagementMode.HighVram;
+                NormalVram = value == MemoryManagementMode.NormalVram;
+                LowVramMode = value == MemoryManagementMode.LowVram;
+                NoVram = value == MemoryManagementMode.NoVram;
+                CpuMode = value == MemoryManagementMode.CpuMode;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnUnetPrecisionModeChanged(UNetPrecisionMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                Fp32Unet = value == UNetPrecisionMode.FP32;
+                Fp64Unet = value == UNetPrecisionMode.FP64;
+                Bf16Unet = value == UNetPrecisionMode.BF16;
+                Fp16Unet = value == UNetPrecisionMode.FP16;
+                Fp8E4M3FnUnet = value == UNetPrecisionMode.FP8_E4M3FN;
+                Fp8E5M2Unet = value == UNetPrecisionMode.FP8_E5M2;
+                Fp8E8M0FnuUnet = value == UNetPrecisionMode.FP8_E8M0FNU;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnVaePrecisionModeChanged(VAEPrecisionMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                Fp16Vae = value == VAEPrecisionMode.FP16;
+                Fp32Vae = value == VAEPrecisionMode.FP32;
+                Bf16Vae = value == VAEPrecisionMode.BF16;
+                CpuVae = value == VAEPrecisionMode.CPU;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnAttentionAlgorithmModeChanged(AttentionAlgorithmMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                UseSplitCrossAttention = value == AttentionAlgorithmMode.SplitCrossAttention;
+                UseQuadCrossAttention = value == AttentionAlgorithmMode.QuadCrossAttention;
+                UsePytorchCrossAttention = value == AttentionAlgorithmMode.PytorchCrossAttention;
+                UseSageAttention = value == AttentionAlgorithmMode.SageAttention;
+                UseFlashAttention = value == AttentionAlgorithmMode.FlashAttention;
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        partial void OnCacheModeChanged(CacheMode value)
+        {
+            if (!_isUpdatingCommand)
+            {
+                // 同步更新对应的布尔属性（保持向后兼容）
+                CacheClassic = value == CacheMode.Classic;
+                CacheNone = value == CacheMode.None;
+                
+                // 如果选择LRU模式且CacheLru为0，设置默认值
+                if (value == CacheMode.LRU && CacheLru == 0)
+                {
+                    CacheLru = 1; // 设置一个默认的LRU缓存大小
+                }
+                
+                // 触发命令更新
+                UpdateStartCommand();
+            }
+        }
+
+        /// <summary>
+        /// 根据布尔属性的当前值同步设置枚举值（用于加载项目后保证一致性）
+        /// </summary>
+        private void SyncEnumValuesFromBooleans()
+        {
+            // 同步内存管理模式
+            if (GpuOnly) MemoryManagementMode = MemoryManagementMode.GpuOnly;
+            else if (HighVram) MemoryManagementMode = MemoryManagementMode.HighVram;
+            else if (NormalVram) MemoryManagementMode = MemoryManagementMode.NormalVram;
+            else if (LowVramMode) MemoryManagementMode = MemoryManagementMode.LowVram;
+            else if (NoVram) MemoryManagementMode = MemoryManagementMode.NoVram;
+            else if (CpuMode) MemoryManagementMode = MemoryManagementMode.CpuMode;
+            else MemoryManagementMode = MemoryManagementMode.None;
+
+            // 同步UNet精度模式
+            if (Fp32Unet) UnetPrecisionMode = UNetPrecisionMode.FP32;
+            else if (Fp64Unet) UnetPrecisionMode = UNetPrecisionMode.FP64;
+            else if (Bf16Unet) UnetPrecisionMode = UNetPrecisionMode.BF16;
+            else if (Fp16Unet) UnetPrecisionMode = UNetPrecisionMode.FP16;
+            else if (Fp8E4M3FnUnet) UnetPrecisionMode = UNetPrecisionMode.FP8_E4M3FN;
+            else if (Fp8E5M2Unet) UnetPrecisionMode = UNetPrecisionMode.FP8_E5M2;
+            else if (Fp8E8M0FnuUnet) UnetPrecisionMode = UNetPrecisionMode.FP8_E8M0FNU;
+            else UnetPrecisionMode = UNetPrecisionMode.None;
+
+            // 同步VAE精度模式
+            if (Fp16Vae) VaePrecisionMode = VAEPrecisionMode.FP16;
+            else if (Fp32Vae) VaePrecisionMode = VAEPrecisionMode.FP32;
+            else if (Bf16Vae) VaePrecisionMode = VAEPrecisionMode.BF16;
+            else if (CpuVae) VaePrecisionMode = VAEPrecisionMode.CPU;
+            else VaePrecisionMode = VAEPrecisionMode.None;
+
+            // 同步注意力算法模式
+            if (UseSplitCrossAttention) AttentionAlgorithmMode = AttentionAlgorithmMode.SplitCrossAttention;
+            else if (UseQuadCrossAttention) AttentionAlgorithmMode = AttentionAlgorithmMode.QuadCrossAttention;
+            else if (UsePytorchCrossAttention) AttentionAlgorithmMode = AttentionAlgorithmMode.PytorchCrossAttention;
+            else if (UseSageAttention) AttentionAlgorithmMode = AttentionAlgorithmMode.SageAttention;
+            else if (UseFlashAttention) AttentionAlgorithmMode = AttentionAlgorithmMode.FlashAttention;
+            else AttentionAlgorithmMode = AttentionAlgorithmMode.None;
+
+            // 同步缓存模式
+            if (CacheClassic) CacheMode = CacheMode.Classic;
+            else if (CacheNone) CacheMode = CacheMode.None;
+            else if (CacheLru > 0) CacheMode = CacheMode.LRU;
+            else CacheMode = CacheMode.Default;
+        }
+
         [ObservableProperty]
         private bool _lowVramMode = false;
 
@@ -1098,6 +1230,21 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             if (!_isUpdatingCommand)
             {
+                // 清洗可能的 "System.Windows.Controls.ComboBoxItem: LEVEL" 字符串
+                if (!string.IsNullOrEmpty(value) && value.Contains("ComboBoxItem:"))
+                {
+                    var idx = value.LastIndexOf(':');
+                    if (idx >= 0 && idx < value.Length - 1)
+                    {
+                        var cleaned = value[(idx + 1)..].Trim();
+                        if (!string.Equals(cleaned, value, StringComparison.Ordinal))
+                        {
+                            _isUpdatingCommand = true;
+                            try { Verbose = cleaned; }
+                            finally { _isUpdatingCommand = false; }
+                        }
+                    }
+                }
                 UpdateStartCommand();
             }
         }
@@ -1358,6 +1505,9 @@ namespace ProjectManager.ViewModels.Dialogs
         private bool _forceFp16 = false;
 
         [ObservableProperty]
+        private UNetPrecisionMode _unetPrecisionMode = UNetPrecisionMode.None;
+
+        [ObservableProperty]
         private bool _fp32Unet = false;
 
         [ObservableProperty]
@@ -1377,6 +1527,9 @@ namespace ProjectManager.ViewModels.Dialogs
 
         [ObservableProperty]
         private bool _fp8E8M0FnuUnet = false;
+
+        [ObservableProperty]
+        private VAEPrecisionMode _vaePrecisionMode = VAEPrecisionMode.None;
 
         [ObservableProperty]
         private bool _fp16Vae = false;
@@ -1410,6 +1563,9 @@ namespace ProjectManager.ViewModels.Dialogs
 
         // === 内存管理 ===
         [ObservableProperty]
+        private MemoryManagementMode _memoryManagementMode = MemoryManagementMode.None;
+
+        [ObservableProperty]
         private bool _gpuOnly = false;
 
         [ObservableProperty]
@@ -1442,6 +1598,9 @@ namespace ProjectManager.ViewModels.Dialogs
 
         // === 缓存设置 ===
         [ObservableProperty]
+        private CacheMode _cacheMode = CacheMode.Default;
+
+        [ObservableProperty]
         private bool _cacheClassic = false;
 
         [ObservableProperty]
@@ -1451,6 +1610,9 @@ namespace ProjectManager.ViewModels.Dialogs
         private bool _cacheNone = false;
 
         // === 注意力机制设置 ===
+        [ObservableProperty]
+        private AttentionAlgorithmMode _attentionAlgorithmMode = AttentionAlgorithmMode.None;
+
         [ObservableProperty]
         private bool _useSplitCrossAttention = false;
 
@@ -1940,6 +2102,13 @@ namespace ProjectManager.ViewModels.Dialogs
                     // Python和脚本设置
                     StartupScript = settings.StartupScript;
 
+                    // 互斥选项组（下拉菜单）
+                    MemoryManagementMode = settings.MemoryManagementMode;
+                    UnetPrecisionMode = settings.UNetPrecisionMode;
+                    VaePrecisionMode = settings.VAEPrecisionMode;
+                    AttentionAlgorithmMode = settings.AttentionAlgorithmMode;
+                    CacheMode = settings.CacheMode;
+
                     // 目录设置
                     BaseDirectory = settings.BaseDirectory;
                     OutputDirectory = settings.OutputDirectory;
@@ -2057,6 +2226,9 @@ namespace ProjectManager.ViewModels.Dialogs
                     AutoLoadWorkflow = settings.AutoLoadWorkflow;
                     EnableWorkflowSnapshots = settings.EnableWorkflowSnapshots;
                 }
+                
+                // 同步枚举值和布尔值（确保一致性）
+                SyncEnumValuesFromBooleans();
                 
                 // 更新启动命令建议
                 UpdateStartCommandSuggestions();
@@ -2635,6 +2807,13 @@ namespace ProjectManager.ViewModels.Dialogs
 
                         // Python和脚本设置
                         StartupScript = StartupScript,
+
+                        // 互斥选项组（下拉菜单）
+                        MemoryManagementMode = MemoryManagementMode,
+                        UNetPrecisionMode = UnetPrecisionMode,
+                        VAEPrecisionMode = VaePrecisionMode,
+                        AttentionAlgorithmMode = AttentionAlgorithmMode,
+                        CacheMode = CacheMode,
 
                         // 目录设置
                         BaseDirectory = BaseDirectory,
