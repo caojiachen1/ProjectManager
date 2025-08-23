@@ -243,12 +243,61 @@ namespace ProjectManager.Behaviors
                         ClearParagraph(state.CurrentParagraph);
                         state.PendingCarriageReturn = false;
                     }
+
+                    // 若处于新行开头，优先剥离并以默认样式绘制时间戳前缀 [HH:mm:ss] 
+                    if (IsParagraphEmpty(state.CurrentParagraph) && TryConsumeTimestampPrefix(ref text, out var ts))
+                    {
+                        state.CurrentParagraph.Inlines.Add(CreateTimestampRun(ts));
+                    }
+
                     if (parseAnsi)
                         AppendTextWithAnsi(state, text);
                     else
                         state.CurrentParagraph.Inlines.Add(new Run(text));
                 }
             }
+        }
+
+        private static bool IsParagraphEmpty(Paragraph p)
+        {
+            return p.Inlines.Count == 0;
+        }
+
+        // 检测并消费行首的时间戳前缀，如 "[12:34:56] "
+        private static bool TryConsumeTimestampPrefix(ref string text, out string timestamp)
+        {
+            timestamp = string.Empty;
+            if (text.Length >= 11 && text[0] == '[' && text.Length >= 11)
+            {
+                // 期望形如 [HH:MM:SS]␠
+                bool match = text.Length >= 11 &&
+                             char.IsDigit(text[1]) && char.IsDigit(text[2]) &&
+                             text[3] == ':' &&
+                             char.IsDigit(text[4]) && char.IsDigit(text[5]) &&
+                             text[6] == ':' &&
+                             char.IsDigit(text[7]) && char.IsDigit(text[8]) &&
+                             text[9] == ']' &&
+                             text[10] == ' ';
+                if (match)
+                {
+                    timestamp = text.Substring(0, 11);
+                    text = text.Substring(11);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static Run CreateTimestampRun(string content)
+        {
+            // 固定使用默认前景色、无装饰、正常字重，避免被 ANSI 样式影响
+            var run = new Run(content)
+            {
+                FontWeight = FontWeights.Normal,
+                FontStyle = FontStyles.Normal,
+                Foreground = new SolidColorBrush(AnsiStyle.DefaultForeground)
+            };
+            return run;
         }
 
         private static void AppendTextWithAnsi(RenderState state, string text)

@@ -11,6 +11,8 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private Project? _project;
+        // 加载中标记，防止在加载时触发命令建议覆盖用户的清空
+        private bool _isLoadingProject = false;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -83,7 +85,10 @@ namespace ProjectManager.ViewModels.Dialogs
                 e.PropertyName == nameof(Port) ||
                 e.PropertyName == nameof(PackageManager))
             {
-                UpdateStartCommand();
+                if (!_isLoadingProject)
+                {
+                    UpdateStartCommand();
+                }
             }
         }
 
@@ -107,14 +112,18 @@ namespace ProjectManager.ViewModels.Dialogs
         public void LoadProject(Project project)
         {
             _project = project;
+            _isLoadingProject = true; // 抑制加载期间的默认命令更新
             
             ProjectName = project.Name ?? string.Empty;
             ProjectPath = project.LocalPath ?? string.Empty;
-            StartCommand = project.StartCommand ?? "npm start";
+            StartCommand = project.StartCommand ?? string.Empty; // 保留空
             TagsString = project.Tags != null ? string.Join(", ", project.Tags) : "JavaScript,Node.js,后端,全栈";
             
-            // 解析Node.js特定的启动参数
-            ParseStartCommand(project.StartCommand ?? "npm start");
+            // 解析Node.js特定的启动参数（空则跳过默认）
+            if (!string.IsNullOrWhiteSpace(project.StartCommand))
+            {
+                ParseStartCommand(project.StartCommand);
+            }
 
             // 如果已有持久化设置，覆盖解析值
             if (project.NodeJSSettings != null)
@@ -133,6 +142,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 EnvironmentFile = project.NodeJSSettings.EnvironmentFile;
                 CustomEnvironmentVars = project.NodeJSSettings.CustomEnvironmentVars;
             }
+            _isLoadingProject = false; // 加载结束
         }
 
         private void ParseStartCommand(string command)

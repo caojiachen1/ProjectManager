@@ -2204,11 +2204,14 @@ namespace ProjectManager.ViewModels.Dialogs
                 
                 ProjectName = project.Name ?? string.Empty;
                 ProjectPath = project.LocalPath ?? string.Empty;
-                StartCommand = project.StartCommand ?? "python main.py";
+                StartCommand = project.StartCommand ?? string.Empty; // 保留空
                 TagsString = project.Tags != null ? string.Join(", ", project.Tags) : "AI绘画,图像生成,工作流,节点编辑";
                 
-                // 解析ComfyUI特定的启动参数（用于兼容老数据）
-                ParseStartCommand(project.StartCommand ?? "python main.py");
+                // 解析ComfyUI特定的启动参数（用于兼容老数据），空则跳过
+                if (!string.IsNullOrWhiteSpace(project.StartCommand))
+                {
+                    ParseStartCommand(project.StartCommand);
+                }
 
                 // 如果存在持久化的 ComfyUISettings，用其覆盖解析结果
                 if (project.ComfyUISettings != null)

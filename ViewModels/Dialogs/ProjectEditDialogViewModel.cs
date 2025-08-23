@@ -13,6 +13,8 @@ namespace ProjectManager.ViewModels.Dialogs
         private readonly IProjectService _projectService;
         private readonly IErrorDisplayService _errorDisplayService;
         private Project? _originalProject;
+        // 在加载或批量赋值阶段的标记，防止触发默认值回填覆盖用户的空值
+        private bool _isLoadingProject = false;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -82,10 +84,14 @@ namespace ProjectManager.ViewModels.Dialogs
                 // 更新命令建议
                 FrameworkCommands = new ObservableCollection<string>(config.CommonCommands);
                 
-                // 如果启动命令为空，设置默认命令
+                // 仅在“新增项目”场景自动填充默认命令；
+                // 加载已有项目或用户刻意清空时（编辑场景/加载阶段），不要把空值回填成默认。
                 if (string.IsNullOrEmpty(StartCommand))
                 {
-                    StartCommand = config.DefaultStartCommand;
+                    if (!_isLoadingProject && !IsEditing)
+                    {
+                        StartCommand = config.DefaultStartCommand;
+                    }
                 }
                 
                 // 如果标签为空，设置默认标签
@@ -99,6 +105,7 @@ namespace ProjectManager.ViewModels.Dialogs
         public void LoadProject(Project? project = null)
         {
             _originalProject = project;
+            _isLoadingProject = true; // 开始批量赋值，避免默认命令回填覆盖空值
             
             if (project != null)
             {
@@ -126,6 +133,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 TagsString = string.Empty;
                 FrameworkCommands.Clear();
             }
+            _isLoadingProject = false; // 赋值结束
         }
 
         [RelayCommand]

@@ -63,48 +63,50 @@ namespace ProjectManager.ViewModels.Pages
         public async Task OnNavigatedToAsync()
         {
             LoadTerminalSessions();
-            
+
             // 处理待切换的项目
             if (!string.IsNullOrEmpty(_pendingProjectName))
             {
+                // 解析项目的默认启动命令（若未显式传入）
+                string? resolvedCommand = _pendingStartCommand;
+                string? resolvedPath = _pendingProjectPath;
+                try
+                {
+                    var projects = await _projectService.GetProjectsAsync();
+                    var proj = projects.FirstOrDefault(p => p.Name == _pendingProjectName);
+                    if (string.IsNullOrWhiteSpace(resolvedCommand))
+                        resolvedCommand = proj?.StartCommand;
+                    if (string.IsNullOrWhiteSpace(resolvedPath))
+                        resolvedPath = !string.IsNullOrWhiteSpace(proj?.WorkingDirectory) ? proj!.WorkingDirectory : proj?.LocalPath;
+                }
+                catch { /* 忽略项目获取失败，保持传入值 */ }
+
                 // 检查是否已存在该项目的终端会话
                 var existingSession = TerminalSessions.FirstOrDefault(s => s.ProjectName == _pendingProjectName);
                 if (existingSession != null)
                 {
-                    // 更新现有会话的命令和路径
-                    if (!string.IsNullOrEmpty(_pendingStartCommand))
-                    {
-                        existingSession.Command = _pendingStartCommand;
-                    }
-                    if (!string.IsNullOrEmpty(_pendingProjectPath))
-                    {
-                        existingSession.ProjectPath = _pendingProjectPath;
-                    }
+                    // 更新现有会话的命令和路径（若可用）
+                    if (!string.IsNullOrWhiteSpace(resolvedCommand))
+                        existingSession.Command = resolvedCommand!;
+                    if (!string.IsNullOrWhiteSpace(resolvedPath))
+                        existingSession.ProjectPath = resolvedPath!;
                     // 切换到现有会话
                     SelectedSession = existingSession;
                 }
-                else if (!string.IsNullOrEmpty(_pendingProjectPath))
+                else if (!string.IsNullOrWhiteSpace(resolvedPath))
                 {
-                    // 如果有启动命令，创建新的终端会话并启动
-                    if (!string.IsNullOrEmpty(_pendingStartCommand))
-                    {
-                        await CreateAndStartSessionAsync(_pendingProjectName, _pendingProjectPath, _pendingStartCommand);
-                    }
-                    else
-                    {
-                        // 只创建会话但不启动，用于终端按钮的情况
-                        var session = _terminalService.CreateSession(_pendingProjectName, _pendingProjectPath, "");
-                        TerminalSessions.Add(session);
-                        SelectedSession = session;
-                    }
+                    // 创建会话但不自动启动：预填充命令，便于用户点击“启动”立即可用
+                    var session = _terminalService.CreateSession(_pendingProjectName, resolvedPath!, resolvedCommand ?? string.Empty);
+                    TerminalSessions.Add(session);
+                    SelectedSession = session;
                 }
-                
+
                 // 清空待处理的项目信息
                 _pendingProjectName = null;
                 _pendingProjectPath = null;
                 _pendingStartCommand = null;
             }
-            
+
             await Task.CompletedTask;
         }
 
@@ -158,6 +160,12 @@ namespace ProjectManager.ViewModels.Pages
         private async Task StartTerminalAsync()
         {
             if (SelectedSession == null) return;
+
+            if (string.IsNullOrWhiteSpace(SelectedSession.Command))
+            {
+                await _errorDisplayService.ShowErrorAsync("当前会话未配置启动命令，请先在项目中设置启动命令。", "无法启动");
+                return;
+            }
 
             IsLoading = true;
             try

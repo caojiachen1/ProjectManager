@@ -11,6 +11,8 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private Project? _project;
+        // 加载中标记，避免在加载时把空命令替换为默认
+        private bool _isLoadingProject = false;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -131,12 +133,18 @@ namespace ProjectManager.ViewModels.Dialogs
                 e.PropertyName == nameof(BuildConfiguration) ||
                 e.PropertyName == nameof(Port))
             {
-                UpdateStartCommand();
+                if (!_isLoadingProject)
+                {
+                    UpdateStartCommand();
+                }
             }
             else if (e.PropertyName == nameof(StartCommand))
             {
                 // 当启动命令变化时，解析命令并更新相关设置
-                ParseStartCommandAndUpdateSettings(StartCommand);
+                if (!_isLoadingProject)
+                {
+                    ParseStartCommandAndUpdateSettings(StartCommand);
+                }
             }
         }
 
@@ -158,14 +166,18 @@ namespace ProjectManager.ViewModels.Dialogs
         public void LoadProject(Project project)
         {
             _project = project;
+            _isLoadingProject = true; // 抑制加载期间的默认命令逻辑
             
             ProjectName = project.Name ?? string.Empty;
             ProjectPath = project.LocalPath ?? string.Empty;
-            StartCommand = project.StartCommand ?? "dotnet run";
+            StartCommand = project.StartCommand ?? string.Empty; // 保留空
             TagsString = project.Tags != null ? string.Join(", ", project.Tags) : ".NET,C#,后端,Web API";
             
-            // 解析.NET特定的启动参数
-            ParseStartCommand(project.StartCommand ?? "dotnet run");
+            // 解析.NET特定的启动参数（空则跳过默认）
+            if (!string.IsNullOrWhiteSpace(project.StartCommand))
+            {
+                ParseStartCommand(project.StartCommand);
+            }
 
             // 如果已有持久化设置，覆盖解析值
             if (project.DotNetSettings != null)
@@ -190,6 +202,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 SelfContainedPublish = project.DotNetSettings.SelfContainedPublish;
                 EnableReadyToRun = project.DotNetSettings.EnableReadyToRun;
             }
+            _isLoadingProject = false; // 加载完毕
         }
 
         private void ParseStartCommand(string command)
