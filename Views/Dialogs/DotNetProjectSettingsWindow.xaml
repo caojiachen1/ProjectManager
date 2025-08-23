@@ -49,43 +49,21 @@
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding StartCommand}" 
-                                      IsEditable="True"
-                                      Text="{Binding StartCommand}">
-                                <ComboBoxItem Content="dotnet run"/>
-                                <ComboBoxItem Content="dotnet watch run"/>
-                                <ComboBoxItem Content="dotnet run --launch-profile Development"/>
-                                <ComboBoxItem Content="dotnet run --no-build"/>
-                                <ComboBoxItem Content="dotnet run --configuration Release"/>
-                                <ComboBoxItem Content="dotnet run --project ."/>
-                            </ComboBox>
+                            <ComboBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                      ItemsSource="{Binding StartCommandOptions}"
+                                      IsEditable="True"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="目标框架" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding TargetFramework}">
-                                <ComboBoxItem Content="net8.0"/>
-                                <ComboBoxItem Content="net7.0"/>
-                                <ComboBoxItem Content="net6.0"/>
-                                <ComboBoxItem Content="netcoreapp3.1"/>
-                                <ComboBoxItem Content="net48"/>
-                                <ComboBoxItem Content="netstandard2.1"/>
-                            </ComboBox>
+                            <ComboBox SelectedItem="{Binding TargetFramework}"
+                                      ItemsSource="{Binding TargetFrameworkOptions}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="项目类型" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding ProjectType}">
-                                <ComboBoxItem Content="Web API"/>
-                                <ComboBoxItem Content="Web App (MVC)"/>
-                                <ComboBoxItem Content="Blazor Server"/>
-                                <ComboBoxItem Content="Blazor WebAssembly"/>
-                                <ComboBoxItem Content="Console App"/>
-                                <ComboBoxItem Content="Class Library"/>
-                                <ComboBoxItem Content="Worker Service"/>
-                                <ComboBoxItem Content="WPF"/>
-                                <ComboBoxItem Content="WinForms"/>
-                            </ComboBox>
+                            <ComboBox SelectedItem="{Binding ProjectType}"
+                                      ItemsSource="{Binding ProjectTypeOptions}"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
@@ -112,10 +90,8 @@
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="构建配置" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding BuildConfiguration}">
-                                <ComboBoxItem Content="Debug"/>
-                                <ComboBoxItem Content="Release"/>
-                            </ComboBox>
+                            <ComboBox SelectedItem="{Binding BuildConfiguration}"
+                                      ItemsSource="{Binding BuildConfigurationOptions}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
@@ -170,14 +146,8 @@
                         
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="目标运行时" Margin="0,0,0,4"/>
-                            <ComboBox SelectedItem="{Binding TargetRuntime}">
-                                <ComboBoxItem Content="portable"/>
-                                <ComboBoxItem Content="win-x64"/>
-                                <ComboBoxItem Content="win-x86"/>
-                                <ComboBoxItem Content="linux-x64"/>
-                                <ComboBoxItem Content="osx-x64"/>
-                                <ComboBoxItem Content="osx-arm64"/>
-                            </ComboBox>
+                            <ComboBox SelectedItem="{Binding TargetRuntime}"
+                                      ItemsSource="{Binding TargetRuntimeOptions}"/>
                         </StackPanel>
                         
                         <StackPanel>

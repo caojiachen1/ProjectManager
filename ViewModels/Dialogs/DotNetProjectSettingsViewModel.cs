@@ -81,6 +81,38 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private string _tagsString = ".NET,C#,后端,Web API";
 
+        // ComboBox选项集合
+        public List<string> StartCommandOptions { get; } = new()
+        {
+            "dotnet run",
+            "dotnet watch run", 
+            "dotnet run --launch-profile Development",
+            "dotnet run --no-build",
+            "dotnet run --configuration Release",
+            "dotnet run --project ."
+        };
+
+        public List<string> TargetFrameworkOptions { get; } = new()
+        {
+            "net8.0", "net7.0", "net6.0", "netcoreapp3.1", "net48", "netstandard2.1"
+        };
+
+        public List<string> ProjectTypeOptions { get; } = new()
+        {
+            "Web API", "Web App (MVC)", "Blazor Server", "Blazor WebAssembly",
+            "Console App", "Class Library", "Worker Service", "WPF", "WinForms"
+        };
+
+        public List<string> BuildConfigurationOptions { get; } = new()
+        {
+            "Debug", "Release"
+        };
+
+        public List<string> TargetRuntimeOptions { get; } = new()
+        {
+            "portable", "win-x64", "win-x86", "linux-x64", "osx-x64", "osx-arm64"
+        };
+
         public event EventHandler<Project>? ProjectSaved;
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
@@ -101,10 +133,17 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 UpdateStartCommand();
             }
+            else if (e.PropertyName == nameof(StartCommand))
+            {
+                // 当启动命令变化时，解析命令并更新相关设置
+                ParseStartCommandAndUpdateSettings(StartCommand);
+            }
         }
 
         private void UpdateStartCommand()
         {
+            if (_isUpdatingFromCommand) return; // 防止循环更新
+            
             var command = EnableHotReload ? "dotnet watch run" : "dotnet run";
             
             if (BuildConfiguration == "Release")
@@ -166,6 +205,75 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
+        private bool _isUpdatingFromCommand = false;
+
+        private void ParseStartCommandAndUpdateSettings(string command)
+        {
+            if (_isUpdatingFromCommand || string.IsNullOrWhiteSpace(command)) return; // 防止循环更新
+            
+            _isUpdatingFromCommand = true;
+            try
+            {
+                // 解析热重载设置
+                var newEnableHotReload = command.Contains("watch");
+                if (EnableHotReload != newEnableHotReload)
+                    EnableHotReload = newEnableHotReload;
+
+                // 解析构建配置
+                var newBuildConfiguration = command.Contains("--configuration Release") ? "Release" : "Debug";
+                if (BuildConfiguration != newBuildConfiguration)
+                    BuildConfiguration = newBuildConfiguration;
+
+                // 解析端口
+                var urlsMatch = System.Text.RegularExpressions.Regex.Match(command, @"--urls\s+https?://[^:]*:(\d+)");
+                if (urlsMatch.Success && int.TryParse(urlsMatch.Groups[1].Value, out int port))
+                {
+                    if (Port != port)
+                        Port = port;
+                }
+
+                // 根据命令内容推断项目类型和设置
+                if (command.Contains("--urls"))
+                {
+                    // 包含URL参数，很可能是Web项目
+                    if (!ProjectType.Contains("Web") && !ProjectType.Contains("Blazor"))
+                    {
+                        ProjectType = "Web API";
+                    }
+                    
+                    // 如果有HTTPS URL，启用HTTPS重定向
+                    if (command.Contains("https://"))
+                    {
+                        EnableHttpsRedirection = true;
+                    }
+                }
+
+                // 解析启动配置文件
+                if (command.Contains("--launch-profile"))
+                {
+                    var profileMatch = System.Text.RegularExpressions.Regex.Match(command, @"--launch-profile\s+(\w+)");
+                    if (profileMatch.Success)
+                    {
+                        var profile = profileMatch.Groups[1].Value;
+                        if (profile.Equals("Development", StringComparison.OrdinalIgnoreCase))
+                        {
+                            EnableDeveloperExceptionPage = true;
+                        }
+                    }
+                }
+
+                // 如果是开发模式的watch命令，启用一些开发者友好的设置
+                if (command.Contains("watch") && BuildConfiguration == "Debug")
+                {
+                    EnableDeveloperExceptionPage = true;
+                }
+            }
+            finally
+            {
+                _isUpdatingFromCommand = false;
+            }
+        }
+
         [RelayCommand]
         private void BrowseOutputPath()
         {
@@ -180,21 +288,15 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private void BrowseFolderPath(string title, Action<string> setPath)
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFolderDialog
             {
                 Title = title,
-                CheckFileExists = false,
-                CheckPathExists = true,
-                FileName = "选择文件夹"
+                Multiselect = false
             };
 
             if (dialog.ShowDialog() == true)
             {
-                var path = Path.GetDirectoryName(dialog.FileName);
-                if (!string.IsNullOrEmpty(path))
-                {
-                    setPath(path);
-                }
+                setPath(dialog.FolderName);
             }
         }
 
@@ -255,11 +357,18 @@ namespace ProjectManager.ViewModels.Dialogs
                 {
                     ProjectSaved?.Invoke(this, _project);
                 }
+                else
+                {
+                    // TODO: 使用WPF UI消息框显示错误
+                    System.Windows.MessageBox.Show("保存项目失败，请检查项目路径和权限。", "错误", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
-                // TODO: 显示错误消息
-                System.Diagnostics.Debug.WriteLine($"保存项目失败: {ex.Message}");
+                // TODO: 使用WPF UI消息框显示错误  
+                System.Windows.MessageBox.Show($"保存项目时发生错误：{ex.Message}", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -276,14 +385,23 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 try
                 {
-                    // TODO: 显示确认对话框
-                    await _projectService.DeleteProjectAsync(_project.Id);
-                    ProjectDeleted?.Invoke(this, _project.Id);
+                    // 显示确认对话框
+                    var result = System.Windows.MessageBox.Show(
+                        $"确定要删除项目 '{_project.Name}' 吗？\n\n注意：这只会从项目列表中移除，不会删除实际文件。", 
+                        "确认删除", 
+                        System.Windows.MessageBoxButton.YesNo, 
+                        System.Windows.MessageBoxImage.Question);
+                    
+                    if (result == System.Windows.MessageBoxResult.Yes)
+                    {
+                        await _projectService.DeleteProjectAsync(_project.Id);
+                        ProjectDeleted?.Invoke(this, _project.Id);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // TODO: 显示错误消息
-                    System.Diagnostics.Debug.WriteLine($"删除项目失败: {ex.Message}");
+                    System.Windows.MessageBox.Show($"删除项目时发生错误：{ex.Message}", "错误",
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
         }
