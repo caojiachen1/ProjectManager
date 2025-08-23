@@ -140,7 +140,17 @@ namespace ProjectManager.Services
                 }
 
                 // 启动终端会话，传递环境变量
-                var sessionStarted = await _terminalService.StartSessionAsync(terminalSession, project.EnvironmentVariables);
+                // 若为 ComfyUI 项目，则自动注入 Python UTF-8（对其他项目不注入，不做任何提示）
+                Dictionary<string, string>? envForLaunch = project.EnvironmentVariables;
+                if (!string.IsNullOrWhiteSpace(project.Framework) && project.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+                {
+                    envForLaunch = new Dictionary<string, string>(project.EnvironmentVariables ?? new Dictionary<string, string>())
+                    {
+                        ["PYTHONUTF8"] = "1",
+                        ["PYTHONIOENCODING"] = "UTF-8"
+                    };
+                }
+                var sessionStarted = await _terminalService.StartSessionAsync(terminalSession, envForLaunch);
                 
                 if (sessionStarted)
                 {

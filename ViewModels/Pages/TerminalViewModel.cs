@@ -176,7 +176,22 @@ namespace ProjectManager.ViewModels.Pages
                 }
 
                 // 启动会话时传递项目的环境变量，确保与项目卡片启动效果一致
-                await _terminalService.StartSessionAsync(SelectedSession, projectEnvironmentVariables);
+                // 若为 ComfyUI 项目，则自动注入 Python UTF-8（其他项目不注入，不做任何提示）
+                Dictionary<string, string>? envForLaunch = projectEnvironmentVariables;
+                if (!string.IsNullOrEmpty(SelectedSession.ProjectName))
+                {
+                    var projects2 = await _projectService.GetProjectsAsync();
+                    var proj2 = projects2.FirstOrDefault(p => p.Name == SelectedSession.ProjectName);
+                    if (proj2 != null && !string.IsNullOrWhiteSpace(proj2.Framework) && proj2.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+                    {
+                        envForLaunch = new Dictionary<string, string>(projectEnvironmentVariables ?? new Dictionary<string, string>())
+                        {
+                            ["PYTHONUTF8"] = "1",
+                            ["PYTHONIOENCODING"] = "UTF-8"
+                        };
+                    }
+                }
+                await _terminalService.StartSessionAsync(SelectedSession, envForLaunch);
             }
             finally
             {
@@ -310,7 +325,21 @@ namespace ProjectManager.ViewModels.Pages
             }
             
             // 启动会话时传递项目的环境变量
-            await _terminalService.StartSessionAsync(session, projectEnvironmentVariables);
+            Dictionary<string, string>? envForLaunch2 = projectEnvironmentVariables;
+            if (!string.IsNullOrEmpty(projectName))
+            {
+                var projects3 = await _projectService.GetProjectsAsync();
+                var proj3 = projects3.FirstOrDefault(p => p.Name == projectName);
+                if (proj3 != null && !string.IsNullOrWhiteSpace(proj3.Framework) && proj3.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+                {
+                    envForLaunch2 = new Dictionary<string, string>(projectEnvironmentVariables ?? new Dictionary<string, string>())
+                    {
+                        ["PYTHONUTF8"] = "1",
+                        ["PYTHONIOENCODING"] = "UTF-8"
+                    };
+                }
+            }
+            await _terminalService.StartSessionAsync(session, envForLaunch2);
         }
 
         /// <summary>

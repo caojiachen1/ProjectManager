@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Text;
+using System.IO;
+using System.Threading;
 using ProjectManager.Models;
 
 namespace ProjectManager.Services
@@ -83,36 +85,40 @@ namespace ProjectManager.Services
             {
                 if (session.IsRunning)
                 {
-                    session.AddOutputLine("终端已在运行中");
+                    session.AddOutputRaw("终端已在运行中\r\n");
                     return false;
                 }
 
                 session.UpdateStatus("正在启动...", false);
-                session.AddOutputLine($"启动命令: {session.Command}");
-                session.AddOutputLine($"工作目录: {session.ProjectPath}");
+                session.AddOutputRaw($"启动命令: {session.Command}\r\n");
+                session.AddOutputRaw($"工作目录: {session.ProjectPath}\r\n");
 
-                // 设置环境变量 - 优先使用传入的环境变量，否则使用会话中存储的环境变量
-                var envVars = environmentVariables ?? session.EnvironmentVariables;
-                
-                // 构建完整的命令序列
-                var commandSequence = new List<string>();
-                
-                if (envVars != null && envVars.Any())
-                {
-                    session.AddOutputLine("设置环境变量:");
-                    foreach (var env in envVars)
-                    {
-                        session.AddOutputLine($"  {env.Key}={env.Value}");
-                        // 强制在命令序列中添加 set 命令
-                        commandSequence.Add($"set \"{env.Key}={env.Value}\"");
-                    }
-                }
-                
-                // 添加启动命令
-                commandSequence.Add(session.Command);
-                
+                // 设置环境变量 - 优先使用传入的环境变量，否则使用会话中存储的环境变量（复制避免外部被修改）
+                var envVars = (environmentVariables ?? session.EnvironmentVariables) != null
+                    ? new Dictionary<string, string>(environmentVariables ?? session.EnvironmentVariables)
+                    : new Dictionary<string, string>();
+
                 // 获取用户设置的终端类型
                 var settings = await _settingsService.GetSettingsAsync();
+
+                // 构建完整的命令序列（根据终端类型生成对应的环境变量设置方式）
+                var commandSequence = new List<string>();
+                if (envVars != null && envVars.Any())
+                {
+                    session.AddOutputRaw("设置环境变量:\r\n");
+                    foreach (var env in envVars)
+                    {
+                        session.AddOutputRaw($"  {env.Key}={env.Value}\r\n");
+                    }
+                    commandSequence.AddRange(BuildEnvCommands(settings.PreferredTerminal, envVars));
+                }
+
+                // 添加启动命令
+                if (!string.IsNullOrWhiteSpace(session.Command))
+                {
+                    commandSequence.Add(session.Command);
+                }
+
                 var (fileName, arguments) = GetTerminalCommandWithSequence(settings.PreferredTerminal, commandSequence);
 
                 var processStartInfo = new ProcessStartInfo
@@ -148,48 +154,56 @@ namespace ProjectManager.Services
                 var process = new Process { StartInfo = processStartInfo };
                 session.Process = process;
 
-                // 处理标准输出
-                process.OutputDataReceived += (sender, e) =>
+                var cts = new CancellationTokenSource();
+                async Task ReadStreamAsync(Stream stream)
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    var buffer = new byte[4096];
+                    while (!cts.IsCancellationRequested)
                     {
-                        // 尝试修复可能的编码问题
-                        var fixedData = FixEncodingIssues(e.Data);
-                        session.AddOutputLine(fixedData);
+                        int bytesRead;
+                        try
+                        {
+                            bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch
+                        {
+                            break;
+                        }
+                        if (bytesRead <= 0) break;
+                        var text = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            session.AddOutputRaw(text);
+                        }
                     }
-                };
-
-                // 处理错误输出
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        var fixedData = FixEncodingIssues(e.Data);
-                        session.AddOutputLine(fixedData);
-                    }
-                };
+                }
 
                 // 处理进程退出
                 process.Exited += (sender, e) =>
                 {
                     session.UpdateStatus("已停止", false);
-                    session.AddOutputLine($"进程已退出，退出代码: {process.ExitCode}");
+                    session.AddOutputRaw($"进程已退出，退出代码: {process.ExitCode}\r\n");
+                    try { cts.Cancel(); } catch { }
                 };
 
                 process.EnableRaisingEvents = true;
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                _ = ReadStreamAsync(process.StandardOutput.BaseStream);
+                _ = ReadStreamAsync(process.StandardError.BaseStream);
 
                 session.UpdateStatus("运行中", true);
-                session.AddOutputLine("终端已启动");
+                session.AddOutputRaw("终端已启动\r\n");
 
                 return true;
             }
             catch (Exception ex)
             {
                 session.UpdateStatus("启动失败", false);
-                session.AddOutputLine($"启动失败: {ex.Message}");
+                session.AddOutputRaw($"启动失败: {ex.Message}\r\n");
                 // 显示终端启动错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端启动失败: {ex.Message}", "终端启动错误"));
                 return false;
@@ -207,13 +221,13 @@ namespace ProjectManager.Services
                 if (session.Process != null && !session.Process.HasExited)
                 {
                     session.Process.Kill(true);
-                    session.AddOutputLine("终端已强制停止");
+                    session.AddOutputRaw("终端已强制停止\r\n");
                 }
                 session.UpdateStatus("已停止", false);
             }
             catch (Exception ex)
             {
-                session.AddOutputLine($"停止失败: {ex.Message}");
+                session.AddOutputRaw($"停止失败: {ex.Message}\r\n");
                 // 显示终端停止错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端停止失败: {ex.Message}", "终端停止错误"));
             }
@@ -318,11 +332,53 @@ namespace ProjectManager.Services
                     ("cmd.exe", $"/c {cmdPrefix}{string.Join(" && ", commandSequence)}"),
                 
                 "git bash" => 
-                    ("bash.exe", $"-c \"{string.Join(" && ", commandSequence)}\""),
+                    ("bash.exe", $"-c \"export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; export TERM=xterm-256color; {string.Join(" && ", commandSequence)}\""),
                 
                 _ => // 默认使用 PowerShell
                     ("powershell.exe", $"-NoProfile -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {string.Join("; ", commandSequence)}\"")
             };
+        }
+
+        /// <summary>
+        /// 将环境变量转换为目标终端的设置命令
+        /// </summary>
+        private static IEnumerable<string> BuildEnvCommands(string terminalType, Dictionary<string, string> env)
+        {
+            var type = terminalType?.ToLower() ?? "powershell";
+            switch (type)
+            {
+                case "cmd":
+                case "command prompt":
+                    foreach (var kv in env)
+                    {
+                        var key = EscapeCmd(kv.Key);
+                        var val = EscapeCmd(kv.Value ?? string.Empty);
+                        yield return $"set \"{key}={val}\"";
+                    }
+                    break;
+                case "git bash":
+                    foreach (var kv in env)
+                    {
+                        var key = EscapeBash(kv.Key);
+                        var val = EscapeBash(kv.Value ?? string.Empty);
+                        yield return $"export {key}=\"{val}\"";
+                    }
+                    break;
+                default: // powershell
+                    foreach (var kv in env)
+                    {
+                        var key = EscapePwsh(kv.Key);
+                        var val = EscapePwsh(kv.Value ?? string.Empty);
+                        // 使用单引号包裹值，避免在 -Command 外层双引号中冲突
+                        yield return $"$env:{key} = '{val}'";
+                    }
+                    break;
+            }
+
+            static string EscapeCmd(string s) => s.Replace("\"", "\\\"");
+            static string EscapeBash(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            // 在单引号字符串中，PowerShell 通过重复单引号来转义
+            static string EscapePwsh(string s) => s.Replace("'", "''");
         }
 
         /// <summary>

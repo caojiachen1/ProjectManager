@@ -64,6 +64,23 @@ namespace ProjectManager.Models
         }
 
         /// <summary>
+        /// 追加原始输出片段（不添加时间戳，不强制换行）。
+        /// 保留控制字符（如 \r、\b、ESC 序列），用于更真实的终端渲染。
+        /// </summary>
+        /// <param name="fragment">原始输出片段</param>
+        public void AddOutputRaw(string fragment)
+        {
+            if (fragment == null) return;
+            lock (_lockObject)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    OutputLines.Add(fragment);
+                });
+            }
+        }
+
+        /// <summary>
         /// 清空输出
         /// </summary>
         public void ClearOutput()

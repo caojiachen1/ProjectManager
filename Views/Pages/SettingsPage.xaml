@@ -253,8 +253,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="使用UTF8编码" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="终端命令使用UTF-8编码" FontSize="12" 
+                    <TextBlock Text="CMD 使用 UTF-8 编码" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="仅对 CMD 注入 chcp 65001（不影响 PowerShell/Bash）" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding UseCmdChcp65001}" VerticalAlignment="Center"/>

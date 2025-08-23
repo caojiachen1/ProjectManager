@@ -127,6 +127,14 @@ namespace ProjectManager
         /// </summary>
         private async void OnExit(object sender, ExitEventArgs e)
         {
+            try
+            {
+                // 确保在应用退出时终止所有后台运行的项目进程
+                var terminalService = Services.GetService(typeof(TerminalService)) as TerminalService;
+                terminalService?.Cleanup();
+            }
+            catch { /* 退出阶段忽略清理异常 */ }
+
             await _host.StopAsync();
 
             _host.Dispose();
