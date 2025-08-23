@@ -40,6 +40,7 @@ namespace ProjectManager.Models
 
         private Process? _process;
         private readonly object _lockObject = new();
+        private bool _nextAtLineStart = true;
 
         [JsonIgnore]
         public Process? Process
@@ -81,6 +82,57 @@ namespace ProjectManager.Models
         }
 
         /// <summary>
+        /// 追加原始输出片段（可选在每行行首添加时间戳）。
+        /// 时间戳格式：[HH:mm:ss] ，仅在行首添加，并在遇到 \n 后下一片段再次添加。
+        /// </summary>
+        public void AddOutputRawWithTimestamp(string fragment, bool enableTimestamps)
+        {
+            if (fragment == null)
+                return;
+
+            if (!enableTimestamps)
+            {
+                AddOutputRaw(fragment);
+                return;
+            }
+
+            lock (_lockObject)
+            {
+                var nowTag = $"[{DateTime.Now:HH:mm:ss}] ";
+                var sb = new System.Text.StringBuilder(fragment.Length + 16);
+                int pos = 0;
+                while (pos < fragment.Length)
+                {
+                    if (_nextAtLineStart)
+                    {
+                        sb.Append(nowTag);
+                        _nextAtLineStart = false;
+                    }
+
+                    int idx = fragment.IndexOf('\n', pos);
+                    if (idx < 0)
+                    {
+                        sb.Append(fragment, pos, fragment.Length - pos);
+                        break;
+                    }
+                    else
+                    {
+                        // 包含换行符
+                        sb.Append(fragment, pos, (idx - pos + 1));
+                        _nextAtLineStart = true;
+                        pos = idx + 1;
+                    }
+                }
+
+                var stamped = sb.ToString();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    OutputLines.Add(stamped);
+                });
+            }
+        }
+
+        /// <summary>
         /// 清空输出
         /// </summary>
         public void ClearOutput()
@@ -90,6 +142,7 @@ namespace ProjectManager.Models
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     OutputLines.Clear();
+                    _nextAtLineStart = true;
                 });
             }
         }

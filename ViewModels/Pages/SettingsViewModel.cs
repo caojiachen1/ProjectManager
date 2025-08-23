@@ -65,6 +65,9 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private string _defaultStartupPage = "Dashboard";
 
+        [ObservableProperty]
+        private bool _showTerminalTimestamps = false;
+
         public SettingsViewModel(ISettingsService settingsService)
         {
             _settingsService = settingsService;
@@ -115,6 +118,7 @@ namespace ProjectManager.ViewModels.Pages
             MaxRecentProjects = settings.MaxRecentProjects;
             UseCmdChcp65001 = settings.UseCmdChcp65001;
             DefaultStartupPage = settings.DefaultStartupPage;
+            ShowTerminalTimestamps = settings.ShowTerminalTimestamps;
 
             _isInitialized = true;
         }
@@ -136,7 +140,8 @@ namespace ProjectManager.ViewModels.Pages
                 AutoSaveProjects = AutoSaveProjects,
                 MaxRecentProjects = MaxRecentProjects,
                 UseCmdChcp65001 = UseCmdChcp65001,
-                DefaultStartupPage = DefaultStartupPage
+                DefaultStartupPage = DefaultStartupPage,
+                ShowTerminalTimestamps = ShowTerminalTimestamps
             };
 
             await _settingsService.SaveSettingsAsync(settings);

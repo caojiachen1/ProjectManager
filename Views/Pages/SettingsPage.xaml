@@ -244,6 +244,22 @@
                 <CheckBox Grid.Column="1" IsChecked="{Binding ShowNotifications}" VerticalAlignment="Center"/>
             </Grid>
         </ui:Card>
+
+        <!-- 终端时间戳 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="终端显示时间戳" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="在终端输出前添加 [HH:mm:ss] 时间戳" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" IsChecked="{Binding ShowTerminalTimestamps}" VerticalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
         
         <!-- 使用UTF8编码 -->
         <ui:Card Margin="0,0,0,8" Padding="16">

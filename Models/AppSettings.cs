@@ -22,6 +22,7 @@ namespace ProjectManager.Models
         public string PreferredTerminal { get; set; } = "PowerShell";
         public bool ShowNotifications { get; set; } = true;
         public bool UseCmdChcp65001 { get; set; } = true;
+        public bool ShowTerminalTimestamps { get; set; } = false;
 
         // 个性化设置
         public ApplicationTheme Theme { get; set; } = ApplicationTheme.Unknown;

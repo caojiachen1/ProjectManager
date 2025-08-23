@@ -85,30 +85,32 @@ namespace ProjectManager.Services
             {
                 if (session.IsRunning)
                 {
-                    session.AddOutputRaw("终端已在运行中\r\n");
+                    var s0 = await _settingsService.GetSettingsAsync();
+                    session.AddOutputRawWithTimestamp("终端已在运行中\r\n", s0.ShowTerminalTimestamps);
                     return false;
                 }
 
                 session.UpdateStatus("正在启动...", false);
-                session.AddOutputRaw($"启动命令: {session.Command}\r\n");
-                session.AddOutputRaw($"工作目录: {session.ProjectPath}\r\n");
+                var settings = await _settingsService.GetSettingsAsync();
+                session.AddOutputRawWithTimestamp($"启动命令: {session.Command}\r\n", settings.ShowTerminalTimestamps);
+                session.AddOutputRawWithTimestamp($"工作目录: {session.ProjectPath}\r\n", settings.ShowTerminalTimestamps);
 
                 // 设置环境变量 - 优先使用传入的环境变量，否则使用会话中存储的环境变量（复制避免外部被修改）
                 var envVars = (environmentVariables ?? session.EnvironmentVariables) != null
                     ? new Dictionary<string, string>(environmentVariables ?? session.EnvironmentVariables)
                     : new Dictionary<string, string>();
 
-                // 获取用户设置的终端类型
-                var settings = await _settingsService.GetSettingsAsync();
+                // 获取用户设置的终端类型（包含是否显示时间戳）
+                // var settings 已在上方获取
 
                 // 构建完整的命令序列（根据终端类型生成对应的环境变量设置方式）
                 var commandSequence = new List<string>();
                 if (envVars != null && envVars.Any())
                 {
-                    session.AddOutputRaw("设置环境变量:\r\n");
+                    session.AddOutputRawWithTimestamp("设置环境变量:\r\n", settings.ShowTerminalTimestamps);
                     foreach (var env in envVars)
                     {
-                        session.AddOutputRaw($"  {env.Key}={env.Value}\r\n");
+                        session.AddOutputRawWithTimestamp($"  {env.Key}={env.Value}\r\n", settings.ShowTerminalTimestamps);
                     }
                     commandSequence.AddRange(BuildEnvCommands(settings.PreferredTerminal, envVars));
                 }
@@ -177,7 +179,7 @@ namespace ProjectManager.Services
                         var text = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         if (!string.IsNullOrEmpty(text))
                         {
-                            session.AddOutputRaw(text);
+                            session.AddOutputRawWithTimestamp(text, settings.ShowTerminalTimestamps);
                         }
                     }
                 }
@@ -186,7 +188,7 @@ namespace ProjectManager.Services
                 process.Exited += (sender, e) =>
                 {
                     session.UpdateStatus("已停止", false);
-                    session.AddOutputRaw($"进程已退出，退出代码: {process.ExitCode}\r\n");
+                    session.AddOutputRawWithTimestamp($"进程已退出，退出代码: {process.ExitCode}\r\n", settings.ShowTerminalTimestamps);
                     try { cts.Cancel(); } catch { }
                 };
 
@@ -196,14 +198,15 @@ namespace ProjectManager.Services
                 _ = ReadStreamAsync(process.StandardError.BaseStream);
 
                 session.UpdateStatus("运行中", true);
-                session.AddOutputRaw("终端已启动\r\n");
+                session.AddOutputRawWithTimestamp("终端已启动\r\n", settings.ShowTerminalTimestamps);
 
                 return true;
             }
             catch (Exception ex)
             {
                 session.UpdateStatus("启动失败", false);
-                session.AddOutputRaw($"启动失败: {ex.Message}\r\n");
+                var s1 = await _settingsService.GetSettingsAsync();
+                session.AddOutputRawWithTimestamp($"启动失败: {ex.Message}\r\n", s1.ShowTerminalTimestamps);
                 // 显示终端启动错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端启动失败: {ex.Message}", "终端启动错误"));
                 return false;
@@ -221,13 +224,15 @@ namespace ProjectManager.Services
                 if (session.Process != null && !session.Process.HasExited)
                 {
                     session.Process.Kill(true);
-                    session.AddOutputRaw("终端已强制停止\r\n");
+                    var s2 = _settingsService.GetSettingsAsync().Result;
+                    session.AddOutputRawWithTimestamp("终端已强制停止\r\n", s2.ShowTerminalTimestamps);
                 }
                 session.UpdateStatus("已停止", false);
             }
             catch (Exception ex)
             {
-                session.AddOutputRaw($"停止失败: {ex.Message}\r\n");
+                var s3 = _settingsService.GetSettingsAsync().Result;
+                session.AddOutputRawWithTimestamp($"停止失败: {ex.Message}\r\n", s3.ShowTerminalTimestamps);
                 // 显示终端停止错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端停止失败: {ex.Message}", "终端停止错误"));
             }
