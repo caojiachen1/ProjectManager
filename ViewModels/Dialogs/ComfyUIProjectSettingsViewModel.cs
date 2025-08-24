@@ -2763,13 +2763,31 @@ namespace ProjectManager.ViewModels.Dialogs
         [RelayCommand]
         private void BrowsePythonPath()
         {
+            // 优先使用当前项目目录作为初始目录；若不可用，使用 PythonPath 的目录；最后回退到 ProgramFiles
+            string? initialDir = null;
+
+            if (!string.IsNullOrEmpty(ProjectPath))
+            {
+                try { initialDir = ProjectPath; }
+                catch { initialDir = null; }
+            }
+
+            if (string.IsNullOrEmpty(initialDir) && !string.IsNullOrEmpty(PythonPath))
+            {
+                try { initialDir = Path.GetDirectoryName(PythonPath); }
+                catch { initialDir = null; }
+            }
+
+            if (string.IsNullOrEmpty(initialDir))
+            {
+                initialDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            }
+
             var dialog = new OpenFileDialog
             {
                 Title = "选择Python可执行文件",
                 Filter = "Python可执行文件 (python.exe)|python.exe",
-                InitialDirectory = string.IsNullOrEmpty(PythonPath) ? 
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) : 
-                    Path.GetDirectoryName(PythonPath),
+                InitialDirectory = initialDir ?? string.Empty,
                 CheckFileExists = true,
                 CheckPathExists = true
             };
