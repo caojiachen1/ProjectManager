@@ -9,6 +9,7 @@ namespace ProjectManager.Services
     {
         Task<List<Project>> GetProjectsAsync();
         Task<bool> SaveProjectAsync(Project project);
+    Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects);
         Task DeleteProjectAsync(string projectId);
         Task<Project?> GetProjectAsync(string projectId);
         Task StartProjectAsync(Project project);
@@ -229,6 +230,33 @@ namespace ProjectManager.Services
         {
             var project = await GetProjectAsync(projectId);
             return project?.LogOutput ?? string.Empty;
+        }
+
+        public async Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects)
+        {
+            if (orderedProjects == null) return;
+
+            // Rebuild internal list order based on provided sequence of project IDs
+            var orderedList = orderedProjects.Select(p => p.Id).ToList();
+            var newList = new List<Project>();
+            foreach (var id in orderedList)
+            {
+                var existing = _projects.FirstOrDefault(p => p.Id == id);
+                if (existing != null)
+                    newList.Add(existing);
+            }
+
+            // Append any missing projects that were not included in the ordered list
+            foreach (var p in _projects)
+            {
+                if (!newList.Any(np => np.Id == p.Id))
+                    newList.Add(p);
+            }
+
+            _projects.Clear();
+            _projects.AddRange(newList);
+
+            await SaveProjectsToFile();
         }
 
         private void LoadProjects()

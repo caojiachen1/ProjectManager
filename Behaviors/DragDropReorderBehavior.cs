@@ -201,6 +201,30 @@ namespace ProjectManager.Behaviors
                 view2.Refresh();
             }
 
+            // 尝试持久化新顺序（如果集合元素为 Project）
+            try
+            {
+                // 获取 IProjectService（使用全局 App 服务容器）
+                var svc = App.Services.GetService(typeof(ProjectManager.Services.IProjectService)) as ProjectManager.Services.IProjectService;
+                if (svc != null)
+                {
+                    // 构建当前顺序的项目列表
+                    if (itemsControl.ItemsSource is IEnumerable enumerable)
+                    {
+                        var ordered = new System.Collections.Generic.List<ProjectManager.Models.Project>();
+                        foreach (var it in enumerable)
+                        {
+                            if (it is ProjectManager.Models.Project p)
+                                ordered.Add(p);
+                        }
+
+                        // Fire-and-forget 保存顺序
+                        _ = svc.SaveProjectsOrderAsync(ordered);
+                    }
+                }
+            }
+            catch { /* 忽略持久化错误，避免影响 UI */ }
+
             // 移除预览
             var state = GetState(itemsControl);
             RemoveAdorner(itemsControl, state);
