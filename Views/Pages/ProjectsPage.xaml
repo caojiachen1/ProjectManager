@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:behaviors="clr-namespace:ProjectManager.Behaviors"
     xmlns:models="clr-namespace:ProjectManager.Models"
     Title="ProjectsPage"
     d:DataContext="{d:DesignInstance local:ProjectsPage,
@@ -107,14 +108,26 @@
                     <!-- 项目名称和菜单按钮 -->
                     <Grid Grid.Row="0" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="{Binding Name}" ToolTipService.Placement="Mouse"/>
+                        <!-- 左上角拖拽句柄（无悬停反馈） -->
+                        <Border Grid.Column="0"
+                                Width="24"
+                                Height="24"
+                                Margin="0,0,8,0"
+                                Background="Transparent"
+                                ToolTip="按住拖动以排序"
+                                Cursor="SizeAll"
+                                behaviors:DragDropReorder.IsDragHandle="True">
+                            <ui:SymbolIcon Symbol="ReOrderDotsVertical24" FontSize="20" Opacity="0.7"/>
+                        </Border>
+
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="{Binding Name}" ToolTipService.Placement="Mouse"/>
                         
                         <!-- 下拉菜单按钮 -->
-                        <ui:Button Grid.Column="1" 
+                        <ui:Button Grid.Column="2" 
                                    VerticalAlignment="Top"
                                    HorizontalAlignment="Right"
                                    Width="32"
@@ -231,9 +244,10 @@
         </Grid.RowDefinitions>
 
         <!-- 项目列表 -->
-        <ItemsControl Grid.Row="0"
+    <ItemsControl Grid.Row="0"
                       ItemsSource="{Binding FilteredProjects}"
-                      ItemTemplate="{StaticResource ProjectCardTemplate}">
+              ItemTemplate="{StaticResource ProjectCardTemplate}"
+              behaviors:DragDropReorder.Enable="True">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal"/>
