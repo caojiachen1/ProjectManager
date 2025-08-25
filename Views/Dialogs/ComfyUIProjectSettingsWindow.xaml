@@ -62,9 +62,8 @@
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>
-                            <ComboBox Text="{Binding StartCommand}" 
-                                      IsEditable="True"
-                                      ItemsSource="{Binding StartCommandSuggestions}"/>
+                            <ui:TextBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                        PlaceholderText="python main.py --listen --port 8188"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
