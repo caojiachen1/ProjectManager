@@ -11,9 +11,9 @@ namespace ProjectManager.ViewModels.Dialogs
 {
     public partial class GitManagementDialogViewModel : ObservableObject
     {
-    private readonly IGitService _gitService;
-    private readonly IContentDialogService _contentDialogService;
-    private readonly IErrorDisplayService _errorDisplayService;
+        private readonly IGitService _gitService;
+        private readonly IContentDialogService _contentDialogService;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
         private Project? _project;
@@ -374,13 +374,12 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private async Task ShowSuccessMessage(string message)
         {
-                // 使用统一的错误/信息显示服务
-                await _errorDisplayService.ShowInfoAsync(message, "成功");
+            await _errorDisplayService.ShowInfoAsync(message, "成功");
         }
 
         private async Task ShowErrorMessage(string message)
         {
-                await _errorDisplayService.ShowErrorAsync(message, "错误");
+            await _errorDisplayService.ShowErrorAsync(message, "错误");
         }
     }
 }

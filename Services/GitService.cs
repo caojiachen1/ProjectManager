@@ -623,9 +623,7 @@ namespace ProjectManager.Services
                                 (double)totalScanned / (totalScanned + directoriesToScan.Count) * 100,
                                 $"发现Git仓库: {Path.GetFileName(currentDirectory)}"
                             ));
-                            
-                            // 如果发现Git仓库，不再扫描其子目录
-                            continue;
+                            // 继续扫描其子目录，以支持仓库内的嵌套仓库（例如子模块或嵌套repo）
                         }
 
                         // 获取子目录并加入扫描队列
@@ -634,6 +632,13 @@ namespace ProjectManager.Services
                             var subDirectories = Directory.GetDirectories(currentDirectory);
                             foreach (var subDir in subDirectories)
                             {
+                                // 跳过 .git 目录以避免无效遍历和性能问题
+                                var name = Path.GetFileName(subDir);
+                                if (string.Equals(name, ".git", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
                                 if (!scannedDirectories.Contains(subDir))
                                 {
                                     directoriesToScan.Enqueue(subDir);

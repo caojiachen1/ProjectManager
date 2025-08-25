@@ -232,9 +232,9 @@ namespace ProjectManager.ViewModels.Dialogs
                 if (!string.IsNullOrWhiteSpace(TagsString))
                 {
                     project.Tags = TagsString.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                           .Select(tag => tag.Trim())
-                                           .Where(tag => !string.IsNullOrEmpty(tag))
-                                           .ToList();
+                                            .Select(tag => tag.Trim())
+                                            .Where(tag => !string.IsNullOrEmpty(tag))
+                                            .ToList();
                 }
                 else
                 {
