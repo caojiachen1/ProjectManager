@@ -50,12 +50,6 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        
-                        <ui:Button Content="切换仓库" 
-                                   Icon="{ui:SymbolIcon ArrowSwap24}"
-                                   Command="{Binding SwitchRepositoryCommand}"
-                                   IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
-                                   HorizontalAlignment="Left"/>
                     </StackPanel>
                 </ui:Card>
 

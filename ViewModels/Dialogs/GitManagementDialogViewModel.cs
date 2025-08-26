@@ -14,6 +14,7 @@ namespace ProjectManager.ViewModels.Dialogs
         private readonly IGitService _gitService;
         private readonly IContentDialogService _contentDialogService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private bool _isPopulatingRepositories = false;
 
         [ObservableProperty]
         private Project? _project;
@@ -73,6 +74,7 @@ namespace ProjectManager.ViewModels.Dialogs
 
             try
             {
+                _isPopulatingRepositories = true;
                 AvailableRepositories.Clear();
 
                 // 首先检查项目根目录是否是Git仓库
@@ -109,16 +111,20 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 System.Diagnostics.Debug.WriteLine($"加载Git仓库列表失败: {ex.Message}");
             }
+            finally
+            {
+                _isPopulatingRepositories = false;
+            }
         }
 
-        [RelayCommand]
-        private async Task SwitchRepository()
+        partial void OnSelectedRepositoryChanged(GitRepositoryInfo? value)
         {
-            if (SelectedRepository != null && SelectedRepository.Path != CurrentRepositoryPath)
-            {
-                CurrentRepositoryPath = SelectedRepository.Path;
-                await RefreshGitInfoAsync();
-            }
+            if (_isPopulatingRepositories) return;
+            if (value == null) return;
+            if (value.Path == CurrentRepositoryPath) return;
+            CurrentRepositoryPath = value.Path;
+            // fire and forget to avoid blocking setter; errors handled inside RefreshGitInfoAsync
+            _ = RefreshGitInfoAsync();
         }
 
         [RelayCommand]

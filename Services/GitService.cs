@@ -54,7 +54,7 @@ namespace ProjectManager.Services
         /// <summary>
         /// 获取项目的Git信息
         /// </summary>
-        public async Task<GitInfo> GetGitInfoAsync(string projectPath)
+    public async Task<GitInfo> GetGitInfoAsync(string projectPath)
         {
             var gitInfo = new GitInfo();
 
@@ -63,9 +63,12 @@ namespace ProjectManager.Services
 
             try
             {
-                // 检查是否是Git仓库
-                var gitDir = Path.Combine(projectPath, ".git");
-                if (!Directory.Exists(gitDir))
+                // 严谨判断：仅认 .git 目录为初筛，且必须通过 git 命令二次确认
+                if (!IsGitRepositoryByMarkerDirectory(projectPath))
+                    return gitInfo;
+
+                var confirm = await ConfirmGitRepositoryWithGitAsync(projectPath);
+                if (!confirm)
                     return gitInfo;
 
                 gitInfo.IsGitRepository = true;
@@ -529,7 +532,7 @@ namespace ProjectManager.Services
             catch { }
         }
 
-        private async Task<(bool IsSuccess, string Output)> RunGitCommandAsync(string workingDirectory, string arguments)
+    private async Task<(bool IsSuccess, string Output)> RunGitCommandAsync(string workingDirectory, string arguments)
         {
             try
             {
@@ -562,9 +565,38 @@ namespace ProjectManager.Services
         }
 
         /// <summary>
+        /// 仅以 .git 目录作为仓库存在的本地标记（不解析 .git 文件）。
+        /// </summary>
+        private static bool IsGitRepositoryByMarkerDirectory(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path)) return false;
+            try
+            {
+                var dotGit = Path.Combine(path, ".git");
+                return Directory.Exists(dotGit);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// 使用 git 命令确认目录是否为仓库：git rev-parse --git-dir
+        /// 仅在存在 .git 目录的前提下调用，以降低无谓开销。
+        /// </summary>
+        private async Task<bool> ConfirmGitRepositoryWithGitAsync(string path)
+        {
+            if (!IsGitRepositoryByMarkerDirectory(path)) return false;
+            try
+            {
+                var result = await RunGitCommandAsync(path, "rev-parse --git-dir");
+                return result.IsSuccess && !string.IsNullOrWhiteSpace(result.Output);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
         /// 扫描指定路径及其子文件夹中的所有Git仓库
         /// </summary>
-        public async Task<List<string>> ScanForGitRepositoriesAsync(string rootPath, IProgress<(double Progress, string Message)>? progress = null)
+    public async Task<List<string>> ScanForGitRepositoriesAsync(string rootPath, IProgress<(double Progress, string Message)>? progress = null)
         {
             var gitRepositories = new List<string>();
 
@@ -598,13 +630,14 @@ namespace ProjectManager.Services
 
                     try
                     {
-                        // 检查是否是Git仓库
-                        var gitDir = Path.Combine(currentDirectory, ".git");
+                        // 检查是否是Git仓库（严格策略：只认 .git 目录，并用 git 二次确认）
                         var isGitRepository = false;
-                        
                         try
                         {
-                            isGitRepository = Directory.Exists(gitDir) || File.Exists(gitDir);
+                            if (IsGitRepositoryByMarkerDirectory(currentDirectory))
+                            {
+                                isGitRepository = await ConfirmGitRepositoryWithGitAsync(currentDirectory);
+                            }
                         }
                         catch (UnauthorizedAccessException)
                         {
