@@ -216,6 +216,50 @@ namespace ProjectManager.ViewModels.Pages
         {
             if (project != null)
             {
+                // 后台异步检查并清理无效的Git仓库（不阻塞UI）
+                if (project.GitRepositories?.Count > 0)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var gitService = _serviceProvider.GetRequiredService<IGitService>();
+                            var projectService = _serviceProvider.GetRequiredService<IProjectService>();
+                            
+                            // 快速验证所有Git仓库的可用性
+                            var validationResult = await gitService.ValidateRepositoriesAsync(project.GitRepositories);
+                            
+                            // 如果有无效的仓库，静默更新项目并保存
+                            if (validationResult.InvalidRepositories.Count > 0)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"静默清理 {validationResult.InvalidRepositories.Count} 个无效的Git仓库");
+                                
+                                // 更新项目的Git仓库列表，移除无效的仓库
+                                project.GitRepositories = validationResult.ValidRepositories;
+                                project.LastModified = DateTime.Now;
+                                
+                                // 保存更新后的项目
+                                await projectService.SaveProjectAsync(project);
+                                
+                                // 在UI线程上更新项目列表中的引用
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    var existingProject = Projects.FirstOrDefault(p => p.Id == project.Id);
+                                    if (existingProject != null)
+                                    {
+                                        existingProject.GitRepositories = project.GitRepositories;
+                                        existingProject.LastModified = project.LastModified;
+                                    }
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"后台Git仓库清理失败: {ex.Message}");
+                        }
+                    });
+                }
+
                 var dialogViewModel = _serviceProvider.GetRequiredService<GitManagementDialogViewModel>();
                 var dialog = new GitManagementWindow();
                 

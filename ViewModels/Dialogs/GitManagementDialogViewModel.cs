@@ -84,7 +84,7 @@ namespace ProjectManager.ViewModels.Dialogs
                     AvailableRepositories.Add(new GitRepositoryInfo(Project.LocalPath, Project.LocalPath));
                 }
 
-                // 添加项目中扫描到的其他Git仓库
+                // 添加项目中扫描到的其他Git仓库，但只添加有效的仓库
                 if (Project.GitRepositories?.Count > 0)
                 {
                     foreach (var repoPath in Project.GitRepositories)
@@ -92,7 +92,15 @@ namespace ProjectManager.ViewModels.Dialogs
                         // 避免重复添加项目根目录
                         if (repoPath != Project.LocalPath)
                         {
-                            AvailableRepositories.Add(new GitRepositoryInfo(repoPath, Project.LocalPath));
+                            // 再次验证仓库的有效性
+                            if (await _gitService.IsValidGitRepositoryAsync(repoPath))
+                            {
+                                AvailableRepositories.Add(new GitRepositoryInfo(repoPath, Project.LocalPath));
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"跳过无效的Git仓库: {repoPath}");
+                            }
                         }
                     }
                 }

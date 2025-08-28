@@ -432,6 +432,64 @@ namespace ProjectManager.Services
             }
         }
 
+        /// <summary>
+        /// 检查Git仓库路径是否有效（快速版本，仅检查文件系统）
+        /// </summary>
+        public Task<bool> IsValidGitRepositoryAsync(string repositoryPath)
+        {
+            if (string.IsNullOrEmpty(repositoryPath) || !Directory.Exists(repositoryPath))
+                return Task.FromResult(false);
+
+            try
+            {
+                // 仅检查是否有.git目录，跳过git命令验证以提高性能
+                return Task.FromResult(IsGitRepositoryByMarkerDirectory(repositoryPath));
+            }
+            catch
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+        /// <summary>
+        /// 批量验证Git仓库路径的有效性（并行优化版本）
+        /// </summary>
+        public async Task<(List<string> ValidRepositories, List<string> InvalidRepositories)> ValidateRepositoriesAsync(IEnumerable<string> repositoryPaths)
+        {
+            var validRepositories = new List<string>();
+            var invalidRepositories = new List<string>();
+
+            if (repositoryPaths == null)
+                return (validRepositories, invalidRepositories);
+
+            var paths = repositoryPaths.ToList();
+            if (paths.Count == 0)
+                return (validRepositories, invalidRepositories);
+
+            // 使用并行处理以提高性能
+            var validationTasks = paths.Select(async repoPath =>
+            {
+                var isValid = await IsValidGitRepositoryAsync(repoPath);
+                return new { Path = repoPath, IsValid = isValid };
+            });
+
+            var results = await Task.WhenAll(validationTasks);
+
+            foreach (var result in results)
+            {
+                if (result.IsValid)
+                {
+                    validRepositories.Add(result.Path);
+                }
+                else
+                {
+                    invalidRepositories.Add(result.Path);
+                }
+            }
+
+            return (validRepositories, invalidRepositories);
+        }
+
         #region Private Methods
 
         private async Task<string> GetCurrentBranchAsync(string projectPath)
