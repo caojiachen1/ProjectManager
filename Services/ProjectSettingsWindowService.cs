@@ -6,11 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProjectManager.Services
 {
-    public interface IProjectSettingsWindowService
-    {
-        bool? ShowSettingsWindow(Project project, Window owner);
-    }
-
     public class ProjectSettingsWindowService : IProjectSettingsWindowService
     {
         private readonly IServiceProvider _serviceProvider;

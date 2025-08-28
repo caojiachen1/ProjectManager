@@ -5,19 +5,6 @@ using ProjectManager.Models;
 
 namespace ProjectManager.Services
 {
-    public interface IProjectService
-    {
-        Task<List<Project>> GetProjectsAsync();
-        Task<bool> SaveProjectAsync(Project project);
-    Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects);
-        Task DeleteProjectAsync(string projectId);
-        Task<Project?> GetProjectAsync(string projectId);
-        Task StartProjectAsync(Project project);
-        Task StopProjectAsync(Project project);
-        Task<string> GetProjectLogsAsync(string projectId);
-        event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
-    }
-
     public class ProjectService : IProjectService
     {
         private readonly string _projectsFilePath;
@@ -322,18 +309,6 @@ namespace ProjectManager.Services
                 // 显示保存错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"保存项目失败: {ex.Message}", "项目保存错误"));
             }
-        }
-    }
-
-    public class ProjectStatusChangedEventArgs : EventArgs
-    {
-        public string ProjectId { get; }
-        public ProjectStatus Status { get; }
-
-        public ProjectStatusChangedEventArgs(string projectId, ProjectStatus status)
-        {
-            ProjectId = projectId;
-            Status = status;
         }
     }
 }
