@@ -571,6 +571,24 @@ namespace ProjectManager.Services
             catch { }
         }
 
+        public async Task<string> GetShortCommitHashAsync(string repositoryPath)
+        {
+            try
+            {
+                var result = await RunGitCommandAsync(repositoryPath, "rev-parse --short HEAD");
+                if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.Output))
+                {
+                    return result.Output.Trim();
+                }
+            }
+            catch
+            {
+                // ignore and return empty
+            }
+
+            return string.Empty;
+        }
+
     private async Task<(bool IsSuccess, string Output)> RunGitCommandAsync(string workingDirectory, string arguments)
         {
             try

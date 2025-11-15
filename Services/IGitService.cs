@@ -22,5 +22,6 @@ namespace ProjectManager.Services
         Task<List<string>> ScanForGitRepositoriesAsync(string rootPath, IProgress<(double Progress, string Message)>? progress = null);
         Task<bool> IsValidGitRepositoryAsync(string repositoryPath);
         Task<(List<string> ValidRepositories, List<string> InvalidRepositories)> ValidateRepositoriesAsync(IEnumerable<string> repositoryPaths);
+        Task<string> GetShortCommitHashAsync(string repositoryPath);
     }
 }

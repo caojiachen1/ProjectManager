@@ -282,6 +282,29 @@ namespace ProjectManager.Helpers
         }
     }
 
+    /// <summary>
+    /// 将项目的 Framework 是否为 "ComfyUI" 映射为 Visibility，用于显示 ComfyUI 专用控件。
+    /// </summary>
+    public class ComfyUIFrameworkToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string framework &&
+                !string.IsNullOrWhiteSpace(framework) &&
+                framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+            {
+                return Visibility.Visible;
+            }
+
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class ProjectCommandParameterConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

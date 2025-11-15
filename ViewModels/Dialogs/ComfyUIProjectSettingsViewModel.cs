@@ -20,6 +20,21 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private string _projectPath = string.Empty;
 
+        /// <summary>
+        /// ComfyUI 根目录（包含 main.py 与 custom_nodes 的目录）。
+        /// </summary>
+        [ObservableProperty]
+        private string _comfyUIRootPath = string.Empty;
+
+        partial void OnComfyUIRootPathChanged(string value)
+        {
+            // 根目录改变会影响 main.py 的实际路径，自动刷新启动命令
+            if (!_isUpdatingCommand)
+            {
+                UpdateStartCommand();
+            }
+        }
+
         [ObservableProperty]
         private string _startCommand = "python main.py";
 
@@ -1897,9 +1912,28 @@ namespace ProjectManager.ViewModels.Dialogs
                 var pythonCommand = string.IsNullOrEmpty(PythonPath) || !IsValidPythonPath(PythonPath) ? "python" : $"\"{PythonPath}\"";
                 
                 // 使用可配置的启动脚本，默认为 main.py
-                var scriptPath = string.IsNullOrWhiteSpace(StartupScript) ? "main.py" : StartupScript.Trim();
-                
-                RunCommand = $"{pythonCommand} {scriptPath}";
+                var script = string.IsNullOrWhiteSpace(StartupScript) ? "main.py" : StartupScript.Trim();
+
+                // 如果脚本是相对路径且指定了 ComfyUI 根目录，则尝试组合为绝对路径
+                string scriptToUse;
+                if (!Path.IsPathRooted(script) && !string.IsNullOrWhiteSpace(ComfyUIRootPath) && Directory.Exists(ComfyUIRootPath))
+                {
+                    try
+                    {
+                        var combined = Path.Combine(ComfyUIRootPath, script);
+                        scriptToUse = File.Exists(combined) ? $"\"{combined}\"" : script;
+                    }
+                    catch
+                    {
+                        scriptToUse = script;
+                    }
+                }
+                else
+                {
+                    scriptToUse = script;
+                }
+
+                RunCommand = $"{pythonCommand} {scriptToUse}";
                 OnPropertyChanged(nameof(RunCommand));
             }
             finally
@@ -2347,6 +2381,7 @@ namespace ProjectManager.ViewModels.Dialogs
                     DatabaseUrl = settings.DatabaseUrl;
 
                     // 路径设置（保留原有设置）
+                    ComfyUIRootPath = settings.ComfyUIRootPath;
                     PythonPath = settings.PythonPath;
                     ModelsPath = settings.ModelsPath;
                     OutputPath = settings.OutputPath;
@@ -2807,6 +2842,97 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
+        /// <summary>
+        /// 自动根据项目路径和常见目录结构检测 ComfyUI 根目录（包含 main.py 的目录）。
+        /// </summary>
+        [RelayCommand]
+        private void DetectComfyUIRoot()
+        {
+            if (_project == null)
+            {
+                return;
+            }
+
+            try
+            {
+                string? detected = null;
+                var baseDir = _project.LocalPath;
+
+                if (!string.IsNullOrWhiteSpace(baseDir) && Directory.Exists(baseDir))
+                {
+                    // 情况 1：项目根目录本身就是 ComfyUI 根目录（包含 main.py）
+                    var mainInRoot = Path.Combine(baseDir, "main.py");
+                    if (File.Exists(mainInRoot))
+                    {
+                        detected = baseDir;
+                    }
+                    else
+                    {
+                        // 情况 2：常见子目录名下存在 main.py
+                        var candidates = new[] { "ComfyUI", "comfyui" };
+                        foreach (var sub in candidates)
+                        {
+                            var subRoot = Path.Combine(baseDir, sub);
+                            var mainInSub = Path.Combine(subRoot, "main.py");
+                            if (Directory.Exists(subRoot) && File.Exists(mainInSub))
+                            {
+                                detected = subRoot;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(detected))
+                {
+                    ComfyUIRootPath = detected;
+                    // 根目录变化会影响脚本完整路径，更新运行命令
+                    UpdateRunCommand();
+                }
+                else
+                {
+                    // 未检测到则保持为空，让用户手动选择
+                }
+            }
+            catch
+            {
+                // 忽略异常，避免影响 UI
+            }
+        }
+
+        /// <summary>
+        /// 手动浏览选择 ComfyUI 根目录。
+        /// </summary>
+        [RelayCommand]
+        private void BrowseComfyUIRoot()
+        {
+            // 使用文件选择器模拟目录选择：用户选中任意文件，我们取其所在目录
+            var dialog = new OpenFileDialog
+            {
+                Title = "选择 ComfyUI 目录中的任意文件（例如 main.py）",
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Filter = "Python 脚本 (*.py)|*.py|所有文件 (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var dir = Path.GetDirectoryName(dialog.FileName);
+                    if (!string.IsNullOrWhiteSpace(dir))
+                    {
+                        ComfyUIRootPath = dir;
+                        UpdateRunCommand();
+                    }
+                }
+                catch
+                {
+                    // 忽略无效路径
+                }
+            }
+        }
+
         [RelayCommand]
         private void BrowseModelsPath()
         {
@@ -3071,11 +3197,15 @@ namespace ProjectManager.ViewModels.Dialogs
                         DatabaseUrl = DatabaseUrl,
 
                         // 路径设置（保留原有设置）
+                        ComfyUIRootPath = ComfyUIRootPath,
                         PythonPath = PythonPath,
                         ModelsPath = ModelsPath,
                         OutputPath = OutputPath,
                         ExtraArgs = ExtraArgs,
-                        CustomNodesPath = CustomNodesPath,
+                        // custom_nodes 目录完全由 ComfyUI 根目录决定：<ComfyUIRootPath>\custom_nodes
+                        CustomNodesPath = (!string.IsNullOrWhiteSpace(ComfyUIRootPath) && Directory.Exists(ComfyUIRootPath))
+                            ? Path.Combine(ComfyUIRootPath, "custom_nodes")
+                            : string.Empty,
                         AutoLoadWorkflow = AutoLoadWorkflow,
                         EnableWorkflowSnapshots = EnableWorkflowSnapshots
                     };

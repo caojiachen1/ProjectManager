@@ -100,6 +100,10 @@ namespace ProjectManager
                 services.AddTransient<ViewModels.Dialogs.GitCloneDialogViewModel>();
                 services.AddTransient<Views.Dialogs.EnvironmentVariablesWindow>();
                 services.AddTransient<ViewModels.Dialogs.EnvironmentVariablesDialogViewModel>();
+
+                // ComfyUI 插件管理窗口
+                services.AddTransient<Views.Dialogs.ComfyUIPluginsManagerWindow>();
+                services.AddTransient<ViewModels.Dialogs.ComfyUIPluginsManagerViewModel>();
             }).Build();
 
         /// <summary>

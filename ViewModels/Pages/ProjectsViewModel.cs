@@ -107,6 +107,73 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
+        private async Task ManageComfyUIPlugins(Project project)
+        {
+            if (project == null) return;
+
+            // 仅对 ComfyUI 项目启用
+            if (string.IsNullOrWhiteSpace(project.Framework) ||
+                !project.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+            {
+                await _errorDisplayService.ShowWarningAsync("插件管理仅适用于 ComfyUI 类型的项目。", "不支持的项目类型");
+                return;
+            }
+
+            // 计算 custom_nodes 目录：完全由 ComfyUI 根目录决定
+            string? customNodesPath = null;
+
+            var comfySettings = project.ComfyUISettings;
+            if (comfySettings != null && !string.IsNullOrWhiteSpace(comfySettings.ComfyUIRootPath))
+            {
+                var root = comfySettings.ComfyUIRootPath;
+                if (Directory.Exists(root))
+                {
+                    customNodesPath = Path.Combine(root, "custom_nodes");
+                }
+            }
+
+            // 若未配置或根目录不存在，则提示错误，不再回退到项目本地路径
+            if (string.IsNullOrWhiteSpace(customNodesPath))
+            {
+                await _errorDisplayService.ShowErrorAsync("未配置有效的 ComfyUI 根目录，无法定位 custom_nodes 目录。请在 ComfyUI 项目设置中指定根目录。", "路径错误");
+                return;
+            }
+
+            // 如果目录不存在，先提示用户是否创建
+            if (!Directory.Exists(customNodesPath))
+            {
+                var confirmed = await _errorDisplayService.ShowConfirmationAsync(
+                    $"未找到 custom_nodes 目录，是否为项目创建？\n\n{customNodesPath}",
+                    "创建插件目录");
+
+                if (!confirmed)
+                    return;
+
+                try
+                {
+                    Directory.CreateDirectory(customNodesPath);
+                }
+                catch (Exception ex)
+                {
+                    await _errorDisplayService.ShowErrorAsync($"创建 custom_nodes 目录失败: {ex.Message}", "错误");
+                    return;
+                }
+            }
+
+            try
+            {
+                // 打开 ComfyUI 插件管理窗口
+                var window = _serviceProvider.GetRequiredService<ProjectManager.Views.Dialogs.ComfyUIPluginsManagerWindow>();
+                window.Initialize(customNodesPath, Application.Current.MainWindow);
+                window.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                await _errorDisplayService.ShowErrorAsync($"打开插件管理窗口失败: {ex.Message}", "错误");
+            }
+        }
+
+        [RelayCommand]
         private async Task CreateProject()
         {
             var dialogViewModel = _serviceProvider.GetRequiredService<NewProjectDialogViewModel>();

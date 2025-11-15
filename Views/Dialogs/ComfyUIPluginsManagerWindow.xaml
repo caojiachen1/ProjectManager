@@ -1,0 +1,113 @@
+<ui:FluentWindow
+    x:Class="ProjectManager.Views.Dialogs.ComfyUIPluginsManagerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:dialogs="clr-namespace:ProjectManager.Views.Dialogs"
+    xmlns:viewModels="clr-namespace:ProjectManager.ViewModels.Dialogs"
+    Title="ComfyUI 插件管理"
+    Width="900"
+    Height="480"
+    MinWidth="800"
+    MinHeight="400"
+    WindowStartupLocation="CenterScreen"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    mc:Ignorable="d">
+
+    <!-- DataContext 由依赖注入提供，在代码隐藏中通过服务容器设置 -->
+
+    <Grid>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="ComfyUI 插件管理"
+            Padding="8,0,0,0" />
+
+        <Grid Margin="0,32,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 顶部已移除：custom_nodes 路径显示与刷新按钮 -->
+
+            <!-- 插件列表：改回 Wpf.Ui DataGrid，实现列自动宽度和文本裁剪 -->
+                <Border Grid.Row="0"
+                    Margin="16"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <ui:DataGrid x:Name="PluginsDataGrid"
+                             AutoGenerateColumns="False"
+                             ItemsSource="{Binding Plugins}"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             IsReadOnly="False"
+                             GridLinesVisibility="All"
+                             HorizontalGridLinesBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                             VerticalGridLinesBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                             HeadersVisibility="All"
+                             ColumnHeaderHeight="28"
+                             RowHeaderWidth="0"
+                             BorderThickness="0"
+                             Background="{DynamicResource ControlAltFillColorSecondaryBrush}"
+                             RowBackground="{DynamicResource ControlAltFillColorSecondaryBrush}"
+                             RowHeight="28">
+
+                    <ui:DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                        </Style>
+                    </ui:DataGrid.RowStyle>
+
+                    <ui:DataGrid.Resources>
+                        <Style x:Key="TightTextCellStyle" TargetType="TextBlock">
+                            <Setter Property="Padding" Value="4,0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        </Style>
+                    </ui:DataGrid.Resources>
+                    <ui:DataGrid.Columns>
+                        <DataGridCheckBoxColumn Header="启用"
+                                                Binding="{Binding IsEnabled}"
+                                                Width="Auto" />
+
+                        <DataGridTextColumn Header="插件名"
+                                            Binding="{Binding Name}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <DataGridTextColumn Header="远端地址"
+                                            Binding="{Binding RemoteUrl}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <DataGridTextColumn Header="当前分支"
+                                            Binding="{Binding Branch}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <DataGridTextColumn Header="版本 ID"
+                                            Binding="{Binding VersionId}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <DataGridTextColumn Header="最后提交信息"
+                                            Binding="{Binding LastCommitMessage}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <DataGridTextColumn Header="更新日期"
+                                            Binding="{Binding LastUpdated}"
+                                            Width="SizeToCells"
+                                            ElementStyle="{StaticResource TightTextCellStyle}" />
+                    </ui:DataGrid.Columns>
+                </ui:DataGrid>
+            </Border>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

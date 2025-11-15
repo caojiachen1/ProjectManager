@@ -60,6 +60,34 @@
                 <!-- ComfyUI特定配置 -->
                 <Expander Header="基础配置" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
+                        <!-- ComfyUI 根目录：自动/手动决定 main.py 和 custom_nodes 的基准路径 -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="ComfyUI 根目录" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0"
+                                            Text="{Binding ComfyUIRootPath, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="例如：D:\ComfyUI 或 项目内的 ComfyUI 目录"
+                                            Margin="0,0,8,0"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <ui:Button Content="自动检测"
+                                               Margin="0,0,8,0"
+                                               Command="{Binding DetectComfyUIRootCommand}"/>
+                                    <ui:Button Content="浏览"
+                                               Icon="{ui:SymbolIcon FolderOpen24}"
+                                               Command="{Binding BrowseComfyUIRootCommand}"/>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Margin="0,4,0,0"
+                                       FontSize="10"
+                                       Foreground="#666666">
+                                <Run Text="用于推断 main.py 与 custom_nodes 的所在目录；留空则根据项目路径自动尝试。"/>
+                            </TextBlock>
+                        </StackPanel>
+
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 

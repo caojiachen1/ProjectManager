@@ -139,6 +139,12 @@ public class ComfyUISettings
     public string DatabaseUrl { get; set; } = string.Empty;
 
     // 路径设置（保留原有设置）
+    /// <summary>
+    /// ComfyUI 根目录路径（包含 main.py 与 custom_nodes 的目录）。
+    /// 为空时表示未显式指定，将根据项目本地路径进行自动推断。
+    /// </summary>
+    public string ComfyUIRootPath { get; set; } = string.Empty;
+
     public string PythonPath { get; set; } = string.Empty;
     public string ModelsPath { get; set; } = "./models";
     public string OutputPath { get; set; } = "./output";

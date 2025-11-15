@@ -24,6 +24,7 @@
             <local:StatusToToggleButtonEnabledConverter x:Key="StatusToToggleButtonEnabledConverter"/>
             <local:StatusToToggleButtonAppearanceConverter x:Key="StatusToToggleButtonAppearanceConverter"/>
             <local:FrameworkToVisibilityConverter x:Key="FrameworkToVisibilityConverter"/>
+            <local:ComfyUIFrameworkToVisibilityConverter x:Key="ComfyUIFrameworkToVisibilityConverter"/>
             <local:ProjectCommandParameterConverter x:Key="ProjectCommandParameterConverter"/>
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>

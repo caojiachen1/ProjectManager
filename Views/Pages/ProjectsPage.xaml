@@ -168,10 +168,10 @@
                     <!-- 项目描述 -->
                     <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" MaxHeight="60"/>
                     
-                    <!-- 项目状态和Git信息 -->
+                    <!-- 项目状态、Git信息和框架/插件按钮 -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:Badge Content="{Binding StatusDisplay}" Appearance="{Binding Status, Converter={StaticResource StatusToBadgeConverter}}" Margin="0,0,8,0"/>
-                        
+
                         <!-- Git状态 -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,8,0" Visibility="{Binding GitInfo.IsGitRepository, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <ui:SymbolIcon Symbol="Branch24" FontSize="12" Foreground="Green" Margin="0,0,4,0"/>
@@ -181,8 +181,27 @@
                                       FontSize="10" 
                                       Margin="0,0,4,0"/>
                         </StackPanel>
-                        
-                        <TextBlock Text="{Binding Framework}" Opacity="0.6" VerticalAlignment="Center"/>
+
+                        <!-- 框架文本和 ComfyUI 插件按钮 -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
+                            <TextBlock Text="{Binding Framework}" Opacity="0.6" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <!-- ComfyUI 插件管理按钮：紧跟在 ComfyUI 文本右侧，仅在 ComfyUI 项目中显示 -->
+                            <ui:Button
+                                Width="32"
+                                Height="32"
+                                Padding="0"
+                                Margin="0,0,0,0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ToolTip="管理 ComfyUI 插件 (custom_nodes)"
+                                Command="{Binding DataContext.ManageComfyUIPluginsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                CommandParameter="{Binding}"
+                                Visibility="{Binding Framework, Converter={StaticResource ComfyUIFrameworkToVisibilityConverter}}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="PuzzlePiece24" FontSize="20" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </StackPanel>
                     </StackPanel>
                     
                     <!-- 路径信息 -->
