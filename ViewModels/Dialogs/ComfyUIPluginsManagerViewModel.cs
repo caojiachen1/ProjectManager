@@ -87,6 +87,13 @@ namespace ProjectManager.ViewModels.Dialogs
                         {
                             var info = new DirectoryInfo(dir);
 
+                            // 跳过 Python 缓存目录，例如 "__pycache__"
+                            if (info.Name.Equals("__pycache__", StringComparison.OrdinalIgnoreCase)
+                                || info.Name.IndexOf("pycache", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                continue;
+                            }
+
                             var plugin = new ComfyUIPluginInfo
                             {
                                 Name = info.Name,
