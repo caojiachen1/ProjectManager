@@ -15,8 +15,7 @@ public class ComfyUISettings
     public string CorsOrigin { get; set; } = "*";
     public float MaxUploadSize { get; set; } = 100;
 
-    // Python和脚本设置
-    public string StartupScript { get; set; } = "main.py";
+    // Python 设置（启动脚本固定为 ComfyUI 根目录下的 main.py，不再可配置）
 
     // 互斥选项组（下拉菜单）
     public MemoryManagementMode MemoryManagementMode { get; set; } = MemoryManagementMode.None;
@@ -141,8 +140,9 @@ public class ComfyUISettings
     // 路径设置（保留原有设置）
     /// <summary>
     /// ComfyUI 根目录路径（包含 main.py 与 custom_nodes 的目录）。
+    /// 启动脚本固定为该目录下的 main.py，已移除单独的“启动脚本文件”设置。
     /// 为空时表示未显式指定，将根据项目本地路径进行自动推断。
-    /// </summary>
+   /// </summary>
     public string ComfyUIRootPath { get; set; } = string.Empty;
 
     public string PythonPath { get; set; } = string.Empty;

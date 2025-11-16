@@ -31,8 +31,6 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- 顶部已移除：custom_nodes 路径显示与刷新按钮 -->
-
             <!-- 插件列表：改回 Wpf.Ui DataGrid，实现列自动宽度和文本裁剪 -->
                 <Border Grid.Row="0"
                     Margin="16"

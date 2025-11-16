@@ -44,18 +44,6 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private string _commandLineArguments = string.Empty;
 
-        [ObservableProperty]
-        private string _startupScript = "main.py";
-
-        partial void OnStartupScriptChanged(string value)
-        {
-            if (!_isUpdatingCommand)
-            {
-                UpdateRunCommand();
-                UpdateCompleteStartCommand();
-            }
-        }
-
         partial void OnRunCommandChanged(string value)
         {
             if (!_isUpdatingCommand)
@@ -1861,13 +1849,13 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             _projectService = projectService;
             
-            // 确保有默认的启动命令
+            // 确保有默认的启动命令（始终使用 ComfyUI 根目录下的 main.py）
             if (string.IsNullOrEmpty(StartCommand))
             {
                 StartCommand = "python main.py";
             }
-            
-            // 初始化启动命令建议
+
+            // 初始化启动命令建议（固定为 main.py，不再支持自定义脚本文件名）
             UpdateStartCommandSuggestions();
         }
 
@@ -1910,27 +1898,25 @@ namespace ProjectManager.ViewModels.Dialogs
             {
                 // 使用正则表达式更新Python路径，只有有效路径才使用
                 var pythonCommand = string.IsNullOrEmpty(PythonPath) || !IsValidPythonPath(PythonPath) ? "python" : $"\"{PythonPath}\"";
-                
-                // 使用可配置的启动脚本，默认为 main.py
-                var script = string.IsNullOrWhiteSpace(StartupScript) ? "main.py" : StartupScript.Trim();
 
-                // 如果脚本是相对路径且指定了 ComfyUI 根目录，则尝试组合为绝对路径
+                // 启动脚本固定为 ComfyUI 根目录下的 main.py
+                // 若指定了有效的 ComfyUIRootPath，则使用其下的 main.py 作为绝对路径；否则使用相对路径 main.py
                 string scriptToUse;
-                if (!Path.IsPathRooted(script) && !string.IsNullOrWhiteSpace(ComfyUIRootPath) && Directory.Exists(ComfyUIRootPath))
+                if (!string.IsNullOrWhiteSpace(ComfyUIRootPath) && Directory.Exists(ComfyUIRootPath))
                 {
                     try
                     {
-                        var combined = Path.Combine(ComfyUIRootPath, script);
-                        scriptToUse = File.Exists(combined) ? $"\"{combined}\"" : script;
+                        var combined = Path.Combine(ComfyUIRootPath, "main.py");
+                        scriptToUse = File.Exists(combined) ? $"\"{combined}\"" : "main.py";
                     }
                     catch
                     {
-                        scriptToUse = script;
+                        scriptToUse = "main.py";
                     }
                 }
                 else
                 {
-                    scriptToUse = script;
+                    scriptToUse = "main.py";
                 }
 
                 RunCommand = $"{pythonCommand} {scriptToUse}";
@@ -2262,8 +2248,7 @@ namespace ProjectManager.ViewModels.Dialogs
                     CorsOrigin = settings.CorsOrigin;
                     MaxUploadSize = settings.MaxUploadSize;
 
-                    // Python和脚本设置
-                    StartupScript = settings.StartupScript;
+                    // Python 设置（启动脚本固定为 main.py，不再从设置中恢复脚本名）
 
                     // 互斥选项组（下拉菜单）
                     MemoryManagementMode = settings.MemoryManagementMode;
@@ -3078,8 +3063,7 @@ namespace ProjectManager.ViewModels.Dialogs
                         CorsOrigin = CorsOrigin,
                         MaxUploadSize = MaxUploadSize,
 
-                        // Python和脚本设置
-                        StartupScript = StartupScript,
+                        // Python 设置（启动脚本固定为 main.py，不再单独持久化脚本名）
 
                         // 互斥选项组（下拉菜单）
                         MemoryManagementMode = MemoryManagementMode,

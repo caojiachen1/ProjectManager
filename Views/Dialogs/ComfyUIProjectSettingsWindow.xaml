@@ -134,16 +134,6 @@
                             </TextBlock>
                         </StackPanel>
 
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="启动脚本文件" Margin="0,0,0,4"/>
-                            <ui:TextBox Text="{Binding StartupScript, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="main.py"
-                                        Margin="0,0,0,0"/>
-                            <TextBlock Margin="0,4,0,0"
-                                       FontSize="10"
-                                       Foreground="#666666"
-                                       Text="指定要执行的Python脚本文件，支持相对路径和绝对路径"/>
-                        </StackPanel>
 
                         <CheckBox Content="启动时监听所有网络接口 (--listen)" 
                                   IsChecked="{Binding ListenAllInterfaces}" 
