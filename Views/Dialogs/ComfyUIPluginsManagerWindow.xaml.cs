@@ -11,7 +11,7 @@ namespace ProjectManager.Views.Dialogs;
 
 public partial class ComfyUIPluginsManagerWindow : FluentWindow
 {
-    private readonly ComfyUIPluginsManagerViewModel _viewModel;
+    private ComfyUIPluginsManagerViewModel? _viewModel;
     private string? _customNodesPath;
 
     public ComfyUIPluginsManagerWindow(ComfyUIPluginsManagerViewModel viewModel)
@@ -64,7 +64,7 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
         // 窗口已经显示，现在开始非阻塞加载数据
         if (!string.IsNullOrWhiteSpace(_customNodesPath))
         {
-            _viewModel.StartLoadFromCustomNodes(_customNodesPath);
+            _viewModel?.StartLoadFromCustomNodes(_customNodesPath);
         }
     }
 
@@ -76,7 +76,8 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
         if (PluginsDataGrid == null)
             return;
 
-        if (_viewModel.Plugins == null || !_viewModel.Plugins.Any())
+        var plugins = _viewModel?.Plugins;
+        if (plugins == null || !plugins.Any())
             return;
 
         // 使用窗口的字体设置，如果未指定则使用系统默认
@@ -88,7 +89,7 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
         // 为每列单独计算最大宽度
         var columnMaxWidths = new Dictionary<int, double>();
 
-        foreach (var plugin in _viewModel.Plugins)
+        foreach (var plugin in plugins)
         {
             // 列 1: 插件名
             UpdateColumnMaxWidth(columnMaxWidths, 1, plugin.Name ?? string.Empty, typeface, FontSize);
@@ -180,7 +181,7 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
         }
     }
 
-    private static double MeasureTextWidth(string text, Typeface typeface, double fontSize)
+    private double MeasureTextWidth(string text, Typeface typeface, double fontSize)
     {
         if (string.IsNullOrEmpty(text))
             return 0.0;
@@ -192,7 +193,7 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
             typeface,
             fontSize,
             Brushes.Black,
-            VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip);
+            VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
         return formattedText.WidthIncludingTrailingWhitespace;
     }

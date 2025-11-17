@@ -2,12 +2,19 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>wpfui-icon.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Disable SDK auto-generation of assembly attributes to avoid duplicate attribute errors
+         Project provides some assembly attributes (e.g. ThemeInfo) in source files. The SDK
+         also generates attributes from project metadata which can lead to CS0579 duplicates. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <!-- Also prevent the SDK from emitting the TargetFrameworkAttribute which can collide
+          with other generated assembly attribute fragments in some build scenarios. -->
+        <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
