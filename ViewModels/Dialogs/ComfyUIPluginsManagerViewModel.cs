@@ -15,6 +15,7 @@ namespace ProjectManager.ViewModels.Dialogs
     public partial class ComfyUIPluginsManagerViewModel : ObservableObject
     {
         private readonly IGitService _gitService;
+        private readonly IErrorDisplayService _errorService;
 
         // 缓存每个插件目录的 Git 信息，避免重复执行 git 命令
         private readonly Dictionary<string, CachedGitInfo> _gitCache = new(StringComparer.OrdinalIgnoreCase);
@@ -34,9 +35,10 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private ObservableCollection<ComfyUIPluginInfo> _plugins = new();
 
-        public ComfyUIPluginsManagerViewModel(IGitService gitService)
+        public ComfyUIPluginsManagerViewModel(IGitService gitService, IErrorDisplayService errorService)
         {
             _gitService = gitService;
+            _errorService = errorService;
         }
 
         /// <summary>
@@ -99,6 +101,8 @@ namespace ProjectManager.ViewModels.Dialogs
                                 Name = info.Name,
                                 LastUpdated = info.LastWriteTime,
                             };
+                            // 保存插件目录的完整路径，便于后续删除等操作
+                            plugin.Path = info.FullName;
 
                             // 如果缓存中已有 Git 信息，立即应用
                             if (_gitCache.TryGetValue(info.FullName, out var cached))
@@ -225,6 +229,34 @@ namespace ProjectManager.ViewModels.Dialogs
                 StartLoadFromCustomNodes(CustomNodesPath);
             }
             return Task.CompletedTask;
+        }
+
+        [RelayCommand]
+        private async Task Remove(ComfyUIPluginInfo plugin)
+        {
+            if (plugin == null)
+                return;
+
+            // 确认删除
+            var confirm = await _errorService.ShowConfirmationAsync($"确定要删除插件 '{plugin.Name}' 吗？此操作不可撤销。", "确认删除");
+            if (!confirm)
+                return;
+
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(plugin.Path) && Directory.Exists(plugin.Path))
+                {
+                    // 尝试删除目录及其内容
+                    Directory.Delete(plugin.Path, true);
+                }
+
+                // 从集合中移除（在 UI 线程）
+                System.Windows.Application.Current.Dispatcher.Invoke(() => Plugins?.Remove(plugin));
+            }
+            catch (Exception ex)
+            {
+                await _errorService.ShowExceptionAsync(ex, "删除失败");
+            }
         }
     }
 }

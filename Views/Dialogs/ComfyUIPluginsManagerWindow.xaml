@@ -32,7 +32,7 @@
             </Grid.RowDefinitions>
 
             <!-- 插件列表：改回 Wpf.Ui DataGrid，实现列自动宽度和文本裁剪 -->
-                <Border Grid.Row="0"
+            <Border Grid.Row="0"
                     Margin="16"
                     BorderThickness="1"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
@@ -58,6 +58,9 @@
                         <Style TargetType="DataGridRow">
                             <Setter Property="Padding" Value="0" />
                             <Setter Property="Margin" Value="0" />
+                            <!-- 使单元格垂直居中显示内容 -->
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
                         </Style>
                     </ui:DataGrid.RowStyle>
 
@@ -103,6 +106,22 @@
                                             Binding="{Binding LastUpdated}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
+
+                        <!-- 操作列：移除按钮 -->
+                        <DataGridTemplateColumn Header="操作" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                        <Button Content="移除"
+                                            Padding="6,2"
+                                            Margin="6,0"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
+                                            CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </ui:DataGrid.Columns>
                 </ui:DataGrid>
             </Border>

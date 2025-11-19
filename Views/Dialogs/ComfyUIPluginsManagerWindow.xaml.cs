@@ -128,12 +128,14 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
             }
         }
 
-        // 计算可用宽度（DataGrid 实际宽度减去 CheckBox 列和边距）
+        // 计算可用宽度（DataGrid 实际宽度减去 CheckBox 列、操作列和滚动条的预留）
         const double padding = 16.0; // 每列左右各 8 像素
         const double checkBoxColumnWidth = 60.0; // CheckBox 列的估计宽度
-        const double scrollBarWidth = 20.0; // 滚动条预留宽度
-        
-        var availableWidth = PluginsDataGrid.ActualWidth - checkBoxColumnWidth - scrollBarWidth;
+        const double scrollBarWidth = 45.0; // 滚动条预留宽度
+        const double opColumnWidth = 60.0; // 操作列固定宽度（与 XAML 一致）
+
+        // 可用于其他列的宽度需减去 checkbox、操作列与滚动条的宽度
+        var availableWidth = PluginsDataGrid.ActualWidth - checkBoxColumnWidth - opColumnWidth - scrollBarWidth;
         
         if (availableWidth <= 0)
         {
@@ -148,23 +150,123 @@ public partial class ComfyUIPluginsManagerWindow : FluentWindow
             totalDesiredWidth += width + padding;
         }
 
-        // 如果总宽度超过可用宽度，按比例缩小每列
-        double scaleFactor = 1.0;
-        if (totalDesiredWidth > availableWidth)
-        {
-            scaleFactor = availableWidth / totalDesiredWidth;
-        }
-
-        // 为每列设置宽度
-        for (int i = 1; i < PluginsDataGrid.Columns.Count; i++)
+        // 我们希望在空间不足时优先压缩“最后提交信息”列（index 5），同时保持最右侧操作列固定宽度。
+        // 计算每列期望宽度（含 padding），但暂不应用。
+        var desiredWidths = new Dictionary<int, double>();
+        for (int i = 1; i < Math.Max(PluginsDataGrid.Columns.Count - 1, 1); i++)
         {
             if (columnMaxWidths.ContainsKey(i) && columnMaxWidths[i] > 0)
             {
-                var columnWidth = (columnMaxWidths[i] + padding) * scaleFactor;
-                // 设置最小宽度，确保列头可见
-                columnWidth = Math.Max(columnWidth, 80);
-                PluginsDataGrid.Columns[i].Width = new DataGridLength(columnWidth);
+                desiredWidths[i] = columnMaxWidths[i] + padding;
             }
+        }
+
+        // 常量：提交列索引与最小宽度
+        const int commitColumnIndex = 5;
+        const double commitMinWidth = 50.0;
+        const double otherMinWidth = 80.0;
+
+        // 操作列固定宽度（与 XAML 对齐）
+
+        // 计算除了操作列和 checkbox 列外，可用于普通列的总可用宽度
+        // 注意 availableWidth 已减去了 checkbox 和 scrollbar 的预留
+
+        // 先计算除提交列之外的其他列所需宽度
+        double othersDesired = 0;
+        var otherIndices = new List<int>();
+        for (int i = 1; i < Math.Max(PluginsDataGrid.Columns.Count - 1, 1); i++)
+        {
+            if (i == commitColumnIndex) continue;
+            if (desiredWidths.ContainsKey(i))
+            {
+                othersDesired += desiredWidths[i];
+                otherIndices.Add(i);
+            }
+        }
+
+        // 计算分配给提交列的宽度：尽量保留其他列所需宽度，将剩余空间分配给提交列
+        var remainingForCommit = availableWidth - othersDesired;
+
+        double commitAssigned;
+        if (desiredWidths.ContainsKey(commitColumnIndex))
+        {
+            var commitDesired = desiredWidths[commitColumnIndex];
+            if (remainingForCommit >= commitDesired)
+            {
+                // 空间足够，使用期望值
+                commitAssigned = commitDesired;
+            }
+            else if (remainingForCommit >= commitMinWidth)
+            {
+                // 空间不足但能至少满足最小值，分配剩余空间
+                commitAssigned = remainingForCommit;
+            }
+            else
+            {
+                // 连最小值也无法直接分配，先把提交列设为最小，然后需要从其他列压缩以腾出空间
+                commitAssigned = commitMinWidth;
+                var deficit = commitMinWidth - Math.Max(0, remainingForCommit);
+
+                // 需要从 otherIndices 按比例或按最小宽度压缩 othersDesired 来补偿 deficit
+                double adjustableSum = 0;
+                foreach (var idx in otherIndices)
+                {
+                    adjustableSum += Math.Max(0, desiredWidths[idx] - (otherMinWidth + padding));
+                }
+
+                if (adjustableSum <= 0)
+                {
+                    // 无法从其他列压缩（都已接近最小），那就按最小值分配（可能会超出 availableWidth）
+                    // 这种极端情况下，我们仍然设置其他列为最小宽度
+                    foreach (var idx in otherIndices)
+                    {
+                        desiredWidths[idx] = otherMinWidth + padding;
+                    }
+                }
+                else
+                {
+                    // 按比例从可压缩量中抽取 deficit
+                    foreach (var idx in otherIndices)
+                    {
+                        var canReduce = Math.Max(0, desiredWidths[idx] - (otherMinWidth + padding));
+                        var reduction = (canReduce / adjustableSum) * deficit;
+                        desiredWidths[idx] = Math.Max(otherMinWidth + padding, desiredWidths[idx] - reduction);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 如果没有提交列，则 nothing to do
+            commitAssigned = 0;
+        }
+
+        // 现在将计算好的宽度应用到列（commit列和其他列），注意 desiredWidths 中含 padding
+        for (int i = 1; i < Math.Max(PluginsDataGrid.Columns.Count - 1, 1); i++)
+        {
+            if (i == commitColumnIndex)
+            {
+                if (commitAssigned > 0)
+                {
+                    var w = Math.Max(commitAssigned, commitMinWidth);
+                    PluginsDataGrid.Columns[i].Width = new DataGridLength(w);
+                }
+            }
+            else if (desiredWidths.ContainsKey(i))
+            {
+                var w = Math.Max(desiredWidths[i], otherMinWidth + padding);
+                PluginsDataGrid.Columns[i].Width = new DataGridLength(w);
+            }
+        }
+
+        // 确保最后一列（操作列）使用固定宽度显示
+        if (PluginsDataGrid.Columns.Count > 0)
+        {
+            var lastIndex = PluginsDataGrid.Columns.Count - 1;
+            // 固定宽度（与 XAML 中定义一致）
+            var fixedWidth = 60.0;
+            PluginsDataGrid.Columns[lastIndex].Width = new DataGridLength(fixedWidth);
+            PluginsDataGrid.Columns[lastIndex].MinWidth = fixedWidth;
         }
     }
 

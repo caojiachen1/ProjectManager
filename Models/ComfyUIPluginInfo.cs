@@ -46,5 +46,11 @@ namespace ProjectManager.Models
         /// </summary>
         [ObservableProperty]
         private DateTime? _lastUpdated;
+
+        /// <summary>
+        /// 插件所在的完整目录路径（用于执行删除/打开等操作）。
+        /// </summary>
+        [ObservableProperty]
+        private string _path = string.Empty;
     }
 }
