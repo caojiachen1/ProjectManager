@@ -62,3 +62,5 @@ Installer/*
 !Installer/*wapproj*
 !Installer/Images/
 !Installer/Package.appxmanifest
+
+publish/*
