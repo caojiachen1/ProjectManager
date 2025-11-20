@@ -30,7 +30,7 @@ namespace ProjectManager.Models
 
         [ObservableProperty]
         [JsonIgnore]
-        private GitInfo? _gitInfo;
+        private GitInfo? _gitInfo = new();
 
         [ObservableProperty]
         private DateTime _createdDate = DateTime.Now;

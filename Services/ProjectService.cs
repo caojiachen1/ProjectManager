@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
+using System.Windows;
 using ProjectManager.Models;
 
 namespace ProjectManager.Services
@@ -12,6 +14,9 @@ namespace ProjectManager.Services
         private readonly TerminalService _terminalService;
         private readonly IGitService _gitService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private static readonly TimeSpan GitInfoCacheDuration = TimeSpan.FromMinutes(2);
+        private readonly ConcurrentDictionary<string, GitInfoCacheEntry> _gitInfoCache = new();
+        private readonly ConcurrentDictionary<string, Task> _gitInfoRefreshTasks = new();
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
 
@@ -30,20 +35,17 @@ namespace ProjectManager.Services
 
         public async Task<List<Project>> GetProjectsAsync()
         {
-            // 加载Git信息
-            foreach (var project in _projects)
+            var snapshot = _projects.ToList();
+
+            foreach (var project in snapshot)
             {
-                try
+                if (!TryApplyCachedGitInfo(project))
                 {
-                    project.GitInfo = await _gitService.GetGitInfoAsync(project.LocalPath);
-                }
-                catch
-                {
-                    // 忽略Git信息加载错误
+                    QueueGitInfoRefresh(project);
                 }
             }
 
-            return await Task.FromResult(_projects.ToList());
+            return await Task.FromResult(snapshot);
         }
 
         public async Task<bool> SaveProjectAsync(Project project)
@@ -73,6 +75,8 @@ namespace ProjectManager.Services
 
             project.LastModified = DateTime.Now;
             await SaveProjectsToFile();
+            InvalidateGitInfoCache(project.Id);
+            QueueGitInfoRefresh(project);
             return true;
         }
 
@@ -86,6 +90,7 @@ namespace ProjectManager.Services
                     await StopProjectAsync(project);
                 }
                 _projects.Remove(project);
+                InvalidateGitInfoCache(project.Id);
                 await SaveProjectsToFile();
             }
         }
@@ -310,5 +315,69 @@ namespace ProjectManager.Services
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"保存项目失败: {ex.Message}", "项目保存错误"));
             }
         }
+        private void QueueGitInfoRefresh(Project project)
+        {
+            if (string.IsNullOrWhiteSpace(project?.LocalPath))
+                return;
+
+            _gitInfoRefreshTasks.GetOrAdd(project.Id, _ => RefreshGitInfoCoreAsync(project));
+        }
+
+        private bool TryApplyCachedGitInfo(Project project)
+        {
+            if (_gitInfoCache.TryGetValue(project.Id, out var entry))
+            {
+                if (DateTime.UtcNow - entry.Timestamp <= GitInfoCacheDuration)
+                {
+                    project.GitInfo = entry.Info;
+                    return true;
+                }
+
+                _gitInfoCache.TryRemove(project.Id, out _);
+            }
+
+            return false;
+        }
+
+        private async Task RefreshGitInfoCoreAsync(Project project)
+        {
+            try
+            {
+                var gitInfo = await _gitService.GetGitInfoAsync(project.LocalPath);
+                _gitInfoCache[project.Id] = new GitInfoCacheEntry(gitInfo, DateTime.UtcNow);
+                await RunOnUiThreadAsync(() => project.GitInfo = gitInfo);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"刷新Git信息失败: {ex.Message}");
+            }
+            finally
+            {
+                _gitInfoRefreshTasks.TryRemove(project.Id, out _);
+            }
+        }
+
+        private void InvalidateGitInfoCache(string projectId)
+        {
+            _gitInfoCache.TryRemove(projectId, out _);
+            _gitInfoRefreshTasks.TryRemove(projectId, out _);
+        }
+
+        private static Task RunOnUiThreadAsync(Action updateAction)
+        {
+            if (updateAction == null)
+                return Task.CompletedTask;
+
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                updateAction();
+                return Task.CompletedTask;
+            }
+
+            return dispatcher.InvokeAsync(updateAction).Task;
+        }
+
+        private readonly record struct GitInfoCacheEntry(GitInfo Info, DateTime Timestamp);
     }
 }
