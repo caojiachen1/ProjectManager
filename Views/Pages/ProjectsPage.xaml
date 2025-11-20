@@ -263,10 +263,10 @@
         </Grid.RowDefinitions>
 
         <!-- 项目列表 -->
-    <ItemsControl Grid.Row="0"
-                      ItemsSource="{Binding FilteredProjects}"
-              ItemTemplate="{StaticResource ProjectCardTemplate}"
-              behaviors:DragDropReorder.Enable="True">
+        <ItemsControl Grid.Row="0"
+                    ItemsSource="{Binding FilteredProjects}"
+                    ItemTemplate="{StaticResource ProjectCardTemplate}"
+                    behaviors:DragDropReorder.Enable="True">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal"/>

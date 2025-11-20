@@ -55,6 +55,9 @@ namespace ProjectManager
                 // Error display service
                 services.AddSingleton<IErrorDisplayService, ErrorDisplayService>();
 
+                // Performance monitor service
+                services.AddSingleton<IPerformanceMonitorService, PerformanceMonitorService>();
+
                 // Settings service
                 services.AddSingleton<ISettingsService, SettingsService>();
 
@@ -73,6 +76,8 @@ namespace ProjectManager
                 services.AddSingleton<ProjectsViewModel>();
                 services.AddSingleton<AddProjectPage>();
                 services.AddSingleton<AddProjectViewModel>();
+                services.AddSingleton<PerformancePage>();
+                services.AddSingleton<PerformanceViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<TerminalPage>();

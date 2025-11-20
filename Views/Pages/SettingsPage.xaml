@@ -294,6 +294,7 @@
                     <ComboBoxItem Content="仪表板" Tag="Dashboard"/>
                     <ComboBoxItem Content="项目管理" Tag="Projects"/>
                     <ComboBoxItem Content="终端控制台" Tag="Terminal"/>
+                    <ComboBoxItem Content="性能监控" Tag="Performance"/>
                 </ComboBox>
             </Grid>
         </ui:Card>

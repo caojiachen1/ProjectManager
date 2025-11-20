@@ -51,11 +51,11 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build ProjectManager.csproj --no-restore --configuration Release
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration Release
-
+      run: dotnet test ProjectManager.csproj --no-build --verbosity normal --configuration Release
+      
     - name: Get latest tag and generate new version
       id: version
       run: |
@@ -159,10 +159,10 @@ jobs:
         $version = "${{ steps.version.outputs.new_version }}" -replace '^v', ''
         $projectName = "${{ github.event.repository.name }}"
         # Publish as self-contained WPF application for Windows x64
-        dotnet publish -c Release --runtime win-x64 -o ./publish/
+        dotnet publish ProjectManager.csproj -c Release --runtime win-x64 -o ./publish/
 
         # Publish as framework-dependent standalone executable (requires .NET runtime)
-        dotnet publish -c Release --runtime win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish-standalone/
+        dotnet publish ProjectManager.csproj -c Release --runtime win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish-standalone/
 
     - name: Create portable ZIP package
       run: |

@@ -28,6 +28,12 @@ namespace ProjectManager.ViewModels.Windows
                 Content = "终端控制台",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
                 TargetPageType = typeof(Views.Pages.TerminalPage)
+            },
+            new NavigationViewItem()
+            {
+                Content = "性能监控",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Pulse24 },
+                TargetPageType = typeof(Views.Pages.PerformancePage)
             }
         };
 

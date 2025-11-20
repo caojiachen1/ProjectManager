@@ -63,6 +63,7 @@ namespace ProjectManager.Views.Windows
                     "Dashboard" => typeof(Views.Pages.DashboardPage),
                     "Projects" => typeof(Views.Pages.ProjectsPage),
                     "Terminal" => typeof(Views.Pages.TerminalPage),
+                    "Performance" => typeof(Views.Pages.PerformancePage),
                     _ => typeof(Views.Pages.DashboardPage) // 默认为仪表板
                 };
 

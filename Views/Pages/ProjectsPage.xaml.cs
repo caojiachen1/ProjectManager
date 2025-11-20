@@ -36,6 +36,11 @@ namespace ProjectManager.Views.Pages
             if (mainWindow == null) return;
 
             var host = FindChildByName<Grid>(mainWindow, "ProjectsToolbarHost");
+            var performanceHost = FindChildByName<Grid>(mainWindow, "PerformanceToolbarHost");
+            if (performanceHost != null)
+            {
+                performanceHost.Visibility = Visibility.Collapsed;
+            }
             if (host == null) return;
 
             // 如果还没有工具栏则创建
@@ -59,6 +64,13 @@ namespace ProjectManager.Views.Pages
             if (mainWindow == null) return;
 
             var host = FindChildByName<Grid>(mainWindow, "ProjectsToolbarHost");
+            var performanceHost = FindChildByName<Grid>(mainWindow, "PerformanceToolbarHost");
+
+            if (performanceHost != null)
+            {
+                performanceHost.Visibility = Visibility.Collapsed;
+            }
+
             if (host == null) return;
 
             host.Visibility = Visibility.Collapsed;

@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
+using System.Linq;
+using System.Management;
+using System.Text;
 using System.Threading;
 using ProjectManager.Models;
 
@@ -20,6 +24,42 @@ namespace ProjectManager.Services
         {
             _settingsService = settingsService;
             _errorDisplayService = errorDisplayService;
+        }
+
+        /// <summary>
+        /// 尝试通过 WMI 查找父进程的子进程（返回第一个匹配且可访问的 Process），如果找不到返回 null。
+        /// </summary>
+        private static Process? TryGetChildProcess(int parentPid)
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = " + parentPid);
+                using var results = searcher.Get();
+                foreach (ManagementObject mo in results)
+                {
+                    try
+                    {
+                        if (mo["ProcessId"] is not null)
+                        {
+                            var pid = Convert.ToInt32(mo["ProcessId"]);
+                            try
+                            {
+                                var p = Process.GetProcessById(pid);
+                                // ignore common shell processes
+                                var name = p.ProcessName?.ToLowerInvariant() ?? string.Empty;
+                                if (name.Contains("cmd") || name.Contains("powershell") || name.Contains("conhost"))
+                                    continue;
+                                if (!p.HasExited)
+                                    return p;
+                            }
+                            catch { /* ignore processes we can't access */ }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+            return null;
         }
 
         /// <summary>
@@ -154,7 +194,7 @@ namespace ProjectManager.Services
                 }
 
                 var process = new Process { StartInfo = processStartInfo };
-                session.Process = process;
+                session.Process = process; // initially the shell process
 
                 var cts = new CancellationTokenSource();
                 async Task ReadStreamAsync(Stream stream)
@@ -194,6 +234,27 @@ namespace ProjectManager.Services
 
                 process.EnableRaisingEvents = true;
                 process.Start();
+
+                // Try to detect if the shell spawns a child process that is the real app
+                // We'll poll synchronously for a short period so callers (e.g. ProjectService) can get the real process
+                try
+                {
+                    const int maxAttempts = 10;
+                    const int delayMs = 150;
+                    for (int attempt = 0; attempt < maxAttempts; attempt++)
+                    {
+                        await Task.Delay(delayMs);
+                        var child = TryGetChildProcess(process.Id);
+                        if (child != null && child.Id != process.Id)
+                        {
+                            // Found a child process; set as session.Process for monitoring
+                            session.Process = child;
+                            session.AddOutputRawWithTimestamp($"检测到子进程 PID={child.Id} ({child.ProcessName})\r\n", settings.ShowTerminalTimestamps);
+                            break;
+                        }
+                    }
+                }
+                catch { }
                 _ = ReadStreamAsync(process.StandardOutput.BaseStream);
                 _ = ReadStreamAsync(process.StandardError.BaseStream);
 
@@ -223,7 +284,41 @@ namespace ProjectManager.Services
             {
                 if (session.Process != null && !session.Process.HasExited)
                 {
-                    session.Process.Kill(true);
+                    try
+                    {
+                        // First attempt: use managed Kill with tree support
+                        session.Process.Kill(entireProcessTree: true);
+                    }
+                    catch { }
+
+                    // Wait briefly for process to exit
+                    try
+                    {
+                        if (!session.Process.WaitForExit(50))
+                        {
+                            // Fallback to taskkill to forcefully terminate the process tree
+                            try
+                            {
+                                var proc = new Process
+                                {
+                                    StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = "taskkill",
+                                        Arguments = $"/PID {session.Process.Id} /F /T",
+                                        CreateNoWindow = true,
+                                        UseShellExecute = false,
+                                        RedirectStandardOutput = true,
+                                        RedirectStandardError = true
+                                    }
+                                };
+                                proc.Start();
+                                proc.WaitForExit(2000);
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
                     var s2 = _settingsService.GetSettingsAsync().Result;
                     session.AddOutputRawWithTimestamp("终端已强制停止\r\n", s2.ShowTerminalTimestamps);
                 }
