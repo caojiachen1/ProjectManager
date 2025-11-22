@@ -1,10 +1,14 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ProjectManager.Models;
 using ProjectManager.Services;
 using Wpf.Ui.Abstractions.Controls;
+using System.Diagnostics;
 
 namespace ProjectManager.ViewModels.Pages
 {
@@ -228,6 +232,109 @@ namespace ProjectManager.ViewModels.Pages
         private void RefreshSessions()
         {
             LoadTerminalSessions();
+        }
+
+        /// <summary>
+        /// 在外部打开命令提示符（CMD），起始目录为当前选中会话的工作目录
+        /// </summary>
+        [RelayCommand]
+        private void OpenCmd()
+        {
+            try
+            {
+                var dir = SelectedSession?.ProjectPath;
+                if (string.IsNullOrWhiteSpace(dir) || !Directory.Exists(dir))
+                {
+                    dir = Environment.CurrentDirectory;
+                }
+
+                // 尝试检测并构建在打开的 cmd 中执行的初始化命令（激活虚拟环境、设置提示符、替换 pip 为 python -m pip）
+                var project = Task.Run(() => FindProjectByNameAsync(SelectedSession?.ProjectName)).Result;
+                var initCmd = BuildCmdInitialization(dir, project);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    // 如果有初始化命令，则通过 /k "..." 在新窗口中执行并保留窗口；否则直接打开工作目录
+                    Arguments = string.IsNullOrEmpty(initCmd) ? "/k" : $"/k \"{initCmd}\"",
+                    WorkingDirectory = dir,
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"无法打开命令提示符: {ex.Message}", "打开 CMD 失败"));
+            }
+        }
+
+        /// <summary>
+        /// 为 CMD 窗口构建初始化命令（激活项目虚拟环境并设置提示符与 pip 别名）
+        /// 返回可以直接放入 cmd.exe /k "..." 的命令串，或为空表示无需特殊初始化
+        /// </summary>
+        private string? BuildCmdInitialization(string projectDir, Project? project)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+                    return null;
+
+                // 首先检查项目设置中是否显式指定了 Python 可执行文件（例如 ComfyUI 的 PythonPath）并优先使用它
+                var pyPath = project?.ComfyUISettings?.PythonPath;
+                if (!string.IsNullOrWhiteSpace(pyPath) && File.Exists(pyPath))
+                {
+                    var scriptsDir = Path.GetDirectoryName(pyPath);
+                    if (!string.IsNullOrWhiteSpace(scriptsDir))
+                    {
+                        var setPath = $"set \"PATH={scriptsDir};%PATH%\"";
+                        var promptCmd = $"prompt ({scriptsDir}) $P$G";
+                        var doskey = "doskey pip=python -m pip $*";
+                        return string.Join(" && ", new List<string> { setPath, promptCmd, doskey });
+                    }
+
+                    var pythonParent = Path.GetDirectoryName(pyPath) ?? projectDir;
+                    var rootName = Path.GetFileName(pythonParent) ?? "python";
+                    var doskeyCmd = $"doskey pip=\"{pyPath}\" -m pip $*";
+                    var simpleParts = new List<string> { $"prompt ({rootName}) $P$G", doskeyCmd };
+                    return string.Join(" && ", simpleParts);
+                }
+
+                var venvCandidates = new[] { ".venv", "venv", "env", ".env", "venv3", "virtualenv" };
+                foreach (var name in venvCandidates)
+                {
+                    var scriptsDir = Path.Combine(projectDir, name, "Scripts");
+                    var pythonExe = Path.Combine(scriptsDir, "python.exe");
+                    if (Directory.Exists(scriptsDir) && File.Exists(pythonExe))
+                    {
+                        var setPath = $"set \"PATH={scriptsDir};%PATH%\"";
+                        var promptCmd = $"prompt ({scriptsDir}) $P$G";
+                        var doskey = "doskey pip=python -m pip $*";
+                        var parts = new List<string> { setPath, promptCmd, doskey };
+                        return string.Join(" && ", parts);
+                    }
+                }
+
+                // 未找到虚拟环境或指定的 Python，可尝试查找 pip 在项目 Scripts 下（宽松匹配）
+                foreach (var dirName in venvCandidates)
+                {
+                    var scriptsDir = Path.Combine(projectDir, dirName, "Scripts");
+                    var maybePython = Path.Combine(scriptsDir, "python.exe");
+                    if (Directory.Exists(scriptsDir) && File.Exists(maybePython))
+                    {
+                        var setPath = $"set \"PATH={scriptsDir};%PATH%\"";
+                        var promptCmd = $"prompt ({scriptsDir}) $P$G";
+                        var doskey = $"doskey pip=python -m pip $*";
+                        return string.Join(" && ", new List<string> { setPath, promptCmd, doskey });
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

@@ -135,6 +135,10 @@
                            Icon="{ui:SymbolIcon ArrowSync24}"
                            Command="{Binding ViewModel.RefreshSessionsCommand}"
                            Margin="0,0,16,0"/>
+                <ui:Button Content="打开命令提示符"
+                           Icon="{ui:SymbolIcon WindowConsole20}"
+                           Command="{Binding ViewModel.OpenCmdCommand}"
+                           Margin="0,0,16,0"/>
                 
                 <!-- 状态显示 -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
