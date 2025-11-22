@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectManager.Models;
@@ -42,7 +43,7 @@ namespace ProjectManager.ViewModels.Pages
             _serviceProvider = serviceProvider;
             _errorDisplayService = errorDisplayService;
             
-            _projectService.ProjectStatusChanged += OnProjectStatusChanged;
+            _projectService.ProjectPropertyChanged += OnProjectPropertyChanged;
         }
 
         [RelayCommand]
@@ -122,24 +123,8 @@ namespace ProjectManager.ViewModels.Pages
         {
             try
             {
-                var projects = await _projectService.GetProjectsAsync();
-                
-                TotalProjects = projects.Count;
-                RunningProjects = projects.Count(p => p.Status == ProjectStatus.Running);
-                StoppedProjects = projects.Count(p => p.Status == ProjectStatus.Stopped);
-                ErrorProjects = projects.Count(p => p.Status == ProjectStatus.Error);
-
-                // 获取最近的5个项目
-                var recentProjectsList = projects
-                    .OrderByDescending(p => p.LastModified)
-                    .Take(5)
-                    .ToList();
-
-                RecentProjects.Clear();
-                foreach (var project in recentProjectsList)
-                {
-                    RecentProjects.Add(project);
-                }
+                await _projectService.GetProjectsAsync();
+                RecalculateDashboard();
             }
             catch (Exception ex)
             {
@@ -149,12 +134,33 @@ namespace ProjectManager.ViewModels.Pages
             }
         }
 
-        private void OnProjectStatusChanged(object? sender, ProjectStatusChangedEventArgs e)
+        private void OnProjectPropertyChanged(object? sender, ProjectPropertyChangedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(async () =>
+            if (e.PropertyName is nameof(Project.Status) or nameof(Project.LastModified))
             {
-                await LoadDashboardData();
-            });
+                Application.Current.Dispatcher.Invoke(RecalculateDashboard);
+            }
+        }
+
+        private void RecalculateDashboard()
+        {
+            var projects = _projectService.Projects;
+
+            TotalProjects = projects.Count;
+            RunningProjects = projects.Count(p => p.Status == ProjectStatus.Running);
+            StoppedProjects = projects.Count(p => p.Status == ProjectStatus.Stopped);
+            ErrorProjects = projects.Count(p => p.Status == ProjectStatus.Error);
+
+            var recent = projects
+                .OrderByDescending(p => p.LastModified)
+                .Take(5)
+                .ToList();
+
+            RecentProjects.Clear();
+            foreach (var project in recent)
+            {
+                RecentProjects.Add(project);
+            }
         }
 
         public void OnNavigatedTo()

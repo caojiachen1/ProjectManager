@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Management;
 using ProjectManager.Models;
+using ProjectManager.Helpers;
+using System.Runtime.InteropServices;
 
 namespace ProjectManager.Services
 {
@@ -36,20 +37,7 @@ namespace ProjectManager.Services
 
         private ProjectPerformanceSnapshot CreateSnapshot(Project project, DateTime capturedAt)
         {
-            Process? process = null;
-            try
-            {
-                process = project.RunningProcess;
-                if (process != null && process.HasExited)
-                {
-                    RemoveCpuSample(process.Id);
-                    process = null;
-                }
-            }
-            catch
-            {
-                process = null;
-            }
+            Process? process = ResolveProcessForSnapshot(project);
 
             var snapshot = new ProjectPerformanceSnapshot
             {
@@ -70,8 +58,11 @@ namespace ProjectManager.Services
 
             snapshot.ProcessId = SafeGet<long?>(() => process.Id);
             snapshot.ProcessName = SafeGet(() => process.ProcessName);
-            snapshot.MemoryUsageMb = SafeGet(() => process.WorkingSet64 / 1024d / 1024d);
-            snapshot.PrivateMemoryUsageMb = SafeGet(() => process.PrivateMemorySize64 / 1024d / 1024d);
+            if (!TryPopulateAggregatedMemory(process, snapshot))
+            {
+                snapshot.MemoryUsageMb = SafeGet(() => process.WorkingSet64 / 1024d / 1024d);
+                snapshot.PrivateMemoryUsageMb = SafeGet(() => process.PrivateMemorySize64 / 1024d / 1024d);
+            }
             snapshot.ThreadCount = SafeGet(() => process.Threads.Count);
             snapshot.ProcessStartTime = SafeGet<DateTime?>(() => process.StartTime);
             snapshot.Uptime = snapshot.ProcessStartTime.HasValue ? capturedAt - snapshot.ProcessStartTime.Value : null;
@@ -124,26 +115,10 @@ namespace ProjectManager.Services
         {
             try
             {
-                // 使用 WMI 获取 TotalPhysicalMemory（字节）
-                using var searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
-                using var results = searcher.Get();
-                foreach (ManagementObject obj in results)
+                var mem = new MEMORYSTATUSEX();
+                if (GlobalMemoryStatusEx(mem))
                 {
-                    try
-                    {
-                        var mem = obj["TotalPhysicalMemory"];
-                        if (mem == null)
-                            continue;
-
-                        if (long.TryParse(mem.ToString(), out var bytes))
-                        {
-                            return bytes / 1024d / 1024d;
-                        }
-                    }
-                    catch
-                    {
-                        // 忽略单条记录
-                    }
+                    return mem.ullTotalPhys / 1024d / 1024d;
                 }
             }
             catch (Exception ex)
@@ -154,12 +129,90 @@ namespace ProjectManager.Services
             return 0d;
         }
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private class MEMORYSTATUSEX
+        {
+            public uint dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+            public uint dwMemoryLoad;
+            public ulong ullTotalPhys;
+            public ulong ullAvailPhys;
+            public ulong ullTotalPageFile;
+            public ulong ullAvailPageFile;
+            public ulong ullTotalVirtual;
+            public ulong ullAvailVirtual;
+            public ulong ullAvailExtendedVirtual;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+
+        private Process? ResolveProcessForSnapshot(Project project)
+        {
+            Process? storedProcess = null;
+            try
+            {
+                storedProcess = project.RunningProcess;
+            }
+            catch
+            {
+                storedProcess = null;
+            }
+
+            if (storedProcess == null)
+                return null;
+
+            Process? resolved = null;
+            try
+            {
+                resolved = ProcessInterop.TryResolveRealProcess(storedProcess) ?? storedProcess;
+
+                if (resolved == null)
+                    return null;
+
+                if (resolved.Id != storedProcess.Id)
+                {
+                    RemoveCpuSample(storedProcess.Id);
+                }
+
+                if (resolved.HasExited)
+                {
+                    RemoveCpuSample(resolved.Id);
+                    return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return resolved;
+        }
+
         private void RemoveCpuSample(int pid)
         {
             lock (_cpuLock)
             {
                 _cpuSamples.Remove(pid);
             }
+        }
+
+        private bool TryPopulateAggregatedMemory(Process process, ProjectPerformanceSnapshot snapshot)
+        {
+            try
+            {
+                if (ProcessInterop.TryGetAggregatedMemoryUsage(process, out var workingMb, out var privateMb))
+                {
+                    snapshot.MemoryUsageMb = workingMb;
+                    snapshot.PrivateMemoryUsageMb = privateMb;
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignored, will fall back to single-process metrics
+            }
+
+            return false;
         }
 
         private static T SafeGet<T>(Func<T> accessor)

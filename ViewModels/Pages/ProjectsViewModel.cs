@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -25,9 +26,6 @@ namespace ProjectManager.ViewModels.Pages
         private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
-        private ObservableCollection<Project> _projects = new();
-
-        [ObservableProperty]
         private ICollectionView? _filteredProjects;
 
         [ObservableProperty]
@@ -42,6 +40,8 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _hasProjects = true;
 
+        public ReadOnlyObservableCollection<Project> Projects { get; }
+
         public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
         {
             _projectService = projectService;
@@ -51,11 +51,21 @@ namespace ProjectManager.ViewModels.Pages
 
             SelectedStatusFilter = "全部";
 
-            _projectService.ProjectStatusChanged += OnProjectStatusChanged;
+            Projects = _projectService.Projects;
 
-            // 设置筛选
+            _projectService.ProjectPropertyChanged += OnProjectPropertyChanged;
+
             FilteredProjects = CollectionViewSource.GetDefaultView(Projects);
-            FilteredProjects.Filter = FilterProjects;
+            if (FilteredProjects != null)
+            {
+                FilteredProjects.Filter = FilterProjects;
+            }
+
+            HasProjects = Projects.Any();
+            if (Projects is INotifyCollectionChanged notifyCollection)
+            {
+                notifyCollection.CollectionChanged += OnProjectsCollectionChanged;
+            }
         }
 
         partial void OnSearchTextChanged(string value)
@@ -65,12 +75,6 @@ namespace ProjectManager.ViewModels.Pages
 
         partial void OnSelectedStatusFilterChanged(string? value)
         {
-            FilteredProjects?.Refresh();
-        }
-
-        partial void OnProjectsChanged(ObservableCollection<Project> value)
-        {
-            HasProjects = Projects.Any();
             FilteredProjects?.Refresh();
         }
 
@@ -458,13 +462,9 @@ namespace ProjectManager.ViewModels.Pages
         {
             try
             {
-                var projects = await _projectService.GetProjectsAsync();
-                Projects.Clear();
-                foreach (var project in projects)
-                {
-                    Projects.Add(project);
-                }
+                await _projectService.GetProjectsAsync();
                 HasProjects = Projects.Any();
+                FilteredProjects?.Refresh();
             }
             catch (Exception ex)
             {
@@ -473,15 +473,17 @@ namespace ProjectManager.ViewModels.Pages
             }
         }
 
-        private void OnProjectStatusChanged(object? sender, ProjectStatusChangedEventArgs e)
+        private void OnProjectsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            var project = Projects.FirstOrDefault(p => p.Id == e.ProjectId);
-            if (project != null)
+            HasProjects = Projects.Any();
+            FilteredProjects?.Refresh();
+        }
+
+        private void OnProjectPropertyChanged(object? sender, ProjectPropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(Project.Name) or nameof(Project.Description) or nameof(Project.Framework) or nameof(Project.Status))
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    project.Status = e.Status;
-                });
+                Application.Current.Dispatcher.Invoke(() => FilteredProjects?.Refresh());
             }
         }
 

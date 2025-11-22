@@ -170,36 +170,9 @@ namespace ProjectManager.ViewModels.Pages
             IsLoading = true;
             try
             {
-                // 根据终端会话的项目名称获取对应的项目环境变量
-                Dictionary<string, string>? projectEnvironmentVariables = null;
-                
-                if (!string.IsNullOrEmpty(SelectedSession.ProjectName))
-                {
-                    var projects = await _projectService.GetProjectsAsync();
-                    var matchingProject = projects.FirstOrDefault(p => p.Name == SelectedSession.ProjectName);
-                    if (matchingProject != null)
-                    {
-                        projectEnvironmentVariables = matchingProject.EnvironmentVariables;
-                    }
-                }
-
-                // 启动会话时传递项目的环境变量，确保与项目卡片启动效果一致
-                // 若为 ComfyUI 项目，则自动注入 Python UTF-8（其他项目不注入，不做任何提示）
-                Dictionary<string, string>? envForLaunch = projectEnvironmentVariables;
-                if (!string.IsNullOrEmpty(SelectedSession.ProjectName))
-                {
-                    var projects2 = await _projectService.GetProjectsAsync();
-                    var proj2 = projects2.FirstOrDefault(p => p.Name == SelectedSession.ProjectName);
-                    if (proj2 != null && !string.IsNullOrWhiteSpace(proj2.Framework) && proj2.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
-                    {
-                        envForLaunch = new Dictionary<string, string>(projectEnvironmentVariables ?? new Dictionary<string, string>())
-                        {
-                            ["PYTHONUTF8"] = "1",
-                            ["PYTHONIOENCODING"] = "UTF-8"
-                        };
-                    }
-                }
-                await _terminalService.StartSessionAsync(SelectedSession, envForLaunch);
+                var project = await FindProjectByNameAsync(SelectedSession.ProjectName);
+                var envForLaunch = BuildEnvironmentVariables(project);
+                await StartSessionWithProjectTrackingAsync(SelectedSession, project, envForLaunch);
             }
             finally
             {
@@ -211,11 +184,14 @@ namespace ProjectManager.ViewModels.Pages
         /// 停止终端
         /// </summary>
         [RelayCommand]
-        private void StopTerminal()
+        private async Task StopTerminal()
         {
             if (SelectedSession == null) return;
 
+            var projectName = SelectedSession.ProjectName;
+            await UpdateProjectStatusAsync(projectName, SelectedSession.Process, ProjectStatus.Stopping);
             _terminalService.StopSession(SelectedSession);
+            await UpdateProjectStatusAsync(projectName, null, ProjectStatus.Stopped);
         }
 
         /// <summary>
@@ -320,34 +296,9 @@ namespace ProjectManager.ViewModels.Pages
                 SelectedSession = session;
             }
             
-            // 获取项目的环境变量
-            Dictionary<string, string>? projectEnvironmentVariables = null;
-            if (!string.IsNullOrEmpty(projectName))
-            {
-                var projects = await _projectService.GetProjectsAsync();
-                var matchingProject = projects.FirstOrDefault(p => p.Name == projectName);
-                if (matchingProject != null)
-                {
-                    projectEnvironmentVariables = matchingProject.EnvironmentVariables;
-                }
-            }
-            
-            // 启动会话时传递项目的环境变量
-            Dictionary<string, string>? envForLaunch2 = projectEnvironmentVariables;
-            if (!string.IsNullOrEmpty(projectName))
-            {
-                var projects3 = await _projectService.GetProjectsAsync();
-                var proj3 = projects3.FirstOrDefault(p => p.Name == projectName);
-                if (proj3 != null && !string.IsNullOrWhiteSpace(proj3.Framework) && proj3.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
-                {
-                    envForLaunch2 = new Dictionary<string, string>(projectEnvironmentVariables ?? new Dictionary<string, string>())
-                    {
-                        ["PYTHONUTF8"] = "1",
-                        ["PYTHONIOENCODING"] = "UTF-8"
-                    };
-                }
-            }
-            await _terminalService.StartSessionAsync(session, envForLaunch2);
+            var project = await FindProjectByNameAsync(projectName);
+            var envForLaunch2 = BuildEnvironmentVariables(project);
+            await StartSessionWithProjectTrackingAsync(session, project, envForLaunch2);
         }
 
         /// <summary>
@@ -387,6 +338,87 @@ namespace ProjectManager.ViewModels.Pages
                     _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"同步项目状态失败: {ex.Message}", "同步错误"));
                 }
             }
+        }
+
+        private async Task<Project?> FindProjectByNameAsync(string? projectName)
+        {
+            if (string.IsNullOrWhiteSpace(projectName))
+                return null;
+
+            var projects = await _projectService.GetProjectsAsync();
+            return projects.FirstOrDefault(p => p.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private Dictionary<string, string>? BuildEnvironmentVariables(Project? project)
+        {
+            if (project == null)
+                return null;
+
+            var env = new Dictionary<string, string>(project.EnvironmentVariables ?? new Dictionary<string, string>());
+
+            if (!string.IsNullOrWhiteSpace(project.Framework) && project.Framework.Equals("ComfyUI", StringComparison.OrdinalIgnoreCase))
+            {
+                env["PYTHONUTF8"] = "1";
+                env["PYTHONIOENCODING"] = "UTF-8";
+            }
+
+            return env;
+        }
+
+        private async Task StartSessionWithProjectTrackingAsync(TerminalSession session, Project? project, Dictionary<string, string>? environmentVariables)
+        {
+            string? projectName = project?.Name ?? session.ProjectName;
+
+            if (!string.IsNullOrWhiteSpace(projectName))
+            {
+                await UpdateProjectStatusAsync(projectName, null, ProjectStatus.Starting);
+            }
+
+            var started = await _terminalService.StartSessionAsync(session, environmentVariables);
+
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                return;
+            }
+
+            if (started)
+            {
+                await UpdateProjectStatusAsync(projectName, session.Process, ProjectStatus.Running);
+                AttachProcessExitHandler(session, projectName);
+            }
+            else
+            {
+                await UpdateProjectStatusAsync(projectName, null, ProjectStatus.Error);
+            }
+        }
+
+        private Task UpdateProjectStatusAsync(string? projectName, Process? process, ProjectStatus status)
+        {
+            if (string.IsNullOrWhiteSpace(projectName))
+                return Task.CompletedTask;
+
+            return _projectService.UpdateProjectRuntimeStatusAsync(projectName, process, status);
+        }
+
+        private void AttachProcessExitHandler(TerminalSession session, string projectName)
+        {
+            var process = session.Process;
+            if (process == null)
+                return;
+
+            void Handler(object? sender, EventArgs args)
+            {
+                process.Exited -= Handler;
+                _ = _projectService.UpdateProjectRuntimeStatusAsync(projectName, null, ProjectStatus.Stopped);
+            }
+
+            try
+            {
+                process.Exited -= Handler;
+            }
+            catch { }
+
+            process.Exited += Handler;
         }
     }
 }

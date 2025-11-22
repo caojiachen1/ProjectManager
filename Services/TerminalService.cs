@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Text;
 using System.Threading;
 using ProjectManager.Models;
+using ProjectManager.Helpers;
 
 namespace ProjectManager.Services
 {
@@ -27,39 +27,18 @@ namespace ProjectManager.Services
         }
 
         /// <summary>
-        /// 尝试通过 WMI 查找父进程的子进程（返回第一个匹配且可访问的 Process），如果找不到返回 null。
+        /// 尝试定位由 shell 进程启动的真实子进程。
         /// </summary>
-        private static Process? TryGetChildProcess(int parentPid)
+        private static Process? TryGetChildProcess(Process process)
         {
             try
             {
-                using var searcher = new ManagementObjectSearcher("SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = " + parentPid);
-                using var results = searcher.Get();
-                foreach (ManagementObject mo in results)
-                {
-                    try
-                    {
-                        if (mo["ProcessId"] is not null)
-                        {
-                            var pid = Convert.ToInt32(mo["ProcessId"]);
-                            try
-                            {
-                                var p = Process.GetProcessById(pid);
-                                // ignore common shell processes
-                                var name = p.ProcessName?.ToLowerInvariant() ?? string.Empty;
-                                if (name.Contains("cmd") || name.Contains("powershell") || name.Contains("conhost"))
-                                    continue;
-                                if (!p.HasExited)
-                                    return p;
-                            }
-                            catch { /* ignore processes we can't access */ }
-                        }
-                    }
-                    catch { }
-                }
+                return ProcessInterop.TryResolveRealProcess(process);
             }
-            catch { }
-            return null;
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -244,10 +223,15 @@ namespace ProjectManager.Services
                     for (int attempt = 0; attempt < maxAttempts; attempt++)
                     {
                         await Task.Delay(delayMs);
-                        var child = TryGetChildProcess(process.Id);
+                        var child = TryGetChildProcess(process);
                         if (child != null && child.Id != process.Id)
                         {
                             // Found a child process; set as session.Process for monitoring
+                            try
+                            {
+                                child.EnableRaisingEvents = true;
+                            }
+                            catch { }
                             session.Process = child;
                             session.AddOutputRawWithTimestamp($"检测到子进程 PID={child.Id} ({child.ProcessName})\r\n", settings.ShowTerminalTimestamps);
                             break;

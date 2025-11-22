@@ -1,9 +1,12 @@
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using ProjectManager.Models;
 
 namespace ProjectManager.Services
 {
     public interface IProjectService
     {
+        ReadOnlyObservableCollection<Project> Projects { get; }
         Task<List<Project>> GetProjectsAsync();
         Task<bool> SaveProjectAsync(Project project);
         Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects);
@@ -12,6 +15,8 @@ namespace ProjectManager.Services
         Task StartProjectAsync(Project project);
         Task StopProjectAsync(Project project);
         Task<string> GetProjectLogsAsync(string projectId);
+        Task<bool> UpdateProjectRuntimeStatusAsync(string projectName, Process? process, ProjectStatus status);
         event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
+        event EventHandler<ProjectPropertyChangedEventArgs>? ProjectPropertyChanged;
     }
 }

@@ -9,7 +9,7 @@
   <Identity
     Name="a2ce93e7-462a-446e-b068-c46e2609ef69"
     Publisher="CN=caoji"
-    Version="3.21.0.0" />
+    Version="4.0.0.0" />
 
   <Properties>
     <DisplayName>Project Manager</DisplayName>

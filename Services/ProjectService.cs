@@ -1,4 +1,7 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
@@ -10,7 +13,8 @@ namespace ProjectManager.Services
     public class ProjectService : IProjectService
     {
         private readonly string _projectsFilePath;
-        private readonly List<Project> _projects;
+        private readonly ObservableCollection<Project> _projects;
+        private readonly ReadOnlyObservableCollection<Project> _projectsView;
         private readonly TerminalService _terminalService;
         private readonly IGitService _gitService;
         private readonly IErrorDisplayService _errorDisplayService;
@@ -19,6 +23,9 @@ namespace ProjectManager.Services
         private readonly ConcurrentDictionary<string, Task> _gitInfoRefreshTasks = new();
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
+        public event EventHandler<ProjectPropertyChangedEventArgs>? ProjectPropertyChanged;
+
+        public ReadOnlyObservableCollection<Project> Projects => _projectsView;
 
         public ProjectService(TerminalService terminalService, IGitService gitService, IErrorDisplayService errorDisplayService)
         {
@@ -29,7 +36,8 @@ namespace ProjectManager.Services
             var appFolder = Path.Combine(appDataPath, "ProjectManager");
             Directory.CreateDirectory(appFolder);
             _projectsFilePath = Path.Combine(appFolder, "projects.json");
-            _projects = new List<Project>();
+            _projects = new ObservableCollection<Project>();
+            _projectsView = new ReadOnlyObservableCollection<Project>(_projects);
             LoadProjects();
         }
 
@@ -65,15 +73,18 @@ namespace ProjectManager.Services
             var existingProject = _projects.FirstOrDefault(p => p.Id == project.Id);
             if (existingProject != null)
             {
-                var index = _projects.IndexOf(existingProject);
-                _projects[index] = project;
+                if (!ReferenceEquals(existingProject, project))
+                {
+                    CopyProjectValues(existingProject, project);
+                }
+                existingProject.LastModified = DateTime.Now;
             }
             else
             {
+                project.LastModified = DateTime.Now;
+                AttachProject(project);
                 _projects.Add(project);
             }
-
-            project.LastModified = DateTime.Now;
             await SaveProjectsToFile();
             InvalidateGitInfoCache(project.Id);
             QueueGitInfoRefresh(project);
@@ -89,6 +100,7 @@ namespace ProjectManager.Services
                 {
                     await StopProjectAsync(project);
                 }
+                DetachProject(project);
                 _projects.Remove(project);
                 InvalidateGitInfoCache(project.Id);
                 await SaveProjectsToFile();
@@ -100,6 +112,27 @@ namespace ProjectManager.Services
             return await Task.FromResult(_projects.FirstOrDefault(p => p.Id == projectId));
         }
 
+        public Task<bool> UpdateProjectRuntimeStatusAsync(string projectName, Process? process, ProjectStatus status)
+        {
+            if (string.IsNullOrWhiteSpace(projectName))
+                return Task.FromResult(false);
+
+            var project = _projects.FirstOrDefault(p => p.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+            if (project == null)
+                return Task.FromResult(false);
+
+            var statusChanged = project.Status != status;
+            var processChanged = project.RunningProcess != process;
+
+            if (!statusChanged && !processChanged)
+                return Task.FromResult(false);
+
+            project.RunningProcess = process;
+            project.Status = status;
+
+            return Task.FromResult(true);
+        }
+
         public async Task StartProjectAsync(Project project)
         {
             if (project.Status == ProjectStatus.Running)
@@ -108,7 +141,15 @@ namespace ProjectManager.Services
             try
             {
                 project.Status = ProjectStatus.Starting;
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+
+                if (string.IsNullOrWhiteSpace(project.StartCommand))
+                {
+                    project.Status = ProjectStatus.Stopped;
+                    project.RunningProcess = null;
+                    project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 未配置启动命令，已自动停止\n";
+                    _ = await SaveProjectAsync(project);
+                    return;
+                }
 
                 // 创建或获取终端会话
                 var existingSessions = _terminalService.GetAllSessions();
@@ -158,7 +199,6 @@ namespace ProjectManager.Services
                         {
                             project.Status = ProjectStatus.Stopped;
                             project.RunningProcess = null;
-                            ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
                         };
                     }
                 }
@@ -168,14 +208,12 @@ namespace ProjectManager.Services
                     project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 终端会话启动失败\n";
                 }
 
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
                 _ = await SaveProjectAsync(project);
             }
             catch (Exception ex)
             {
                 project.Status = ProjectStatus.Error;
                 project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 启动失败: {ex.Message}\n";
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
                 
                 // 显示错误消息
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目启动失败: {ex.Message}", "项目启动错误"));
@@ -190,7 +228,6 @@ namespace ProjectManager.Services
             try
             {
                 project.Status = ProjectStatus.Stopping;
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
 
                 // 同时停止终端会话
                 var existingSessions = _terminalService.GetAllSessions();
@@ -204,14 +241,12 @@ namespace ProjectManager.Services
                 project.RunningProcess = null;
                 project.Status = ProjectStatus.Stopped;
                 
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
                 _ = await SaveProjectAsync(project);
             }
             catch (Exception ex)
             {
                 project.Status = ProjectStatus.Error;
                 project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 停止失败: {ex.Message}\n";
-                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
                 
                 // 显示错误消息
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目停止失败: {ex.Message}", "项目停止错误"));
@@ -246,7 +281,11 @@ namespace ProjectManager.Services
             }
 
             _projects.Clear();
-            _projects.AddRange(newList);
+            foreach (var project in newList)
+            {
+                AttachProject(project);
+                _projects.Add(project);
+            }
 
             await SaveProjectsToFile();
         }
@@ -265,11 +304,18 @@ namespace ProjectManager.Services
                 var dtoList = JsonSerializer.Deserialize<List<PersistedProject>>(json, options);
                 if (dtoList == null) return;
 
+                foreach (var existing in _projects.ToList())
+                {
+                    DetachProject(existing);
+                }
+                _projects.Clear();
+
                 foreach (var dto in dtoList)
                 {
                     try
                     {
                         var model = ProjectPersistenceMapper.ToModel(dto);
+                        AttachProject(model);
                         _projects.Add(model);
                     }
                     catch (Exception mapEx)
@@ -361,6 +407,66 @@ namespace ProjectManager.Services
         {
             _gitInfoCache.TryRemove(projectId, out _);
             _gitInfoRefreshTasks.TryRemove(projectId, out _);
+        }
+
+        private void AttachProject(Project project)
+        {
+            if (project == null)
+                return;
+
+            project.PropertyChanged -= OnProjectPropertyChanged;
+            project.PropertyChanged += OnProjectPropertyChanged;
+        }
+
+        private void DetachProject(Project project)
+        {
+            if (project == null)
+                return;
+
+            project.PropertyChanged -= OnProjectPropertyChanged;
+        }
+
+        private void OnProjectPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not Project project || string.IsNullOrEmpty(e.PropertyName))
+                return;
+
+            ProjectPropertyChanged?.Invoke(this, new ProjectPropertyChangedEventArgs(project, e.PropertyName));
+
+            if (e.PropertyName == nameof(Project.Status))
+            {
+                ProjectStatusChanged?.Invoke(this, new ProjectStatusChangedEventArgs(project.Id, project.Status));
+            }
+        }
+
+        private static void CopyProjectValues(Project target, Project source)
+        {
+            if (target == null || source == null)
+                return;
+
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.LocalPath = source.LocalPath;
+            target.StartCommand = source.StartCommand;
+            target.WorkingDirectory = source.WorkingDirectory;
+            target.Framework = source.Framework;
+            target.GitInfo = source.GitInfo;
+            target.CreatedDate = source.CreatedDate;
+            target.LastModified = source.LastModified;
+            target.Status = source.Status;
+            target.RunningProcess = source.RunningProcess;
+            target.LogOutput = source.LogOutput;
+            target.Tags = source.Tags != null ? new List<string>(source.Tags) : new List<string>();
+            target.AutoStart = source.AutoStart;
+            target.EnvironmentVariables = source.EnvironmentVariables != null
+                ? new Dictionary<string, string>(source.EnvironmentVariables)
+                : new Dictionary<string, string>();
+            target.GitRepositories = source.GitRepositories != null
+                ? new List<string>(source.GitRepositories)
+                : new List<string>();
+            target.ComfyUISettings = source.ComfyUISettings;
+            target.NodeJSSettings = source.NodeJSSettings;
+            target.DotNetSettings = source.DotNetSettings;
         }
 
         private static Task RunOnUiThreadAsync(Action updateAction)
