@@ -24,7 +24,9 @@ namespace ProjectManager.Services
                 Title = title,
                 Content = message,
                 PrimaryButtonText = "确定",
-                IsPrimaryButtonEnabled = true
+                IsPrimaryButtonEnabled = true,
+                IsSecondaryButtonEnabled = false,
+                CloseButtonText = "取消"
             };
 
             await messageBox.ShowDialogAsync();
@@ -56,7 +58,8 @@ namespace ProjectManager.Services
                 Title = title,
                 Content = message,
                 PrimaryButtonText = "确定",
-                IsPrimaryButtonEnabled = true
+                IsPrimaryButtonEnabled = true,
+                CloseButtonText = "关闭"
             };
 
             await messageBox.ShowDialogAsync();
@@ -74,7 +77,8 @@ namespace ProjectManager.Services
                 Title = title,
                 Content = message,
                 PrimaryButtonText = "确定",
-                IsPrimaryButtonEnabled = true
+                IsPrimaryButtonEnabled = true,
+                CloseButtonText = "关闭"
             };
 
             await messageBox.ShowDialogAsync();
@@ -93,9 +97,9 @@ namespace ProjectManager.Services
                 Title = title,
                 Content = message,
                 PrimaryButtonText = "确定",
-                SecondaryButtonText = "取消",
                 IsPrimaryButtonEnabled = true,
-                IsSecondaryButtonEnabled = true
+                IsSecondaryButtonEnabled = false,
+                CloseButtonText = "取消"
             };
 
             var result = await messageBox.ShowDialogAsync();

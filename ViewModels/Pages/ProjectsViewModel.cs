@@ -380,30 +380,6 @@ namespace ProjectManager.ViewModels.Pages
             await LoadProjects();
         }
 
-        // 框架相关命令
-        // [RelayCommand]
-        // private async Task ExecuteFrameworkCommand(object parameter)
-        // {
-        //     if (parameter is not (Project project, string command)) return;
-
-        //     try
-        //     {
-        //         var terminalViewModel = _serviceProvider.GetService<TerminalViewModel>();
-        //         if (terminalViewModel != null)
-        //         {
-        //             terminalViewModel.SetProjectPath(project.Name, project.LocalPath);
-        //             // 模拟命令执行 - 实际应该使用TerminalViewModel的方法
-        //             // 暂时导航到终端页面让用户手动执行
-        //         }
-                
-        //         _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         await ShowErrorMessage($"执行命令失败: {ex.Message}");
-        //     }
-        // }
-
         [RelayCommand]
         private void OpenProjectInExplorer(Project project)
         {
