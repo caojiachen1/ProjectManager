@@ -83,6 +83,10 @@ namespace ProjectManager
                 services.AddSingleton<TerminalPage>();
                 services.AddSingleton<TerminalViewModel>();
                 
+                // System Environment Variables page
+                services.AddSingleton<SystemEnvironmentVariablesPage>();
+                services.AddSingleton<SystemEnvironmentVariablesViewModel>();
+                
                 // Project Settings Window Service
                 services.AddTransient<IProjectSettingsWindowService, ProjectSettingsWindowService>();
                 
@@ -109,6 +113,10 @@ namespace ProjectManager
                 // ComfyUI 插件管理窗口
                 services.AddTransient<Views.Dialogs.ComfyUIPluginsManagerWindow>();
                 services.AddTransient<ViewModels.Dialogs.ComfyUIPluginsManagerViewModel>();
+                
+                // 编辑环境变量对话框
+                services.AddTransient<Views.Dialogs.EditEnvironmentVariableWindow>();
+                services.AddTransient<ViewModels.Dialogs.EditEnvironmentVariableViewModel>();
             }).Build();
 
         /// <summary>

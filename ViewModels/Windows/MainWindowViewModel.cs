@@ -34,6 +34,12 @@ namespace ProjectManager.ViewModels.Windows
                 Content = "性能监控",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Pulse24 },
                 TargetPageType = typeof(Views.Pages.PerformancePage)
+            },
+            new NavigationViewItem()
+            {
+                Content = "系统环境变量",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.BracesVariable24 },
+                TargetPageType = typeof(Views.Pages.SystemEnvironmentVariablesPage)
             }
         };
 

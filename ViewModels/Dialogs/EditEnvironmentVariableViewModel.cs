@@ -1,0 +1,165 @@
+using System;
+using System.IO;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using ProjectManager.Models;
+using System.Windows;
+
+namespace ProjectManager.ViewModels.Dialogs
+{
+    public partial class EditEnvironmentVariableViewModel : ObservableObject
+    {
+        [ObservableProperty]
+        private string _variableName = string.Empty;
+
+        [ObservableProperty]
+        private string _variableValue = string.Empty;
+
+        [ObservableProperty]
+        private bool _isSystemVariable;
+
+        [ObservableProperty]
+        private bool _canEditName;
+
+        [ObservableProperty]
+        private string _infoMessage = string.Empty;
+
+        private readonly SystemEnvironmentVariable _originalVariable;
+
+        public EditEnvironmentVariableViewModel(SystemEnvironmentVariable variable, bool isSystemVariable)
+        {
+            _originalVariable = variable;
+            _variableName = variable.Name;
+            _variableValue = variable.Value;
+            _isSystemVariable = isSystemVariable;
+            _canEditName = false; // 不允许编辑变量名，只允许编辑值
+            _infoMessage = isSystemVariable 
+                ? "编辑系统环境变量 (需要管理员权限)" 
+                : "编辑用户环境变量";
+        }
+
+        [RelayCommand]
+        private void BrowseFolder()
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "选择文件夹",
+                    Filter = "Folder|*.none",
+                    CheckFileExists = false,
+                    CheckPathExists = true,
+                    FileName = "选择文件夹"
+                };
+
+                if (!string.IsNullOrEmpty(VariableValue) && Directory.Exists(VariableValue))
+                {
+                    dialog.InitialDirectory = VariableValue;
+                }
+
+                if (dialog.ShowDialog() == true)
+                {
+                    string? folderPath = Path.GetDirectoryName(dialog.FileName);
+                    if (!string.IsNullOrEmpty(folderPath))
+                    {
+                        if (string.IsNullOrEmpty(VariableValue))
+                        {
+                            VariableValue = folderPath;
+                        }
+                        else
+                        {
+                            // 如果已有值，添加到末尾
+                            var paths = VariableValue.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                            if (!paths.Contains(folderPath))
+                            {
+                                VariableValue = string.Join(";", paths.Append(folderPath));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"浏览文件夹时出错: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseFile()
+        {
+            try
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Title = "选择文件",
+                    CheckFileExists = true,
+                    CheckPathExists = true,
+                    Multiselect = false
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    if (string.IsNullOrEmpty(VariableValue))
+                    {
+                        VariableValue = dialog.FileName;
+                    }
+                    else
+                    {
+                        // 如果已有值，添加到末尾
+                        var paths = VariableValue.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                        if (!paths.Contains(dialog.FileName))
+                        {
+                            VariableValue = string.Join(";", paths.Append(dialog.FileName));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"浏览文件时出错: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void Save()
+        {
+            try
+            {
+                // 验证输入
+                if (string.IsNullOrWhiteSpace(VariableName))
+                {
+                    throw new ArgumentException("变量名不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(VariableValue))
+                {
+                    throw new ArgumentException("变量值不能为空");
+                }
+
+                // 更新原始变量
+                _originalVariable.Name = VariableName.Trim();
+                _originalVariable.Value = VariableValue.Trim();
+
+                // 关闭窗口并返回成功
+                if (Application.Current?.MainWindow != null)
+                {
+                    foreach (Window window in Application.Current.MainWindow.OwnedWindows)
+                    {
+                        if (window is Views.Dialogs.EditEnvironmentVariableWindow dialog)
+                        {
+                            dialog.DialogResult = true;
+                            dialog.Close();
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"保存环境变量时出错: {ex.Message}");
+            }
+        }
+    }
+}

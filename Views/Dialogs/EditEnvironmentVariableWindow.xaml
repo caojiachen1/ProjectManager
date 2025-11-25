@@ -1,0 +1,138 @@
+<ui:FluentWindow
+    x:Class="ProjectManager.Views.Dialogs.EditEnvironmentVariableWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="编辑环境变量"
+    Width="600"
+    Height="400"
+    MinWidth="500"
+    MinHeight="350"
+    WindowStartupLocation="CenterOwner"
+    ResizeMode="CanResize"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="编辑环境变量"
+            Grid.Row="0"
+            CloseWindowByDoubleClickOnIcon="True"
+            Padding="5,0,0,0">
+            <ui:TitleBar.Icon>
+                <ui:SymbolIcon Symbol="Edit24" Margin="10,-3,10,0"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Margin="24,32,24,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 提示信息 - 使用基本样式避免枚举值问题 -->
+            <Border Grid.Row="0" 
+                    Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                    BorderBrush="{DynamicResource SystemFillColorAttentionBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon Grid.Column="0" 
+                                   Symbol="Info24" 
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SystemFillColorAttentionBrush}"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="{Binding InfoMessage}" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                </Grid>
+            </Border>
+
+            <!-- 变量名 -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,16">
+                <TextBlock Text="变量名:" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                <ui:TextBox Text="{Binding VariableName, UpdateSourceTrigger=PropertyChanged}"
+                            IsEnabled="{Binding CanEditName}"
+                            PlaceholderText="输入变量名">
+                    <ui:TextBox.Icon>
+                        <ui:SymbolIcon Symbol="Tag24"/>
+                    </ui:TextBox.Icon>
+                </ui:TextBox>
+            </StackPanel>
+
+            <!-- 变量值 -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,16">
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="变量值:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="1" 
+                               Content="浏览目录..."
+                               Appearance="Secondary"
+                               Command="{Binding BrowseFolderCommand}"
+                               Margin="8,0,8,0"
+                               Padding="12,4">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Folder24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button Grid.Column="2" 
+                               Content="浏览文件..."
+                               Appearance="Secondary"
+                               Command="{Binding BrowseFileCommand}"
+                               Padding="12,4">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Document24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </Grid>
+                <ui:TextBox Text="{Binding VariableValue, UpdateSourceTrigger=PropertyChanged}"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            MaxHeight="120"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            PlaceholderText="输入变量值，可以包含多个路径用分号分隔">
+                    <ui:TextBox.Icon>
+                        <ui:SymbolIcon Symbol="TextFont24"/>
+                    </ui:TextBox.Icon>
+                </ui:TextBox>
+            </StackPanel>
+
+            <!-- 底部按钮 -->
+            <StackPanel Grid.Row="3" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right">
+                <ui:Button Content="取消" 
+                           Appearance="Secondary"
+                           IsCancel="True"
+                           Click="CancelButton_Click"
+                           Margin="0,0,8,0"
+                           Padding="24,8"/>
+                <ui:Button Content="确定" 
+                           Appearance="Primary"
+                           IsDefault="True"
+                           Command="{Binding SaveCommand}"
+                           Padding="24,8"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>
