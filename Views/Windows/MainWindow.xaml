@@ -64,6 +64,7 @@
                     <StackPanel Grid.Row="1" Margin="0,12,0,0">
                         <Grid x:Name="ProjectsToolbarHost" Visibility="Collapsed" />
                         <Grid x:Name="PerformanceToolbarHost" Visibility="Collapsed" />
+                        <Grid x:Name="EnvironmentVariablesToolbarHost" Visibility="Collapsed" />
                     </StackPanel>
                 </Grid>
             </ui:NavigationView.Header>

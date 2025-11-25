@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows;
 using ProjectManager.Models;
 using System.Windows.Media;
+using ProjectManager.Controls;
+using System.Linq;
 
 namespace ProjectManager.Views.Pages
 {
@@ -23,6 +25,53 @@ namespace ProjectManager.Views.Pages
             AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(OnAnyPreviewMouseLeftButtonDown), true);
         }
 
+        private void SystemEnvironmentVariablesPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Application.Current.MainWindow as Windows.MainWindow;
+            if (mainWindow == null) return;
+
+            // 隐藏其他工具栏
+            var projectsHost = FindChildByName<Grid>(mainWindow, "ProjectsToolbarHost");
+            var performanceHost = FindChildByName<Grid>(mainWindow, "PerformanceToolbarHost");
+            if (projectsHost != null)
+            {
+                projectsHost.Visibility = Visibility.Collapsed;
+            }
+            if (performanceHost != null)
+            {
+                performanceHost.Visibility = Visibility.Collapsed;
+            }
+
+            // 显示环境变量工具栏
+            var envHost = FindChildByName<Grid>(mainWindow, "EnvironmentVariablesToolbarHost");
+            if (envHost == null) return;
+
+            // 如果还没有工具栏则创建
+            if (envHost.Children.OfType<EnvironmentVariablesHeaderToolbar>().FirstOrDefault() is not EnvironmentVariablesHeaderToolbar toolbar)
+            {
+                toolbar = new EnvironmentVariablesHeaderToolbar();
+                toolbar.DataContext = this.DataContext;
+                envHost.Children.Add(toolbar);
+            }
+            else
+            {
+                toolbar.DataContext = this.DataContext;
+            }
+
+            envHost.Visibility = Visibility.Visible;
+        }
+
+        private void SystemEnvironmentVariablesPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Application.Current.MainWindow as Windows.MainWindow;
+            if (mainWindow == null) return;
+
+            var envHost = FindChildByName<Grid>(mainWindow, "EnvironmentVariablesToolbarHost");
+            if (envHost == null) return;
+
+            envHost.Visibility = Visibility.Collapsed;
+        }
+
         private void UserVariableListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Debug.WriteLine("UserVariableListView_MouseDoubleClick invoked");
@@ -32,8 +81,8 @@ namespace ProjectManager.Views.Pages
             if (fe != null && fe.DataContext is SystemEnvironmentVariable variable)
             {
                 ViewModel.SelectedUserVariable = variable;
-                if (ViewModel.EditUserVariableCommand.CanExecute(null))
-                    ViewModel.EditUserVariableCommand.Execute(null);
+                if (ViewModel.EditSelectedCommand.CanExecute(null))
+                    ViewModel.EditSelectedCommand.Execute(null);
                 e.Handled = true;
             }
         }
@@ -46,8 +95,8 @@ namespace ProjectManager.Views.Pages
             if (fe != null && fe.DataContext is SystemEnvironmentVariable variable)
             {
                 ViewModel.SelectedSystemVariable = variable;
-                if (ViewModel.EditSystemVariableCommand.CanExecute(null))
-                    ViewModel.EditSystemVariableCommand.Execute(null);
+                if (ViewModel.EditSelectedCommand.CanExecute(null))
+                    ViewModel.EditSelectedCommand.Execute(null);
                 e.Handled = true;
             }
         }
@@ -77,18 +126,33 @@ namespace ProjectManager.Views.Pages
                 if (variable.IsSystemVariable)
                 {
                     ViewModel.SelectedSystemVariable = variable;
-                    if (ViewModel.EditSystemVariableCommand.CanExecute(null))
-                        ViewModel.EditSystemVariableCommand.Execute(null);
                 }
                 else
                 {
                     ViewModel.SelectedUserVariable = variable;
-                    if (ViewModel.EditUserVariableCommand.CanExecute(null))
-                        ViewModel.EditUserVariableCommand.Execute(null);
                 }
+
+                // 使用统一的编辑命令
+                if (ViewModel.EditSelectedCommand.CanExecute(null))
+                    ViewModel.EditSelectedCommand.Execute(null);
 
                 e.Handled = true;
             }
+        }
+
+        private T? FindChildByName<T>(DependencyObject parent, string name) where T : FrameworkElement
+        {
+            if (parent == null) return null;
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T fe && fe.Name == name)
+                    return fe;
+                var result = FindChildByName<T>(child, name);
+                if (result != null) return result;
+            }
+            return null;
         }
     }
 }

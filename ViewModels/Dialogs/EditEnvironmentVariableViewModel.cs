@@ -28,16 +28,16 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private readonly SystemEnvironmentVariable _originalVariable;
 
-        public EditEnvironmentVariableViewModel(SystemEnvironmentVariable variable, bool isSystemVariable)
+        public EditEnvironmentVariableViewModel(SystemEnvironmentVariable variable, bool isSystemVariable, bool isNewVariable = false)
         {
             _originalVariable = variable;
             _variableName = variable.Name;
             _variableValue = variable.Value;
             _isSystemVariable = isSystemVariable;
-            _canEditName = false; // 不允许编辑变量名，只允许编辑值
+            _canEditName = isNewVariable; // 只有新建变量时才允许编辑变量名
             _infoMessage = isSystemVariable 
-                ? "编辑系统环境变量 (需要管理员权限)" 
-                : "编辑用户环境变量";
+                ? (isNewVariable ? "新建系统环境变量 (需要管理员权限)" : "编辑系统环境变量 (需要管理员权限)") 
+                : (isNewVariable ? "新建用户环境变量" : "编辑用户环境变量");
         }
 
         [RelayCommand]
