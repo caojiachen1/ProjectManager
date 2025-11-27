@@ -39,36 +39,52 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             try
             {
-                var dialog = new Microsoft.Win32.SaveFileDialog
+                var dialog = new OpenFileDialog
                 {
                     Title = "选择文件夹",
-                    Filter = "Folder|*.none",
+                    Filter = "文件夹|*.*",
+                    FileName = "选择文件夹", // 默认文件名留空
                     CheckFileExists = false,
                     CheckPathExists = true,
-                    FileName = "选择文件夹"
+                    ValidateNames = false
                 };
 
+                // 设置初始目录
                 if (!string.IsNullOrEmpty(VariableValue) && Directory.Exists(VariableValue))
                 {
                     dialog.InitialDirectory = VariableValue;
                 }
+                else if (!string.IsNullOrEmpty(VariableValue))
+                {
+                    // 如果VariableValue包含多个路径，使用第一个存在的路径
+                    var paths = VariableValue.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var path in paths)
+                    {
+                        if (Directory.Exists(path))
+                        {
+                            dialog.InitialDirectory = path;
+                            break;
+                        }
+                    }
+                }
 
                 if (dialog.ShowDialog() == true)
                 {
-                    string? folderPath = Path.GetDirectoryName(dialog.FileName);
-                    if (!string.IsNullOrEmpty(folderPath))
+                    // 获取选择的文件夹路径 - 使用Path.GetDirectoryName获取文件夹路径
+                    string? selectedPath = Path.GetDirectoryName(dialog.FileName);
+                    if (!string.IsNullOrEmpty(selectedPath))
                     {
                         if (string.IsNullOrEmpty(VariableValue))
                         {
-                            VariableValue = folderPath;
+                            VariableValue = selectedPath;
                         }
                         else
                         {
                             // 如果已有值，添加到末尾
                             var paths = VariableValue.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                            if (!paths.Contains(folderPath))
+                            if (!paths.Contains(selectedPath))
                             {
-                                VariableValue = string.Join(";", paths.Append(folderPath));
+                                VariableValue = string.Join(";", paths.Append(selectedPath));
                             }
                         }
                     }
@@ -76,7 +92,7 @@ namespace ProjectManager.ViewModels.Dialogs
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"浏览文件夹时出错: {ex.Message}");
+                Debug.WriteLine($"浏览文件夹时出错: {ex.Message}");
             }
         }
 
