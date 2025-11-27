@@ -23,9 +23,6 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private bool _canEditName;
 
-        [ObservableProperty]
-        private string _infoMessage = string.Empty;
-
         private readonly SystemEnvironmentVariable _originalVariable;
 
         public EditEnvironmentVariableViewModel(SystemEnvironmentVariable variable, bool isSystemVariable, bool isNewVariable = false)
@@ -35,9 +32,6 @@ namespace ProjectManager.ViewModels.Dialogs
             _variableValue = variable.Value;
             _isSystemVariable = isSystemVariable;
             _canEditName = isNewVariable; // 只有新建变量时才允许编辑变量名
-            _infoMessage = isSystemVariable 
-                ? (isNewVariable ? "新建系统环境变量 (需要管理员权限)" : "编辑系统环境变量 (需要管理员权限)") 
-                : (isNewVariable ? "新建用户环境变量" : "编辑用户环境变量");
         }
 
         [RelayCommand]

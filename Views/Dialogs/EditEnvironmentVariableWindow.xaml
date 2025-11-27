@@ -7,9 +7,9 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="编辑环境变量"
     Width="600"
-    Height="400"
+    Height="320"
     MinWidth="500"
-    MinHeight="350"
+    MinHeight="280"
     WindowStartupLocation="CenterOwner"
     ResizeMode="CanResize"
     ExtendsContentIntoTitleBar="True"
@@ -21,51 +21,30 @@
     mc:Ignorable="d">
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="13*"/>
+            <ColumnDefinition Width="62*"/>
+        </Grid.ColumnDefinitions>
         <ui:TitleBar
             x:Name="TitleBar"
             Title="编辑环境变量"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True"
-            Padding="5,0,0,0">
+            Padding="5,0,0,0" Grid.ColumnSpan="2">
             <ui:TitleBar.Icon>
                 <ui:SymbolIcon Symbol="Edit24" Margin="10,-3,10,0"/>
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <Grid Margin="24,32,24,24">
+        <Grid Margin="24,32,24,24" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- 提示信息 - 使用基本样式避免枚举值问题 -->
-            <Border Grid.Row="0" 
-                    Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
-                    BorderBrush="{DynamicResource SystemFillColorAttentionBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="12"
-                    Margin="0,0,0,16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <ui:SymbolIcon Grid.Column="0" 
-                                   Symbol="Info24" 
-                                   Margin="0,0,8,0"
-                                   Foreground="{DynamicResource SystemFillColorAttentionBrush}"/>
-                    <TextBlock Grid.Column="1" 
-                               Text="{Binding InfoMessage}" 
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                </Grid>
-            </Border>
-
             <!-- 变量名 -->
-            <StackPanel Grid.Row="1" Margin="0,0,0,16">
+            <StackPanel Grid.Row="0" Margin="0,30,0,16">
                 <TextBlock Text="变量名:" Margin="0,0,0,4" FontWeight="SemiBold"/>
                 <ui:TextBox Text="{Binding VariableName, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding CanEditName}"
@@ -77,8 +56,8 @@
             </StackPanel>
 
             <!-- 变量值 -->
-            <StackPanel Grid.Row="2" Margin="0,0,0,16">
-                <Grid Margin="0,0,0,8">
+            <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -118,7 +97,7 @@
             </StackPanel>
 
             <!-- 底部按钮 -->
-            <StackPanel Grid.Row="3" 
+            <StackPanel Grid.Row="2" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
                 <ui:Button Content="取消" 
