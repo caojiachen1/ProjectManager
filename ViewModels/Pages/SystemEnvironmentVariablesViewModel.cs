@@ -231,24 +231,15 @@ namespace ProjectManager.ViewModels.Pages
             }
             else
             {
-                // 没有管理员权限，使用UAC提权
-                MessageBoxResult result = MessageBox.Show(
-                    "删除系统环境变量需要管理员权限。是否允许以管理员身份运行？",
-                    "需要管理员权限",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
+                // 没有管理员权限，直接使用UAC提权
+                if (_envService.DeleteVariable(name, true))
                 {
-                    if (_envService.DeleteVariable(name, true))
-                    {
-                        LoadEnvironmentVariables();
-                        MessageBox.Show("系统环境变量已成功删除！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("删除系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
+                    LoadEnvironmentVariables();
+                    MessageBox.Show("系统环境变量已成功删除！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("删除系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
@@ -403,24 +394,15 @@ namespace ProjectManager.ViewModels.Pages
             }
             else
             {
-                // 没有管理员权限，使用UAC提权
-                MessageBoxResult result = MessageBox.Show(
-                    "修改系统环境变量需要管理员权限。是否允许以管理员身份运行设置程序？",
-                    "需要管理员权限",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
+                // 没有管理员权限，直接使用UAC提权（不显示确认对话框）
+                if (_envService.SetSystemVariableWithUac(name, value))
                 {
-                    if (_envService.SetSystemVariableWithUac(name, value))
-                    {
-                        LoadEnvironmentVariables();
-                        MessageBox.Show("系统环境变量已成功更新！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("设置系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
+                    LoadEnvironmentVariables();
+                    MessageBox.Show("系统环境变量已成功更新！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("设置系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }

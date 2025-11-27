@@ -241,16 +241,6 @@ namespace ProjectManager.Services
         {
             if (isSystemVariables && !HasAdminPrivileges())
             {
-                // 需要UAC提权
-                var result = MessageBox.Show(
-                    "批量修改系统环境变量需要管理员权限。是否以管理员身份运行？",
-                    "需要管理员权限",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result != MessageBoxResult.Yes)
-                    return false;
-
                 return await Task.Run(() =>
                 {
                     foreach (var variable in variables)
