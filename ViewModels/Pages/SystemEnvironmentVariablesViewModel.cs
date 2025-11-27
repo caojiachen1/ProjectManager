@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,16 +15,13 @@ using ProjectManager.Views.Dialogs;
 using Wpf.Ui.Controls;
 using ProjectManager.Helpers;
 using ProjectManager.Services;
-using MessageBox = System.Windows.MessageBox;
-using MessageBoxButton = System.Windows.MessageBoxButton;
-using MessageBoxResult = System.Windows.MessageBoxResult;
-using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace ProjectManager.ViewModels.Pages
 {
     public partial class SystemEnvironmentVariablesViewModel : ObservableObject
     {
         private readonly EnvironmentVariableService _envService;
+        private readonly IErrorDisplayService _errorDisplayService;
 
         [ObservableProperty]
         private ObservableCollection<SystemEnvironmentVariable> _userVariables = new();
@@ -61,9 +59,10 @@ namespace ProjectManager.ViewModels.Pages
         public bool HasSelectedSystemVariable => SelectedSystemVariable != null;
         public bool HasSelection => SelectedUserVariable != null || SelectedSystemVariable != null;
 
-        public SystemEnvironmentVariablesViewModel()
+        public SystemEnvironmentVariablesViewModel(IErrorDisplayService errorDisplayService)
         {
             _envService = new EnvironmentVariableService();
+            _errorDisplayService = errorDisplayService;
             
             FilteredUserVariables = CollectionViewSource.GetDefaultView(UserVariables);
             FilteredUserVariables.Filter = FilterUserVariables;
@@ -173,48 +172,44 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void DeleteUserVariable()
+        private async Task DeleteUserVariable()
         {
             if (SelectedUserVariable == null) return;
 
-            MessageBoxResult result = MessageBox.Show(
+            var confirmed = await _errorDisplayService.ShowConfirmationAsync(
                 $"确定要删除用户环境变量 '{SelectedUserVariable.Name}' 吗？",
-                "确认删除",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                "确认删除");
 
-            if (result == MessageBoxResult.Yes)
+            if (confirmed)
             {
                 if (_envService.DeleteVariable(SelectedUserVariable.Name, false))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("用户环境变量已删除！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _errorDisplayService.ShowInfoAsync("用户环境变量已删除！", "成功");
                 }
                 else
                 {
-                    MessageBox.Show("删除用户环境变量失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _errorDisplayService.ShowErrorAsync("删除用户环境变量失败");
                 }
             }
         }
 
         [RelayCommand]
-        private void DeleteSystemVariable()
+        private async Task DeleteSystemVariable()
         {
             if (SelectedSystemVariable == null) return;
 
-            MessageBoxResult result = MessageBox.Show(
+            var confirmed = await _errorDisplayService.ShowConfirmationAsync(
                 $"确定要删除系统环境变量 '{SelectedSystemVariable.Name}' 吗？\n\n注意：此操作需要管理员权限。",
-                "确认删除",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                "确认删除");
 
-            if (result == MessageBoxResult.Yes)
+            if (confirmed)
             {
-                DeleteSystemVariableWithUac(SelectedSystemVariable.Name);
+                await DeleteSystemVariableWithUac(SelectedSystemVariable.Name);
             }
         }
 
-        private void DeleteSystemVariableWithUac(string name)
+        private async Task DeleteSystemVariableWithUac(string name)
         {
             if (_envService.HasAdminPrivileges())
             {
@@ -222,11 +217,11 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.DeleteVariable(name, true))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("系统环境变量已删除！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = Task.Run(async () => await _errorDisplayService.ShowInfoAsync("系统环境变量已删除！", "成功"));
                 }
                 else
                 {
-                    MessageBox.Show("删除系统环境变量失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync("删除系统环境变量失败"));
                 }
             }
             else
@@ -235,11 +230,11 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.DeleteVariable(name, true))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("系统环境变量已成功删除！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = Task.Run(async () => await _errorDisplayService.ShowInfoAsync("系统环境变量已成功删除！", "成功"));
                 }
                 else
                 {
-                    MessageBox.Show("删除系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = Task.Run(async () => await _errorDisplayService.ShowInfoAsync("删除系统环境变量失败，用户取消了提权或权限不足。", "提示"));
                 }
             }
         }
@@ -251,33 +246,33 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void EditSelected()
+        private async Task EditSelected()
         {
             if (SelectedUserVariable != null)
             {
-                EditVariable(SelectedUserVariable, false);
+                await EditVariable(SelectedUserVariable, false);
             }
             else if (SelectedSystemVariable != null)
             {
-                EditVariable(SelectedSystemVariable, true);
+                await EditVariable(SelectedSystemVariable, true);
             }
         }
 
         [RelayCommand]
-        private void DeleteSelected()
+        private async Task DeleteSelected()
         {
             if (SelectedUserVariable != null)
             {
-                DeleteUserVariable();
+                await DeleteUserVariable();
             }
             else if (SelectedSystemVariable != null)
             {
-                DeleteSystemVariable();
+                await DeleteSystemVariable();
             }
         }
 
         [RelayCommand]
-        private void AddUserVariable()
+        private async Task AddUserVariable()
         {
             var newVariable = new SystemEnvironmentVariable("新变量", "", false);
             var editWindow = new Views.Dialogs.EditEnvironmentVariableWindow();
@@ -292,17 +287,17 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetUserVariable(viewModel.VariableName, viewModel.VariableValue))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("用户环境变量已添加！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _errorDisplayService.ShowInfoAsync("用户环境变量已添加！", "成功");
                 }
                 else
                 {
-                    MessageBox.Show("添加用户环境变量失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _errorDisplayService.ShowErrorAsync("添加用户环境变量失败");
                 }
             }
         }
 
         [RelayCommand]
-        private void AddSystemVariable()
+        private async Task AddSystemVariable()
         {
             var newVariable = new SystemEnvironmentVariable("新变量", "", true);
             var editWindow = new Views.Dialogs.EditEnvironmentVariableWindow();
@@ -314,25 +309,25 @@ namespace ProjectManager.ViewModels.Pages
 
             if (editWindow.ShowDialog() == true)
             {
-                SaveSystemVariableWithUac(viewModel.VariableName, viewModel.VariableValue);
+                await SaveSystemVariableWithUac(viewModel.VariableName, viewModel.VariableValue);
             }
         }
 
         [RelayCommand]
-        private void EditUserVariable()
+        private async Task EditUserVariable()
         {
             if (SelectedUserVariable == null) return;
-            EditVariable(SelectedUserVariable, false);
+            await EditVariable(SelectedUserVariable, false);
         }
 
         [RelayCommand]
-        private void EditSystemVariable()
+        private async Task EditSystemVariable()
         {
             if (SelectedSystemVariable == null) return;
-            EditVariable(SelectedSystemVariable, true);
+            await EditVariable(SelectedSystemVariable, true);
         }
 
-        private void EditVariable(SystemEnvironmentVariable variable, bool isSystemVariable)
+        private async Task EditVariable(SystemEnvironmentVariable variable, bool isSystemVariable)
         {
             try
             {
@@ -347,7 +342,7 @@ namespace ProjectManager.ViewModels.Pages
                 if (editWindow.ShowDialog() == true)
                 {
                     // 保存更改 - 根据是否需要管理员权限采用不同策略
-                    SaveEnvironmentVariable(viewModel.VariableName, viewModel.VariableValue, isSystemVariable);
+                    await SaveEnvironmentVariable(viewModel.VariableName, viewModel.VariableValue, isSystemVariable);
                 }
             }
             catch (Exception ex)
@@ -356,12 +351,12 @@ namespace ProjectManager.ViewModels.Pages
             }
         }
 
-        private void SaveEnvironmentVariable(string name, string value, bool isSystemVariable)
+        private async Task SaveEnvironmentVariable(string name, string value, bool isSystemVariable)
         {
             if (isSystemVariable)
             {
                 // 系统环境变量需要管理员权限
-                SaveSystemVariableWithUac(name, value);
+                await SaveSystemVariableWithUac(name, value);
             }
             else
             {
@@ -372,12 +367,12 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    MessageBox.Show("保存用户环境变量失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync("保存用户环境变量失败"));
                 }
             }
         }
 
-        private void SaveSystemVariableWithUac(string name, string value)
+        private async Task SaveSystemVariableWithUac(string name, string value)
         {
             if (_envService.HasAdminPrivileges())
             {
@@ -385,11 +380,11 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetSystemVariable(name, value))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("系统环境变量已成功更新！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _errorDisplayService.ShowInfoAsync("系统环境变量已成功更新！", "成功");
                 }
                 else
                 {
-                    MessageBox.Show("保存系统环境变量失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _errorDisplayService.ShowErrorAsync("保存系统环境变量失败");
                 }
             }
             else
@@ -398,11 +393,11 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetSystemVariableWithUac(name, value))
                 {
                     LoadEnvironmentVariables();
-                    MessageBox.Show("系统环境变量已成功更新！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _errorDisplayService.ShowInfoAsync("系统环境变量已成功更新！", "成功");
                 }
                 else
                 {
-                    MessageBox.Show("设置系统环境变量失败，用户取消了提权或权限不足。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _errorDisplayService.ShowInfoAsync("设置系统环境变量失败，用户取消了提权或权限不足。", "提示");
                 }
             }
         }
