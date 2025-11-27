@@ -22,6 +22,7 @@ namespace ProjectManager.ViewModels.Pages
     {
         private readonly EnvironmentVariableService _envService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private bool _isUpdatingSelection; // 防止递归更新的标志
 
         [ObservableProperty]
         private ObservableCollection<SystemEnvironmentVariable> _userVariables = new();
@@ -163,12 +164,32 @@ namespace ProjectManager.ViewModels.Pages
 
         partial void OnSelectedUserVariableChanged(SystemEnvironmentVariable? value)
         {
+            if (_isUpdatingSelection) return; // 防止递归
+            
+            // 实现互斥选择：如果用户变量被选中，清除系统变量的选择
+            if (value != null && SelectedSystemVariable != null)
+            {
+                _isUpdatingSelection = true;
+                SelectedSystemVariable = null;
+                _isUpdatingSelection = false;
+            }
+            
             OnPropertyChanged(nameof(HasSelectedUserVariable));
             OnPropertyChanged(nameof(HasSelection));
         }
 
         partial void OnSelectedSystemVariableChanged(SystemEnvironmentVariable? value)
         {
+            if (_isUpdatingSelection) return; // 防止递归
+            
+            // 实现互斥选择：如果系统变量被选中，清除用户变量的选择
+            if (value != null && SelectedUserVariable != null)
+            {
+                _isUpdatingSelection = true;
+                SelectedUserVariable = null;
+                _isUpdatingSelection = false;
+            }
+            
             OnPropertyChanged(nameof(HasSelectedSystemVariable));
             OnPropertyChanged(nameof(HasSelection));
         }
