@@ -81,6 +81,7 @@ namespace ProjectManager.Views.Pages
             if (fe != null && fe.DataContext is SystemEnvironmentVariable variable)
             {
                 ViewModel.SelectedUserVariable = variable;
+                ViewModel.SelectedSystemVariable = null;
                 if (ViewModel.EditSelectedCommand.CanExecute(null))
                     ViewModel.EditSelectedCommand.Execute(null);
                 e.Handled = true;
@@ -95,6 +96,7 @@ namespace ProjectManager.Views.Pages
             if (fe != null && fe.DataContext is SystemEnvironmentVariable variable)
             {
                 ViewModel.SelectedSystemVariable = variable;
+                ViewModel.SelectedUserVariable = null;
                 if (ViewModel.EditSelectedCommand.CanExecute(null))
                     ViewModel.EditSelectedCommand.Execute(null);
                 e.Handled = true;
@@ -126,10 +128,12 @@ namespace ProjectManager.Views.Pages
                 if (variable.IsSystemVariable)
                 {
                     ViewModel.SelectedSystemVariable = variable;
+                    ViewModel.SelectedUserVariable = null;
                 }
                 else
                 {
                     ViewModel.SelectedUserVariable = variable;
+                    ViewModel.SelectedSystemVariable = null;
                 }
 
                 // 使用统一的编辑命令
