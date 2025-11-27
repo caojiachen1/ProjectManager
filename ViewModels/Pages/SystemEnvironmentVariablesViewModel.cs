@@ -164,11 +164,13 @@ namespace ProjectManager.ViewModels.Pages
         partial void OnSelectedUserVariableChanged(SystemEnvironmentVariable? value)
         {
             OnPropertyChanged(nameof(HasSelectedUserVariable));
+            OnPropertyChanged(nameof(HasSelection));
         }
 
         partial void OnSelectedSystemVariableChanged(SystemEnvironmentVariable? value)
         {
             OnPropertyChanged(nameof(HasSelectedSystemVariable));
+            OnPropertyChanged(nameof(HasSelection));
         }
 
         [RelayCommand]
