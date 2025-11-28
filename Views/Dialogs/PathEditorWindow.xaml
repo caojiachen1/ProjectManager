@@ -25,36 +25,29 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         
-        <!-- DataGrid Row Style - 简化版本 -->
+        <!-- DataGrid Row Style - 超简化版本 -->
         <Style x:Key="PathDataGridRowStyle" TargetType="DataGridRow">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
         </Style>
         
-        <!-- DataGrid Cell Style - 简化版本 -->
+        <!-- DataGrid Cell Style - 超简化版本 -->
         <Style x:Key="PathDataGridCellStyle" TargetType="DataGridCell">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0"/>
         </Style>
         
-        <!-- DataGrid Column Header Style - 简化版本 -->
+        <!-- DataGrid Column Header Style - 超简化版本 -->
         <Style x:Key="PathDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
     </ui:FluentWindow.Resources>
 
@@ -94,9 +87,6 @@
                                  x:Name="PathDataGrid"
                                  ItemsSource="{Binding PathItems}"
                                  SelectedItem="{Binding SelectedPathItem}"
-                                 SelectionMode="Single"
-                                 BorderThickness="1"
-                                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                  MouseDoubleClick="PathListView_MouseDoubleClick"
                                  KeyDown="PathDataGrid_KeyDown"
                                  Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -107,16 +97,16 @@
                                  CanUserDeleteRows="False"
                                  CanUserReorderColumns="False"
                                  CanUserResizeColumns="True"
-                                 CanUserResizeRows="False"
                                  CanUserSortColumns="False"
                                  IsReadOnly="True"
+                                 AutoGenerateColumns="False"
                                  RowStyle="{StaticResource PathDataGridRowStyle}"
                                  CellStyle="{StaticResource PathDataGridCellStyle}"
                                  ColumnHeaderStyle="{StaticResource PathDataGridColumnHeaderStyle}"
                                  Margin="0,0,0,8">
                         <DataGrid.Columns>
-                            <!-- 路径列 - 自适应宽度 -->
-                            <DataGridTemplateColumn Header="目录" Width="*">
+                            <!-- 路径列 - 使用相对宽度避免布局问题 -->
+                            <DataGridTemplateColumn Header="目录" MinWidth="200">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Path}" 
@@ -130,15 +120,14 @@
                             </DataGridTemplateColumn>
                             
                             <!-- 状态列 - 固定宽度，只显示图标 -->
-                            <DataGridTemplateColumn Header="可用" Width="60">
+                            <DataGridTemplateColumn Header="可用" Width="50" MinWidth="50">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
-                                                           Foreground="{Binding StatusColor}"
-                                                           VerticalAlignment="Center"
-                                                           ToolTip="{Binding StatusText}"/>
-                                        </Grid>
+                                        <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
+                                                       Foreground="{Binding StatusColor}"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"
+                                                       ToolTip="{Binding StatusText}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

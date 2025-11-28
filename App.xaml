@@ -35,6 +35,7 @@
             <converters:HasGitRepositoryToVisibilityConverter x:Key="HasGitRepositoryToVisibilityConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+            <converters:CellsPanelOffsetConverter x:Key="CellsPanelOffsetConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
