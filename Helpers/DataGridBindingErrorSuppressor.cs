@@ -19,11 +19,21 @@ namespace ProjectManager.Helpers
         {
             if (_isInitialized) return;
 
-            // Only suppress this specific error in Debug builds
-#if DEBUG
-            PresentationTraceSources.DataBindingSource.Listeners.Clear();
-            PresentationTraceSources.DataBindingSource.Listeners.Add(new DataGridBindingErrorListener());
-#endif
+            // Suppress this specific error in all builds (this is a known WPF issue)
+            try
+            {
+                // Store existing listeners
+                var existingListeners = PresentationTraceSources.DataBindingSource.Listeners;
+                
+                // Clear and add our custom listener first
+                existingListeners.Clear();
+                existingListeners.Add(new DataGridBindingErrorListener());
+            }
+            catch
+            {
+                // Ignore any errors in setting up the suppressor
+            }
+            
             _isInitialized = true;
         }
 
@@ -31,8 +41,8 @@ namespace ProjectManager.Helpers
         {
             public override void Write(string message)
             {
-                // Suppress CellsPanelHorizontalOffset binding errors
-                if (message.Contains("CellsPanelHorizontalOffset") && message.Contains("is not valid for target property"))
+                // Suppress CellsPanelHorizontalOffset binding errors - more comprehensive filtering
+                if (IsCellsPanelHorizontalOffsetError(message))
                     return;
                 
                 // Write other messages to the default listener
@@ -41,12 +51,25 @@ namespace ProjectManager.Helpers
 
             public override void WriteLine(string message)
             {
-                // Suppress CellsPanelHorizontalOffset binding errors
-                if (message.Contains("CellsPanelHorizontalOffset") && message.Contains("is not valid for target property"))
+                // Suppress CellsPanelHorizontalOffset binding errors - more comprehensive filtering
+                if (IsCellsPanelHorizontalOffsetError(message))
                     return;
                 
                 // Write other messages to the default listener
                 Debug.WriteLine(message);
+            }
+
+            private bool IsCellsPanelHorizontalOffsetError(string message)
+            {
+                // Check for various forms of CellsPanelHorizontalOffset errors
+                if (string.IsNullOrEmpty(message)) return false;
+                
+                // Check for the specific error patterns
+                bool hasCellsPanel = message.Contains("CellsPanelHorizontalOffset");
+                bool hasWidthBinding = message.Contains("Button.Width") || message.Contains("Width");
+                bool hasNegativeValue = message.Contains("-") && (message.Contains("E-") || message.Contains("is not valid for target property"));
+                
+                return hasCellsPanel && hasWidthBinding && hasNegativeValue;
             }
         }
     }
