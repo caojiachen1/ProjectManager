@@ -354,18 +354,36 @@ namespace ProjectManager.ViewModels.Pages
         {
             try
             {
-                // Create a new window instance each time
-                var editWindow = new Views.Dialogs.EditEnvironmentVariableWindow();
-                editWindow.Owner = Application.Current.MainWindow;
-                editWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-                var viewModel = new ViewModels.Dialogs.EditEnvironmentVariableViewModel(variable, isSystemVariable);
-                editWindow.DataContext = viewModel;
-
-                if (editWindow.ShowDialog() == true)
+                // 检查是否是PATH变量，如果是则使用专门的Path编辑器
+                if (string.Equals(variable.Name, "PATH", StringComparison.OrdinalIgnoreCase))
                 {
-                    // 保存更改 - 根据是否需要管理员权限采用不同策略
-                    await SaveEnvironmentVariable(viewModel.VariableName, viewModel.VariableValue, isSystemVariable);
+                    // 使用专门的Path编辑器
+                    var pathEditorViewModel = new ViewModels.Dialogs.PathEditorViewModel(variable.Value, isSystemVariable);
+                    var pathEditor = new Views.Dialogs.PathEditorWindow(pathEditorViewModel);
+                    pathEditor.Owner = Application.Current.MainWindow;
+                    pathEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                    if (pathEditor.ShowDialog() == true)
+                    {
+                        // 保存PATH变量的更改
+                        await SaveEnvironmentVariable(variable.Name, pathEditorViewModel.GetResultPath(), isSystemVariable);
+                    }
+                }
+                else
+                {
+                    // 使用标准的环境变量编辑窗口
+                    var editWindow = new Views.Dialogs.EditEnvironmentVariableWindow();
+                    editWindow.Owner = Application.Current.MainWindow;
+                    editWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                    var viewModel = new ViewModels.Dialogs.EditEnvironmentVariableViewModel(variable, isSystemVariable);
+                    editWindow.DataContext = viewModel;
+
+                    if (editWindow.ShowDialog() == true)
+                    {
+                        // 保存更改 - 根据是否需要管理员权限采用不同策略
+                        await SaveEnvironmentVariable(viewModel.VariableName, viewModel.VariableValue, isSystemVariable);
+                    }
                 }
             }
             catch (Exception ex)

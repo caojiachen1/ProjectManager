@@ -23,6 +23,9 @@ namespace ProjectManager.ViewModels.Dialogs
         [ObservableProperty]
         private bool _canEditName;
 
+        [ObservableProperty]
+        private bool _isPathVariable;
+
         private readonly SystemEnvironmentVariable _originalVariable;
 
         public EditEnvironmentVariableViewModel(SystemEnvironmentVariable variable, bool isSystemVariable, bool isNewVariable = false)
@@ -32,6 +35,8 @@ namespace ProjectManager.ViewModels.Dialogs
             _variableValue = variable.Value;
             _isSystemVariable = isSystemVariable;
             _canEditName = isNewVariable; // 只有新建变量时才允许编辑变量名
+            _isPathVariable = string.Equals(variable.Name, "PATH", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(variable.Name, "Path", StringComparison.OrdinalIgnoreCase);
         }
 
         [RelayCommand]
@@ -169,6 +174,27 @@ namespace ProjectManager.ViewModels.Dialogs
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"保存环境变量时出错: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void EditPath()
+        {
+            try
+            {
+                var pathEditorViewModel = new PathEditorViewModel(VariableValue, IsSystemVariable);
+                var pathEditor = new Views.Dialogs.PathEditorWindow(pathEditorViewModel);
+                pathEditor.Owner = Application.Current.MainWindow;
+                pathEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (pathEditor.ShowDialog() == true)
+                {
+                    VariableValue = pathEditorViewModel.GetResultPath();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"打开路径编辑器失败: {ex.Message}");
             }
         }
     }

@@ -62,19 +62,31 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="变量值:" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ui:Button Grid.Column="1" 
+                               Content="编辑路径..."
+                               Command="{Binding EditPathCommand}"
+                               Appearance="Secondary"
+                               Margin="8,0,8,0"
+                               Padding="12,4"
+                               Visibility="{Binding IsPathVariable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Edit24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button Grid.Column="2" 
                                Content="浏览目录..."
                                Appearance="Secondary"
                                Command="{Binding BrowseFolderCommand}"
-                               Margin="8,0,8,0"
+                               Margin="0,0,8,0"
                                Padding="12,4">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Folder24"/>
                         </ui:Button.Icon>
                     </ui:Button>
-                    <ui:Button Grid.Column="2" 
+                    <ui:Button Grid.Column="3" 
                                Content="浏览文件..."
                                Appearance="Secondary"
                                Command="{Binding BrowseFileCommand}"

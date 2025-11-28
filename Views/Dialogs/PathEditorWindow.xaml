@@ -1,0 +1,198 @@
+<ui:FluentWindow
+    x:Class="ProjectManager.Views.Dialogs.PathEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
+    Title="编辑路径"
+    Width="700"
+    Height="500"
+    MinWidth="600"
+    MinHeight="400"
+    WindowStartupLocation="CenterOwner"
+    ResizeMode="CanResize"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+    
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="编辑路径"
+            Grid.Row="0"
+            CloseWindowByDoubleClickOnIcon="True"
+            Padding="5,0,0,0">
+            <ui:TitleBar.Icon>
+                <ui:SymbolIcon Symbol="Edit24" Margin="10,-3,10,0"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Margin="24,32,24,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧路径列表 -->
+                <Grid Grid.Column="0" Margin="0,20,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 路径列表模式 -->
+                    <ListView Grid.Row="1"
+                                 ItemsSource="{Binding PathItems}"
+                                 SelectedItem="{Binding SelectedPathItem}"
+                                 SelectionMode="Single"
+                                 BorderThickness="1"
+                                 BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                 MouseDoubleClick="PathListView_MouseDoubleClick"
+                                 Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="路径" Width="400">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path}" 
+                                                       ToolTip="{Binding Path}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="状态" Width="80">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
+                                                           Foreground="{Binding StatusColor}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="4,0"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!-- 文本编辑模式 -->
+                    <ui:TextBox Grid.Row="1"
+                                Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged}"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                PlaceholderText="C:\\Windows;C:\\Windows\\System32;D:\\MyTools"
+                                Visibility="{Binding IsListMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <ui:TextBox.Icon>
+                            <ui:SymbolIcon Symbol="TextFont24"/>
+                        </ui:TextBox.Icon>
+                    </ui:TextBox>
+                </Grid>
+
+                <!-- 右侧按钮组 - 只在列表模式下显示 -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Center"
+                            Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,20,0,0">
+                    <ui:Button Content="新建" 
+                               Command="{Binding NewCommand}"
+                               Appearance="Primary"
+                               Margin="0,0,0,8"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                    
+                    <ui:Button Content="编辑" 
+                               Command="{Binding EditCommand}"
+                               IsEnabled="{Binding HasSelection}"
+                               Margin="0,0,0,8"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                    
+                    <ui:Button Content="浏览" 
+                               Command="{Binding BrowseCommand}"
+                               IsEnabled="{Binding HasSelection}"
+                               Margin="0,0,0,8"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                    
+                    <ui:Button Content="删除" 
+                               Command="{Binding DeleteCommand}"
+                               IsEnabled="{Binding HasSelection}"
+                               Margin="0,0,0,16"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                    
+                    <Separator Margin="0,0,0,16"/>
+                    
+                    <ui:Button Content="上移" 
+                               Command="{Binding MoveUpCommand}"
+                               IsEnabled="{Binding CanMoveUp}"
+                               Margin="0,0,0,8"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                    
+                    <ui:Button Content="下移" 
+                               Command="{Binding MoveDownCommand}"
+                               IsEnabled="{Binding CanMoveDown}"
+                               Margin="0,0,0,8"
+                               Padding="20,8"
+                               HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 底部按钮区 - 编辑文本按钮在左侧，确认取消按钮在右侧靠上位置 -->
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 左侧：编辑文本按钮 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <ui:Button Content="编辑文本" 
+                               Command="{Binding ToggleEditModeCommand}"
+                               Appearance="Secondary"
+                               Margin="0,0,8,0"
+                               Padding="16,6"
+                               Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Edit24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <ui:Button Content="确认" 
+                               Command="{Binding SaveCommand}"
+                               Appearance="Primary"
+                               IsDefault="True"
+                               Margin="0,0,8,0"
+                               Padding="24,8"/>                    
+                    <ui:Button Content="取消" 
+                               Command="{Binding CancelCommand}"
+                               Appearance="Secondary"
+                               IsCancel="True"
+                               Padding="24,8"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>
