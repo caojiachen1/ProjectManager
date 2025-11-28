@@ -10,23 +10,6 @@ using ProjectManager.ViewModels.Dialogs;
 
 namespace ProjectManager.Views.Dialogs
 {
-    // 行号转换器
-    public class RowIndexConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is int index)
-            {
-                return (index + 1).ToString();
-            }
-            return "0";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
     // 反向布尔值到可见性转换器
     public class InverseBooleanToVisibilityConverter : IValueConverter
     {
