@@ -24,6 +24,88 @@
     <ui:FluentWindow.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <local:RowIndexConverter x:Key="RowIndexConverter"/>
+        
+        <!-- DataGrid Row Style for Dark Mode -->
+        <Style x:Key="PathDataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- DataGrid Cell Style for Dark Mode -->
+        <Style x:Key="PathDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- DataGrid Column Header Style -->
+        <Style x:Key="PathDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- ScrollBar Style for Fluent Design -->
+        <Style x:Key="FluentScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Border x:Name="PART_Track" 
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    CornerRadius="6"
+                                    Margin="2,2,2,2"
+                                    Width="8">
+                                <Canvas>
+                                    <Rectangle x:Name="PART_Thumb"
+                                               Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                                               RadiusX="4"
+                                               RadiusY="4"
+                                               Width="8"
+                                               Height="20"
+                                               Opacity="0.7"/>
+                                </Canvas>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PART_Thumb" Property="Opacity" Value="1.0"/>
+                                <Setter TargetName="PART_Thumb" Property="Fill" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </ui:FluentWindow.Resources>
 
     <Grid>
@@ -57,41 +139,110 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 路径列表模式 -->
-                    <ListView Grid.Row="1"
+                    <!-- 路径列表模式 - DataGrid -->
+                    <DataGrid Grid.Row="1"
+                                 x:Name="PathDataGrid"
                                  ItemsSource="{Binding PathItems}"
                                  SelectedItem="{Binding SelectedPathItem}"
                                  SelectionMode="Single"
                                  BorderThickness="1"
-                                 BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                  MouseDoubleClick="PathListView_MouseDoubleClick"
-                                 Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="路径" Width="400">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
+                                 KeyDown="PathDataGrid_KeyDown"
+                                 Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                 HeadersVisibility="Column"
+                                 GridLinesVisibility="None"
+                                 CanUserAddRows="False"
+                                 CanUserDeleteRows="False"
+                                 CanUserReorderColumns="True"
+                                 CanUserResizeColumns="True"
+                                 CanUserResizeRows="False"
+                                 CanUserSortColumns="True"
+                                 IsReadOnly="True"
+                                 RowStyle="{StaticResource PathDataGridRowStyle}"
+                                 CellStyle="{StaticResource PathDataGridCellStyle}"
+                                 ColumnHeaderStyle="{StaticResource PathDataGridColumnHeaderStyle}"
+                                 Margin="0,0,0,8"
+                                 MaxWidth="480"
+                                 AlternationCount="2"
+                                 RowBackground="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                 AlternatingRowBackground="{DynamicResource SubtleFillColorSecondaryBrush}">
+                        <DataGrid.Resources>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource FluentScrollBarStyle}"/>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <!-- 序号列 -->
+                            <DataGridTextColumn Header="#" Width="40" IsReadOnly="True">
+                                <DataGridTextColumn.Binding>
+                                    <Binding RelativeSource="{RelativeSource AncestorType={x:Type DataGridRow}}" 
+                                             Path="(ItemsControl.AlternationIndex)" 
+                                             Converter="{StaticResource RowIndexConverter}"/>
+                                </DataGridTextColumn.Binding>
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            
+                            <DataGridTemplateColumn Header="路径" Width="320" SortMemberPath="Path">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
                                             <TextBlock Text="{Binding Path}" 
                                                        ToolTip="{Binding Path}"
                                                        TextTrimming="CharacterEllipsis"
                                                        VerticalAlignment="Center"
-                                                       Margin="8,4"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="状态" Width="80">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
+                                                       Margin="8,4"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="状态" Width="80" SortMemberPath="Status">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
                                                            Foreground="{Binding StatusColor}"
                                                            VerticalAlignment="Center"
-                                                           Margin="4,0"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                                                           Margin="4,0,2,0"/>
+                                            <TextBlock Text="{Binding StatusText}" 
+                                                       VerticalAlignment="Center"
+                                                       Margin="2,0,0,0"
+                                                       Foreground="{Binding StatusColor}"
+                                                       FontSize="11"
+                                                       Opacity="0.8"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="编辑" Command="{Binding EditCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Edit24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="浏览" Command="{Binding BrowseCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="删除" Command="{Binding DeleteCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Delete24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
 
                     <!-- 文本编辑模式 -->
                     <ui:TextBox Grid.Row="1"

@@ -278,6 +278,14 @@ namespace ProjectManager.ViewModels.Dialogs
             _ => "QuestionCircle24"
         };
 
+        public string StatusText => Status switch
+        {
+            PathStatus.Valid => "有效",
+            PathStatus.NotFound => "未找到",
+            PathStatus.Invalid => "无效",
+            _ => "未知"
+        };
+
         public Brush StatusColor => GetStatusBrush(Status);
 
         private Brush GetStatusBrush(PathStatus status)
