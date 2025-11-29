@@ -208,7 +208,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.DeleteVariable(SelectedUserVariable.Name, false))
                 {
                     LoadEnvironmentVariables();
-                    await _errorDisplayService.ShowInfoAsync("用户环境变量已删除！", "成功");
                 }
                 else
                 {
@@ -240,7 +239,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.DeleteVariable(name, true))
                 {
                     LoadEnvironmentVariables();
-                    _ = Task.Run(async () => await _errorDisplayService.ShowInfoAsync("系统环境变量已删除！", "成功"));
                 }
                 else
                 {
@@ -253,7 +251,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.DeleteVariable(name, true))
                 {
                     LoadEnvironmentVariables();
-                    _ = Task.Run(async () => await _errorDisplayService.ShowInfoAsync("系统环境变量已成功删除！", "成功"));
                 }
                 else
                 {
@@ -310,7 +307,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetUserVariable(viewModel.VariableName, viewModel.VariableValue))
                 {
                     LoadEnvironmentVariables();
-                    await _errorDisplayService.ShowInfoAsync("用户环境变量已添加！", "成功");
                 }
                 else
                 {
@@ -421,7 +417,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetSystemVariable(name, value))
                 {
                     LoadEnvironmentVariables();
-                    await _errorDisplayService.ShowInfoAsync("系统环境变量已成功更新！", "成功");
                 }
                 else
                 {
@@ -434,7 +429,6 @@ namespace ProjectManager.ViewModels.Pages
                 if (_envService.SetSystemVariableWithUac(name, value))
                 {
                     LoadEnvironmentVariables();
-                    await _errorDisplayService.ShowInfoAsync("系统环境变量已成功更新！", "成功");
                 }
                 else
                 {

@@ -45,10 +45,10 @@ namespace ProjectManager.Services
                     FileName = "setx",
                     Arguments = $"\"{name}\" \"{escapedValue}\" /M",
                     Verb = "runas", // 请求管理员权限
-                    UseShellExecute = true,
+                    UseShellExecute = !HasAdminPrivileges(), // 有权限时静默，没权限时弹UAC
                     CreateNoWindow = true,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false
+                    RedirectStandardOutput = HasAdminPrivileges(),
+                    RedirectStandardError = HasAdminPrivileges()
                 };
 
                 using (var process = Process.Start(startInfo))
@@ -78,8 +78,10 @@ namespace ProjectManager.Services
                     FileName = "setx",
                     Arguments = $"\"{name}\" \"{escapedValue}\" /M",
                     Verb = "runas", // 触发UAC
-                    UseShellExecute = true,
-                    CreateNoWindow = true
+                    UseShellExecute = !HasAdminPrivileges(), // 有权限时静默，没权限时弹UAC
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = HasAdminPrivileges(),
+                    RedirectStandardError = HasAdminPrivileges()
                 };
 
                 using (var process = Process.Start(startInfo))
@@ -128,17 +130,17 @@ namespace ProjectManager.Services
         }
 
         /// <summary>
-        /// 使用UAC删除系统环境变量
+        /// 使用UAC删除系统环境变量（通过注册表真正删除）
         /// </summary>
         private bool DeleteSystemVariableWithUac(string name)
         {
             try
             {
-                // 使用setx命令设置空值来删除系统环境变量
+                // 使用reg delete命令真正删除系统环境变量
                 var startInfo = new ProcessStartInfo
                 {
-                    FileName = "setx",
-                    Arguments = $"\"{name}\" \"\" /M", // 设置为空值来删除
+                    FileName = "reg",
+                    Arguments = $"delete \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\" /v \"{name}\" /f",
                     Verb = "runas", // 触发UAC
                     UseShellExecute = true,
                     CreateNoWindow = true
@@ -147,7 +149,13 @@ namespace ProjectManager.Services
                 using (var process = Process.Start(startInfo))
                 {
                     process?.WaitForExit();
-                    return process?.ExitCode == 0;
+                    if (process?.ExitCode == 0)
+                    {
+                        // 广播环境变量变更通知
+                        BroadcastEnvironmentChange();
+                        return true;
+                    }
+                    return false;
                 }
             }
             catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
@@ -232,6 +240,50 @@ namespace ProjectManager.Services
 
             // 转义引号和特殊字符
             return argument.Replace("\"", "\\\"");
+        }
+
+        /// <summary>
+        /// 广播环境变量变更通知，使更改立即生效
+        /// </summary>
+        private void BroadcastEnvironmentChange()
+        {
+            try
+            {
+                // 使用 setx 命令触发系统刷新环境变量
+                // 实际上 setx 任何变量都会广播 WM_SETTINGCHANGE
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "setx",
+                    Arguments = "_DUMMY_VAR_ \"1\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (var process = Process.Start(startInfo))
+                {
+                    process?.WaitForExit();
+                }
+
+                // 删除刚刚创建的 dummy 变量
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "reg",
+                    Arguments = "delete \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\" /v _DUMMY_VAR_ /f",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (var process = Process.Start(startInfo))
+                {
+                    process?.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"广播环境变量变更失败: {ex.Message}");
+            }
         }
 
         /// <summary>
