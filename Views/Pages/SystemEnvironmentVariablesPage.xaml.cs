@@ -8,6 +8,7 @@ using ProjectManager.Models;
 using System.Windows.Media;
 using ProjectManager.Controls;
 using System.Linq;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ProjectManager.Views.Pages
 {
@@ -153,6 +154,60 @@ namespace ProjectManager.Views.Pages
                 if (result != null) return result;
             }
             return null;
+        }
+
+        private void UserVariableDataGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (ViewModel == null) return;
+
+            switch (e.Key)
+            {
+                case Key.Delete:
+                    // Delete键删除选中用户变量
+                    if (ViewModel.SelectedUserVariable != null)
+                    {
+                        ViewModel.DeleteUserVariableCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+
+                case Key.Enter:
+                case Key.F2:
+                    // Enter键或F2键编辑选中用户变量
+                    if (ViewModel.SelectedUserVariable != null)
+                    {
+                        ViewModel.EditUserVariableCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void SystemVariableDataGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (ViewModel == null) return;
+
+            switch (e.Key)
+            {
+                case Key.Delete:
+                    // Delete键删除选中系统变量
+                    if (ViewModel.SelectedSystemVariable != null)
+                    {
+                        ViewModel.DeleteSystemVariableCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+
+                case Key.Enter:
+                case Key.F2:
+                    // Enter键或F2键编辑选中系统变量
+                    if (ViewModel.SelectedSystemVariable != null)
+                    {
+                        ViewModel.EditSystemVariableCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+            }
         }
     }
 }

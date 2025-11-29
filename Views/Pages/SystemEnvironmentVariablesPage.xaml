@@ -101,29 +101,43 @@
                                 <ui:DataGrid ItemsSource="{Binding FilteredUserVariables}"
                                              SelectedItem="{Binding SelectedUserVariable}"
                                              MouseDoubleClick="UserVariableListView_MouseDoubleClick"
+                                             KeyDown="UserVariableDataGrid_KeyDown"
+                                             Style="{StaticResource CleanDataGridStyle}"
                                              AutoGenerateColumns="False"
-                                             CanUserAddRows="False"
-                                             CanUserDeleteRows="False"
-                                             HeadersVisibility="Column"
-                                             SelectionMode="Single"
-                                             GridLinesVisibility="None"
-                                             RowStyle="{StaticResource EnvDataGridRowStyle}"
-                                             CellStyle="{StaticResource EnvDataGridCellStyle}"
-                                             Background="{DynamicResource ListViewBackgroundBrush}"
-                                             BorderThickness="0"
-                                             Margin="0">
+                                             Margin="0,0,0,8">
                                     <ui:DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="变量名" Width="250">
+                                        <!-- 类型图标列 - 固定宽度，只显示图标 -->
+                                    <DataGridTemplateColumn Header="" Width="32" MinWidth="32" DisplayIndex="0">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ui:SymbolIcon Symbol="People24" 
+                                                               Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                               VerticalAlignment="Center"
+                                                               HorizontalAlignment="Center"
+                                                               ToolTip="用户变量"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    
+                                    <DataGridTemplateColumn Header="变量名" Width="250" MinWidth="200" DisplayIndex="1">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Name}" 
+                                                               VerticalAlignment="Center" 
+                                                               Margin="8,4"
+                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
                                         <DataGridTemplateColumn Header="变量值" Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Value}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Value}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Value}" 
+                                                               TextTrimming="CharacterEllipsis" 
+                                                               ToolTip="{Binding Value}" 
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,4"
+                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -162,29 +176,43 @@
                             <ui:DataGrid ItemsSource="{Binding FilteredSystemVariables}"
                                          SelectedItem="{Binding SelectedSystemVariable}"
                                          MouseDoubleClick="SystemVariableListView_MouseDoubleClick"
+                                         KeyDown="SystemVariableDataGrid_KeyDown"
+                                         Style="{StaticResource CleanDataGridStyle}"
                                          AutoGenerateColumns="False"
-                                         CanUserAddRows="False"
-                                         CanUserDeleteRows="False"
-                                         HeadersVisibility="Column"
-                                         SelectionMode="Single"
-                                         GridLinesVisibility="None"
-                                         RowStyle="{StaticResource EnvDataGridRowStyle}"
-                                         CellStyle="{StaticResource EnvDataGridCellStyle}"
-                                         Background="{DynamicResource ListViewBackgroundBrush}"
-                                         BorderThickness="0"
-                                         Margin="0">
+                                         Margin="0,0,0,8">
                                 <ui:DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="变量名" Width="250">
+                                    <!-- 类型图标列 - 固定宽度，只显示图标 -->
+                                <DataGridTemplateColumn Header="" Width="32" MinWidth="32" DisplayIndex="0">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ui:SymbolIcon Symbol="Shield24" 
+                                                           Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           ToolTip="系统变量"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <DataGridTemplateColumn Header="变量名" Width="250" MinWidth="200" DisplayIndex="1">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Name}" 
+                                                           VerticalAlignment="Center" 
+                                                           Margin="8,4"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="变量值" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Value}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Value}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Value}" 
+                                                           TextTrimming="CharacterEllipsis" 
+                                                           ToolTip="{Binding Value}" 
+                                                           VerticalAlignment="Center"
+                                                           Margin="8,4"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
