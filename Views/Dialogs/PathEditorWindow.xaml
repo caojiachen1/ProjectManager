@@ -8,9 +8,9 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     Title="编辑路径"
     Width="700"
-    Height="500"
+    Height="600"
     MinWidth="600"
-    MinHeight="400"
+    MinHeight="450"
     WindowStartupLocation="CenterOwner"
     ResizeMode="CanResize"
     ExtendsContentIntoTitleBar="True"
@@ -57,41 +57,66 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 路径列表模式 -->
-                    <ListView Grid.Row="1"
+                    <!-- 路径列表模式 - DataGrid -->
+                    <DataGrid Grid.Row="1"
+                                 x:Name="PathDataGrid"
                                  ItemsSource="{Binding PathItems}"
                                  SelectedItem="{Binding SelectedPathItem}"
-                                 SelectionMode="Single"
-                                 BorderThickness="1"
-                                 BorderBrush="{DynamicResource ControlElevationBorderBrush}"
                                  MouseDoubleClick="PathListView_MouseDoubleClick"
-                                 Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="路径" Width="400">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path}" 
-                                                       ToolTip="{Binding Path}"
-                                                       TextTrimming="CharacterEllipsis"
+                                 KeyDown="PathDataGrid_KeyDown"
+                                 Visibility="{Binding IsListMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 Style="{StaticResource CleanDataGridStyle}"
+                                 AutoGenerateColumns="False"
+                                 Margin="0,0,0,8">
+                        <DataGrid.Columns>
+                            <!-- 路径列 - 使用星号宽度占据剩余空间，设置DisplayIndex -->
+                            <DataGridTemplateColumn Header="目录" Width="*" MinWidth="200" DisplayIndex="0">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path}" 
+                                                   ToolTip="{Binding Path}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,4"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <!-- 状态列 - 固定宽度，只显示图标，设置DisplayIndex保持在前面 -->
+                            <DataGridTemplateColumn Header="可用" Width="50" MinWidth="50" DisplayIndex="1">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
+                                                       Foreground="{Binding StatusColor}"
                                                        VerticalAlignment="Center"
-                                                       Margin="8,4"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="状态" Width="80">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
-                                                           Foreground="{Binding StatusColor}"
-                                                           VerticalAlignment="Center"
-                                                           Margin="4,0"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                                                       HorizontalAlignment="Center"
+                                                       ToolTip="{Binding StatusText}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="编辑" Command="{Binding EditCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Edit24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="浏览" Command="{Binding BrowseCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="删除" Command="{Binding DeleteCommand}">
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Delete24"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
 
                     <!-- 文本编辑模式 -->
                     <ui:TextBox Grid.Row="1"

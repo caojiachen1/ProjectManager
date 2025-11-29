@@ -10,6 +10,7 @@ using ProjectManager.ViewModels.Pages;
 using ProjectManager.ViewModels.Windows;
 using ProjectManager.Views.Pages;
 using ProjectManager.Views.Windows;
+using ProjectManager.Helpers;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 
@@ -132,6 +133,9 @@ namespace ProjectManager
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
+            // Suppress known WPF DataGrid binding errors (CellsPanelHorizontalOffset issue)
+            DataGridBindingErrorSuppressor.Initialize();
+            
             await _host.StartAsync();
 
             // 注册全局未处理异常处理

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -250,6 +251,31 @@ namespace ProjectManager.ViewModels.Dialogs
             }
         }
 
+        // 当SelectedPathItem改变时，通知相关的计算属性更新
+        partial void OnSelectedPathItemChanged(PathItem? value)
+        {
+            OnPropertyChanged(nameof(HasSelection));
+            OnPropertyChanged(nameof(CanMoveUp));
+            OnPropertyChanged(nameof(CanMoveDown));
+        }
+
+        // 当PathItems集合改变时，通知相关的计算属性更新
+        partial void OnPathItemsChanged(ObservableCollection<PathItem> value)
+        {
+            OnPropertyChanged(nameof(CanMoveUp));
+            OnPropertyChanged(nameof(CanMoveDown));
+            
+            // 如果集合实现了INotifyCollectionChanged，订阅其CollectionChanged事件
+            if (value != null)
+            {
+                value.CollectionChanged += (sender, e) =>
+                {
+                    OnPropertyChanged(nameof(CanMoveUp));
+                    OnPropertyChanged(nameof(CanMoveDown));
+                };
+            }
+        }
+
         // 计算属性
         public bool HasSelection => SelectedPathItem != null;
         public bool CanMoveUp => SelectedPathItem != null && PathItems.IndexOf(SelectedPathItem) > 0;
@@ -276,6 +302,14 @@ namespace ProjectManager.ViewModels.Dialogs
             PathStatus.NotFound => "Warning24",
             PathStatus.Invalid => "ErrorCircle24",
             _ => "QuestionCircle24"
+        };
+
+        public string StatusText => Status switch
+        {
+            PathStatus.Valid => "有效",
+            PathStatus.NotFound => "未找到",
+            PathStatus.Invalid => "无效",
+            _ => "未知"
         };
 
         public Brush StatusColor => GetStatusBrush(Status);
