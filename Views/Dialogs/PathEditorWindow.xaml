@@ -84,7 +84,7 @@
                             </DataGridTemplateColumn>
                             
                             <!-- 状态列 - 固定宽度，只显示图标，设置DisplayIndex保持在前面 -->
-                            <DataGridTemplateColumn Header="可用" Width="50" MinWidth="50" DisplayIndex="1">
+                            <DataGridTemplateColumn Header="可用" Width="50" MinWidth="50" DisplayIndex="1" CanUserResize="False">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ui:SymbolIcon Symbol="{Binding StatusIcon}" 
