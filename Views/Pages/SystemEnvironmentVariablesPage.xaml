@@ -153,7 +153,14 @@
                                              KeyDown="UserVariableDataGrid_KeyDown"
                                              AutoGenerateColumns="False"
                                              Margin="0,0,0,8"
-                                             ColumnHeaderStyle="{StaticResource SingleGripperColumnHeaderStyle}">
+                                             ColumnHeaderStyle="{StaticResource SingleGripperColumnHeaderStyle}"
+                                             CanUserAddRows="False"
+                                             CanUserDeleteRows="False"
+                                             IsReadOnly="True"
+                                             RowHeaderWidth="0"
+                                             RowStyle="{StaticResource EnvDataGridRowStyle}"
+                                             CellStyle="{StaticResource EnvDataGridCellStyle}"
+                                             SelectionMode="Single">
                                     <ui:DataGrid.Columns>
                                         <!-- 类型图标列 - 固定宽度，只显示图标 -->
                                     <DataGridTemplateColumn Header="" Width="32" MinWidth="32" DisplayIndex="0">
@@ -228,7 +235,14 @@
                                          KeyDown="SystemVariableDataGrid_KeyDown"
                                          AutoGenerateColumns="False"
                                          Margin="0,0,0,8"
-                                         ColumnHeaderStyle="{StaticResource SingleGripperColumnHeaderStyle}">
+                                         ColumnHeaderStyle="{StaticResource SingleGripperColumnHeaderStyle}"
+                                         CanUserAddRows="False"
+                                         CanUserDeleteRows="False"
+                                         IsReadOnly="True"
+                                         RowHeaderWidth="0"
+                                         RowStyle="{StaticResource EnvDataGridRowStyle}"
+                                         CellStyle="{StaticResource EnvDataGridCellStyle}"
+                                         SelectionMode="Single">
                                 <ui:DataGrid.Columns>
                                     <!-- 类型图标列 - 固定宽度，只显示图标 -->
                                 <DataGridTemplateColumn Header="" Width="32" MinWidth="32" DisplayIndex="0">
