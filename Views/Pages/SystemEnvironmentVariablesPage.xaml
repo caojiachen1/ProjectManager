@@ -102,7 +102,6 @@
                                              SelectedItem="{Binding SelectedUserVariable}"
                                              MouseDoubleClick="UserVariableListView_MouseDoubleClick"
                                              KeyDown="UserVariableDataGrid_KeyDown"
-                                             Style="{StaticResource CleanDataGridStyle}"
                                              AutoGenerateColumns="False"
                                              Margin="0,0,0,8">
                                     <ui:DataGrid.Columns>
@@ -177,7 +176,6 @@
                                          SelectedItem="{Binding SelectedSystemVariable}"
                                          MouseDoubleClick="SystemVariableListView_MouseDoubleClick"
                                          KeyDown="SystemVariableDataGrid_KeyDown"
-                                         Style="{StaticResource CleanDataGridStyle}"
                                          AutoGenerateColumns="False"
                                          Margin="0,0,0,8">
                                 <ui:DataGrid.Columns>
