@@ -37,6 +37,10 @@
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
             <converters:CellsPanelOffsetConverter x:Key="CellsPanelOffsetConverter"/>
             
+            <!-- 自定义深灰色刷子用于DataGrid选中状态 -->
+            <SolidColorBrush x:Key="DataGridSelectedBackgroundBrush" Color="#252525" />
+            <SolidColorBrush x:Key="DataGridSelectedForegroundBrush" Color="#FFFFFF" />
+            
             <!-- Clean DataGrid style without the problematic CellsPanelHorizontalOffset binding -->
             <Style x:Key="CleanDataGridStyle" TargetType="DataGrid">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
@@ -59,6 +63,12 @@
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Margin" Value="0"/>
                             <Setter Property="Padding" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource DataGridSelectedBackgroundBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource DataGridSelectedForegroundBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </Setter.Value>
                 </Setter>
@@ -68,6 +78,17 @@
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Padding" Value="6,4"/>
                             <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource DataGridSelectedForegroundBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsEditing" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource DataGridSelectedForegroundBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </Setter.Value>
                 </Setter>
