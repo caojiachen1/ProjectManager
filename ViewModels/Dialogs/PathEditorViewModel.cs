@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -247,6 +248,31 @@ namespace ProjectManager.ViewModels.Dialogs
                         LoadPathItems(viewModel.PathText);
                     }
                 }
+            }
+        }
+
+        // 当SelectedPathItem改变时，通知相关的计算属性更新
+        partial void OnSelectedPathItemChanged(PathItem? value)
+        {
+            OnPropertyChanged(nameof(HasSelection));
+            OnPropertyChanged(nameof(CanMoveUp));
+            OnPropertyChanged(nameof(CanMoveDown));
+        }
+
+        // 当PathItems集合改变时，通知相关的计算属性更新
+        partial void OnPathItemsChanged(ObservableCollection<PathItem> value)
+        {
+            OnPropertyChanged(nameof(CanMoveUp));
+            OnPropertyChanged(nameof(CanMoveDown));
+            
+            // 如果集合实现了INotifyCollectionChanged，订阅其CollectionChanged事件
+            if (value != null)
+            {
+                value.CollectionChanged += (sender, e) =>
+                {
+                    OnPropertyChanged(nameof(CanMoveUp));
+                    OnPropertyChanged(nameof(CanMoveDown));
+                };
             }
         }
 
