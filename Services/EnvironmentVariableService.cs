@@ -3,15 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 using ProjectManager.Models;
 
 namespace ProjectManager.Services
 {
     public class EnvironmentVariableService
     {
+        // Windows API 导入
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SendMessageTimeout(
+            IntPtr hWnd,
+            uint Msg,
+            IntPtr wParam,
+            string lParam,
+            uint fuFlags,
+            uint uTimeout,
+            out IntPtr lpdwResult);
         /// <summary>
         /// 设置用户环境变量（不需要管理员权限）
         /// </summary>
@@ -37,25 +49,18 @@ namespace ProjectManager.Services
         {
             try
             {
-                // 使用setx命令设置系统环境变量
-                string escapedValue = EscapeArgument(value);
-                
-                var startInfo = new ProcessStartInfo
+                // 使用注册表直接设置系统环境变量
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", true))
                 {
-                    FileName = "setx",
-                    Arguments = $"\"{name}\" \"{escapedValue}\" /M",
-                    Verb = "runas", // 请求管理员权限
-                    UseShellExecute = !HasAdminPrivileges(), // 有权限时静默，没权限时弹UAC
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = HasAdminPrivileges(),
-                    RedirectStandardError = HasAdminPrivileges()
-                };
-
-                using (var process = Process.Start(startInfo))
-                {
-                    process?.WaitForExit();
-                    return process?.ExitCode == 0;
+                    if (key != null)
+                    {
+                        key.SetValue(name, value, RegistryValueKind.String);
+                        // 广播环境变量变更通知
+                        BroadcastEnvironmentChange();
+                        return true;
+                    }
                 }
+                return false;
             }
             catch (Exception ex)
             {
@@ -71,23 +76,34 @@ namespace ProjectManager.Services
         {
             try
             {
-                string escapedValue = EscapeArgument(value);
-                
-                var startInfo = new ProcessStartInfo
+                if (HasAdminPrivileges())
                 {
-                    FileName = "setx",
-                    Arguments = $"\"{name}\" \"{escapedValue}\" /M",
-                    Verb = "runas", // 触发UAC
-                    UseShellExecute = !HasAdminPrivileges(), // 有权限时静默，没权限时弹UAC
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = HasAdminPrivileges(),
-                    RedirectStandardError = HasAdminPrivileges()
-                };
+                    // 如果已有管理员权限，直接设置
+                    return SetSystemVariable(name, value);
+                }
+                else
+                {
+                    // 使用reg命令通过UAC提权设置注册表
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "reg",
+                        Arguments = $"add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\" /v \"{name}\" /d \"{value}\" /f",
+                        Verb = "runas", // 触发UAC
+                        UseShellExecute = true,
+                        CreateNoWindow = true
+                    };
 
-                using (var process = Process.Start(startInfo))
-                {
-                    process?.WaitForExit();
-                    return process?.ExitCode == 0;
+                    using (var process = Process.Start(startInfo))
+                    {
+                        process?.WaitForExit();
+                        if (process?.ExitCode == 0)
+                        {
+                            // 广播环境变量变更通知
+                            BroadcastEnvironmentChange();
+                            return true;
+                        }
+                        return false;
+                    }
                 }
             }
             catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
@@ -249,36 +265,15 @@ namespace ProjectManager.Services
         {
             try
             {
-                // 使用 setx 命令触发系统刷新环境变量
-                // 实际上 setx 任何变量都会广播 WM_SETTINGCHANGE
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = "setx",
-                    Arguments = "_DUMMY_VAR_ \"1\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                using (var process = Process.Start(startInfo))
-                {
-                    process?.WaitForExit();
-                }
-
-                // 删除刚刚创建的 dummy 变量
-                startInfo = new ProcessStartInfo
-                {
-                    FileName = "reg",
-                    Arguments = "delete \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\" /v _DUMMY_VAR_ /f",
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using (var process = Process.Start(startInfo))
-                {
-                    process?.WaitForExit();
-                }
+                // 使用 Windows API 广播 WM_SETTINGCHANGE 消息
+                // 通知所有窗口环境变量已更改
+                IntPtr hwndBroadcast = new IntPtr(0xFFFF); // HWND_BROADCAST
+                const int WM_SETTINGCHANGE = 0x001A;
+                const int SMTO_ABORTIFHUNG = 0x0002;
+                
+                // 发送消息到所有窗口
+                SendMessageTimeout(hwndBroadcast, WM_SETTINGCHANGE, IntPtr.Zero, "Environment", 
+                    SMTO_ABORTIFHUNG, 5000, out IntPtr _);
             }
             catch (Exception ex)
             {
