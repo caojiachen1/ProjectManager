@@ -12,9 +12,15 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ProjectManager.Views.Pages
 {
-    public partial class SystemEnvironmentVariablesPage : INavigableView<SystemEnvironmentVariablesViewModel>
+    public partial class SystemEnvironmentVariablesPage : INavigableView<SystemEnvironmentVariablesViewModel>, INavigationAware
     {
         public SystemEnvironmentVariablesViewModel ViewModel { get; }
+        
+        // 缓存视觉树查找结果
+        private Grid? _cachedProjectsHost;
+        private Grid? _cachedPerformanceHost;
+        private Grid? _cachedEnvHost;
+        private bool _toolbarCacheInitialized = false;
 
         public SystemEnvironmentVariablesPage(SystemEnvironmentVariablesViewModel viewModel)
         {
@@ -25,52 +31,70 @@ namespace ProjectManager.Views.Pages
             // Listen for tunneling mouse-down and detect double-clicks (use ClickCount) to robustly catch double-clicks
             AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(OnAnyPreviewMouseLeftButtonDown), true);
         }
+        
+        public void OnNavigatedTo()
+        {
+            // 异步初始化数据
+            _ = ViewModel.EnsureInitializedAsync();
+        }
+
+        public void OnNavigatedFrom() { }
+
+        public async Task OnNavigatedToAsync()
+        {
+            await ViewModel.EnsureInitializedAsync();
+        }
+
+        public Task OnNavigatedFromAsync() => Task.CompletedTask;
 
         private void SystemEnvironmentVariablesPage_Loaded(object sender, RoutedEventArgs e)
         {
             var mainWindow = Application.Current.MainWindow as Windows.MainWindow;
             if (mainWindow == null) return;
 
-            // 隐藏其他工具栏
-            var projectsHost = FindChildByName<Grid>(mainWindow, "ProjectsToolbarHost");
-            var performanceHost = FindChildByName<Grid>(mainWindow, "PerformanceToolbarHost");
-            if (projectsHost != null)
+            // 使用缓存的视觉树查找结果
+            if (!_toolbarCacheInitialized)
             {
-                projectsHost.Visibility = Visibility.Collapsed;
+                _cachedProjectsHost = FindChildByName<Grid>(mainWindow, "ProjectsToolbarHost");
+                _cachedPerformanceHost = FindChildByName<Grid>(mainWindow, "PerformanceToolbarHost");
+                _cachedEnvHost = FindChildByName<Grid>(mainWindow, "EnvironmentVariablesToolbarHost");
+                _toolbarCacheInitialized = true;
             }
-            if (performanceHost != null)
+
+            // 隐藏其他工具栏
+            if (_cachedProjectsHost != null)
             {
-                performanceHost.Visibility = Visibility.Collapsed;
+                _cachedProjectsHost.Visibility = Visibility.Collapsed;
+            }
+            if (_cachedPerformanceHost != null)
+            {
+                _cachedPerformanceHost.Visibility = Visibility.Collapsed;
             }
 
             // 显示环境变量工具栏
-            var envHost = FindChildByName<Grid>(mainWindow, "EnvironmentVariablesToolbarHost");
-            if (envHost == null) return;
+            if (_cachedEnvHost == null) return;
 
             // 如果还没有工具栏则创建
-            if (envHost.Children.OfType<EnvironmentVariablesHeaderToolbar>().FirstOrDefault() is not EnvironmentVariablesHeaderToolbar toolbar)
+            if (_cachedEnvHost.Children.OfType<EnvironmentVariablesHeaderToolbar>().FirstOrDefault() is not EnvironmentVariablesHeaderToolbar toolbar)
             {
                 toolbar = new EnvironmentVariablesHeaderToolbar();
                 toolbar.DataContext = this.DataContext;
-                envHost.Children.Add(toolbar);
+                _cachedEnvHost.Children.Add(toolbar);
             }
             else
             {
                 toolbar.DataContext = this.DataContext;
             }
 
-            envHost.Visibility = Visibility.Visible;
+            _cachedEnvHost.Visibility = Visibility.Visible;
         }
 
         private void SystemEnvironmentVariablesPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Application.Current.MainWindow as Windows.MainWindow;
-            if (mainWindow == null) return;
-
-            var envHost = FindChildByName<Grid>(mainWindow, "EnvironmentVariablesToolbarHost");
-            if (envHost == null) return;
-
-            envHost.Visibility = Visibility.Collapsed;
+            if (_cachedEnvHost != null)
+            {
+                _cachedEnvHost.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void UserVariableListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)

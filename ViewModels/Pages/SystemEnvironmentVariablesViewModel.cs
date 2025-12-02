@@ -23,6 +23,9 @@ namespace ProjectManager.ViewModels.Pages
         private readonly EnvironmentVariableService _envService;
         private readonly IErrorDisplayService _errorDisplayService;
         private bool _isUpdatingSelection; // 防止递归更新的标志
+        private bool _isInitialized = false;
+        private CancellationTokenSource? _filterDebounceCts;
+        private readonly TimeSpan _filterDebounceDelay = TimeSpan.FromMilliseconds(100);
 
         [ObservableProperty]
         private ObservableCollection<SystemEnvironmentVariable> _userVariables = new();
@@ -53,6 +56,9 @@ namespace ProjectManager.ViewModels.Pages
 
         [ObservableProperty]
         private ICollectionView? _filteredSystemVariables;
+        
+        [ObservableProperty]
+        private bool _isLoading = false;
 
         public bool HasUserVariables => UserVariables.Count > 0;
         public bool HasSystemVariables => SystemVariables.Count > 0;
@@ -71,34 +77,68 @@ namespace ProjectManager.ViewModels.Pages
             FilteredSystemVariables = CollectionViewSource.GetDefaultView(SystemVariables);
             FilteredSystemVariables.Filter = FilterSystemVariables;
 
-            LoadEnvironmentVariables();
+            // 延迟加载，不在构造函数中执行
         }
 
-        private void LoadEnvironmentVariables()
+        /// <summary>
+        /// 确保环境变量已加载
+        /// </summary>
+        public async Task EnsureInitializedAsync()
         {
+            if (_isInitialized) return;
+            await LoadEnvironmentVariablesAsync();
+            _isInitialized = true;
+        }
+
+        /// <summary>
+        /// 异步加载环境变量
+        /// </summary>
+        private async Task LoadEnvironmentVariablesAsync()
+        {
+            IsLoading = true;
             try
             {
+                // 在后台线程加载环境变量
+                var (userVarsList, systemVarsList) = await Task.Run(() =>
+                {
+                    var userVars = new List<SystemEnvironmentVariable>();
+                    var systemVars = new List<SystemEnvironmentVariable>();
+
+                    // 加载用户环境变量
+                    var userEnvVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+                    foreach (System.Collections.DictionaryEntry entry in userEnvVars)
+                    {
+                        userVars.Add(new SystemEnvironmentVariable(
+                            entry.Key.ToString() ?? string.Empty,
+                            entry.Value?.ToString() ?? string.Empty,
+                            false));
+                    }
+
+                    // 加载系统环境变量
+                    var sysEnvVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+                    foreach (System.Collections.DictionaryEntry entry in sysEnvVars)
+                    {
+                        systemVars.Add(new SystemEnvironmentVariable(
+                            entry.Key.ToString() ?? string.Empty,
+                            entry.Value?.ToString() ?? string.Empty,
+                            true));
+                    }
+
+                    return (userVars, systemVars);
+                });
+
+                // 在UI线程更新集合
                 UserVariables.Clear();
                 SystemVariables.Clear();
 
-                // 加载用户环境变量
-                var userVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
-                foreach (System.Collections.DictionaryEntry entry in userVars)
+                foreach (var v in userVarsList)
                 {
-                    UserVariables.Add(new SystemEnvironmentVariable(
-                        entry.Key.ToString() ?? string.Empty,
-                        entry.Value?.ToString() ?? string.Empty,
-                        false));
+                    UserVariables.Add(v);
                 }
 
-                // 加载系统环境变量
-                var systemVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-                foreach (System.Collections.DictionaryEntry entry in systemVars)
+                foreach (var v in systemVarsList)
                 {
-                    SystemVariables.Add(new SystemEnvironmentVariable(
-                        entry.Key.ToString() ?? string.Empty,
-                        entry.Value?.ToString() ?? string.Empty,
-                        true));
+                    SystemVariables.Add(v);
                 }
 
                 // 更新计数
@@ -112,6 +152,18 @@ namespace ProjectManager.ViewModels.Pages
             {
                 Debug.WriteLine($"加载环境变量时出错: {ex.Message}");
             }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 同步加载环境变量（用于刷新操作）
+        /// </summary>
+        private void LoadEnvironmentVariables()
+        {
+            _ = LoadEnvironmentVariablesAsync();
         }
 
         private bool FilterUserVariables(object obj)
@@ -124,9 +176,8 @@ namespace ProjectManager.ViewModels.Pages
 
             if (!string.IsNullOrEmpty(SearchText))
             {
-                var searchLower = SearchText.ToLower();
-                return variable.Name.ToLower().Contains(searchLower) ||
-                       variable.Value.ToLower().Contains(searchLower);
+                return variable.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                       variable.Value.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
             }
 
             return true;
@@ -142,9 +193,8 @@ namespace ProjectManager.ViewModels.Pages
 
             if (!string.IsNullOrEmpty(SearchText))
             {
-                var searchLower = SearchText.ToLower();
-                return variable.Name.ToLower().Contains(searchLower) ||
-                       variable.Value.ToLower().Contains(searchLower);
+                return variable.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                       variable.Value.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
             }
 
             return true;
@@ -152,14 +202,44 @@ namespace ProjectManager.ViewModels.Pages
 
         partial void OnSearchTextChanged(string value)
         {
-            FilteredUserVariables?.Refresh();
-            FilteredSystemVariables?.Refresh();
+            DebouncedRefreshFilter();
         }
 
         partial void OnSelectedFilterIndexChanged(int value)
         {
+            // 筛选器立即响应
             FilteredUserVariables?.Refresh();
             FilteredSystemVariables?.Refresh();
+        }
+
+        /// <summary>
+        /// 防抖刷新过滤器
+        /// </summary>
+        private void DebouncedRefreshFilter()
+        {
+            _filterDebounceCts?.Cancel();
+            _filterDebounceCts = new CancellationTokenSource();
+            var token = _filterDebounceCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(_filterDebounceDelay, token);
+                    if (!token.IsCancellationRequested)
+                    {
+                        Application.Current?.Dispatcher.Invoke(() =>
+                        {
+                            FilteredUserVariables?.Refresh();
+                            FilteredSystemVariables?.Refresh();
+                        });
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // 忽略取消
+                }
+            }, token);
         }
 
         partial void OnSelectedUserVariableChanged(SystemEnvironmentVariable? value)
@@ -260,9 +340,9 @@ namespace ProjectManager.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void Refresh()
+        private async Task Refresh()
         {
-            LoadEnvironmentVariables();
+            await LoadEnvironmentVariablesAsync();
         }
 
         [RelayCommand]
