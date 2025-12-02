@@ -18,9 +18,12 @@ namespace ProjectManager.Services
         private readonly TerminalService _terminalService;
         private readonly IGitService _gitService;
         private readonly IErrorDisplayService _errorDisplayService;
-        private static readonly TimeSpan GitInfoCacheDuration = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan GitInfoCacheDuration = TimeSpan.FromMinutes(5); // 增加缓存时间
         private readonly ConcurrentDictionary<string, GitInfoCacheEntry> _gitInfoCache = new();
         private readonly ConcurrentDictionary<string, Task> _gitInfoRefreshTasks = new();
+        private bool _isInitialized = false;
+        private readonly SemaphoreSlim _initLock = new(1, 1);
+        private readonly SemaphoreSlim _saveLock = new(1, 1); // 防止并发保存
 
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
         public event EventHandler<ProjectPropertyChangedEventArgs>? ProjectPropertyChanged;
@@ -38,26 +41,81 @@ namespace ProjectManager.Services
             _projectsFilePath = Path.Combine(appFolder, "projects.json");
             _projects = new ObservableCollection<Project>();
             _projectsView = new ReadOnlyObservableCollection<Project>(_projects);
-            LoadProjects();
+            // 延迟加载项目，不阻塞构造函数
+            _ = EnsureInitializedAsync();
+        }
+
+        /// <summary>
+        /// 确保项目已初始化加载
+        /// </summary>
+        private async Task EnsureInitializedAsync()
+        {
+            if (_isInitialized) return;
+            
+            await _initLock.WaitAsync();
+            try
+            {
+                if (_isInitialized) return;
+                await LoadProjectsAsync();
+                _isInitialized = true;
+            }
+            finally
+            {
+                _initLock.Release();
+            }
         }
 
         public async Task<List<Project>> GetProjectsAsync()
         {
+            await EnsureInitializedAsync();
             var snapshot = _projects.ToList();
 
+            // 批量处理Git信息，减少单独调用次数
+            var projectsNeedingRefresh = new List<Project>();
             foreach (var project in snapshot)
             {
                 if (!TryApplyCachedGitInfo(project))
                 {
-                    QueueGitInfoRefresh(project);
+                    projectsNeedingRefresh.Add(project);
                 }
             }
 
-            return await Task.FromResult(snapshot);
+            // 异步批量刷新Git信息，不阻塞主流程
+            if (projectsNeedingRefresh.Count > 0)
+            {
+                _ = Task.Run(() => BatchRefreshGitInfoAsync(projectsNeedingRefresh));
+            }
+
+            return snapshot;
+        }
+
+        /// <summary>
+        /// 批量刷新Git信息
+        /// </summary>
+        private async Task BatchRefreshGitInfoAsync(List<Project> projects)
+        {
+            // 限制并发数量以避免过多Git进程
+            var semaphore = new SemaphoreSlim(3);
+            var tasks = projects.Select(async project =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    await RefreshGitInfoCoreAsync(project);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
         }
 
         public async Task<bool> SaveProjectAsync(Project project)
         {
+            await EnsureInitializedAsync();
+            
             // 检查项目名称是否已存在（不包括当前项目本身）
             var existingProjectWithSameName = _projects.FirstOrDefault(p => 
                 p.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase) && p.Id != project.Id);
@@ -86,13 +144,25 @@ namespace ProjectManager.Services
                 _projects.Add(project);
             }
             await SaveProjectsToFile();
-            InvalidateGitInfoCache(project.Id);
-            QueueGitInfoRefresh(project);
+            
+            // 只有在项目路径变更时才刷新Git信息
+            var needsGitRefresh = existingProject == null || 
+                !string.Equals(existingProject.LocalPath, project.LocalPath, StringComparison.OrdinalIgnoreCase);
+            
+            if (needsGitRefresh)
+            {
+                InvalidateGitInfoCache(project.Id);
+                // 异步刷新，不阻塞保存
+                _ = Task.Run(() => RefreshGitInfoCoreAsync(project));
+            }
+            
             return true;
         }
 
         public async Task DeleteProjectAsync(string projectId)
         {
+            await EnsureInitializedAsync();
+            
             var project = _projects.FirstOrDefault(p => p.Id == projectId);
             if (project != null)
             {
@@ -109,7 +179,8 @@ namespace ProjectManager.Services
 
         public async Task<Project?> GetProjectAsync(string projectId)
         {
-            return await Task.FromResult(_projects.FirstOrDefault(p => p.Id == projectId));
+            await EnsureInitializedAsync();
+            return _projects.FirstOrDefault(p => p.Id == projectId);
         }
 
         public Task<bool> UpdateProjectRuntimeStatusAsync(string projectName, Process? process, ProjectStatus status)
@@ -261,6 +332,8 @@ namespace ProjectManager.Services
 
         public async Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects)
         {
+            await EnsureInitializedAsync();
+            
             if (orderedProjects == null) return;
 
             // Rebuild internal list order based on provided sequence of project IDs
@@ -290,13 +363,18 @@ namespace ProjectManager.Services
             await SaveProjectsToFile();
         }
 
-        private void LoadProjects()
+        /// <summary>
+        /// 异步加载项目列表
+        /// </summary>
+        private async Task LoadProjectsAsync()
         {
             try
             {
                 if (!File.Exists(_projectsFilePath)) return;
 
-                var json = File.ReadAllText(_projectsFilePath);
+                var json = await File.ReadAllTextAsync(_projectsFilePath);
+                if (string.IsNullOrWhiteSpace(json)) return;
+
                 var options = new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -304,27 +382,28 @@ namespace ProjectManager.Services
                 var dtoList = JsonSerializer.Deserialize<List<PersistedProject>>(json, options);
                 if (dtoList == null) return;
 
-                foreach (var existing in _projects.ToList())
+                await RunOnUiThreadAsync(() =>
                 {
-                    DetachProject(existing);
-                }
-                _projects.Clear();
+                    foreach (var existing in _projects.ToList())
+                    {
+                        DetachProject(existing);
+                    }
+                    _projects.Clear();
 
-                foreach (var dto in dtoList)
-                {
-                    try
+                    foreach (var dto in dtoList)
                     {
-                        var model = ProjectPersistenceMapper.ToModel(dto);
-                        AttachProject(model);
-                        _projects.Add(model);
+                        try
+                        {
+                            var model = ProjectPersistenceMapper.ToModel(dto);
+                            AttachProject(model);
+                            _projects.Add(model);
+                        }
+                        catch (Exception mapEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"映射项目失败 (ID={dto.Id}): {mapEx.Message}");
+                        }
                     }
-                    catch (Exception mapEx)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"映射项目失败 (ID={dto.Id}): {mapEx.Message}");
-                        // 显示映射错误
-                        _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目映射失败: {mapEx.Message}", "项目加载错误"));
-                    }
-                }
+                });
             }
             catch (Exception ex)
             {
@@ -336,6 +415,8 @@ namespace ProjectManager.Services
 
         private async Task SaveProjectsToFile()
         {
+            // 使用信号量防止并发保存
+            await _saveLock.WaitAsync();
             try
             {
                 var dtoList = _projects.Select(ProjectPersistenceMapper.ToDto).ToList();
@@ -352,7 +433,17 @@ namespace ProjectManager.Services
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
                 var json = JsonSerializer.Serialize(dtoList, options);
-                await File.WriteAllTextAsync(_projectsFilePath, json);
+                
+                // 使用临时文件写入，然后原子替换，避免文件损坏
+                var tempPath = _projectsFilePath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json);
+                
+                // 删除旧文件并重命名临时文件
+                if (File.Exists(_projectsFilePath))
+                {
+                    File.Delete(_projectsFilePath);
+                }
+                File.Move(tempPath, _projectsFilePath);
             }
             catch (Exception ex)
             {
@@ -360,17 +451,19 @@ namespace ProjectManager.Services
                 // 显示保存错误
                 _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"保存项目失败: {ex.Message}", "项目保存错误"));
             }
+            finally
+            {
+                _saveLock.Release();
+            }
         }
-        private void QueueGitInfoRefresh(Project project)
-        {
-            if (string.IsNullOrWhiteSpace(project?.LocalPath))
-                return;
-
-            _gitInfoRefreshTasks.GetOrAdd(project.Id, _ => RefreshGitInfoCoreAsync(project));
-        }
-
+        /// <summary>
+        /// 尝试应用缓存的Git信息
+        /// </summary>
         private bool TryApplyCachedGitInfo(Project project)
         {
+            if (string.IsNullOrWhiteSpace(project?.LocalPath))
+                return true; // 没有路径的项目不需要Git信息
+            
             if (_gitInfoCache.TryGetValue(project.Id, out var entry))
             {
                 if (DateTime.UtcNow - entry.Timestamp <= GitInfoCacheDuration)

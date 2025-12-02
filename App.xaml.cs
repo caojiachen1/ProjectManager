@@ -22,11 +22,11 @@ namespace ProjectManager
     public partial class App
     {
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
-        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-        // https://docs.microsoft.com/dotnet/core/extensions/configuration
-        // https://docs.microsoft.com/dotnet/core/extensions/logging
-        private static readonly IHost _host = Host
+        // 使用Lazy延迟初始化Host以加快应用启动
+        private static readonly Lazy<IHost> _hostLazy = new Lazy<IHost>(() => CreateHost(), LazyThreadSafetyMode.ExecutionAndPublication);
+        private static IHost _host => _hostLazy.Value;
+
+        private static IHost CreateHost() => Host
             .CreateDefaultBuilder()
             .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory) ?? string.Empty); })
             .ConfigureServices((context, services) =>
@@ -123,10 +123,7 @@ namespace ProjectManager
         /// <summary>
         /// Gets services.
         /// </summary>
-        public static IServiceProvider Services
-        {
-            get { return _host.Services; }
-        }
+        public static IServiceProvider Services => _host.Services;
 
         /// <summary>
         /// Occurs when the application is loading.

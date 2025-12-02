@@ -24,6 +24,9 @@ namespace ProjectManager.ViewModels.Pages
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IErrorDisplayService _errorDisplayService;
+        private CancellationTokenSource? _filterDebounceCts;
+        private readonly TimeSpan _filterDebounceDelay = TimeSpan.FromMilliseconds(100);
+        private bool _isNavigatedTo = false;
 
         [ObservableProperty]
         private ICollectionView? _filteredProjects;
@@ -70,25 +73,52 @@ namespace ProjectManager.ViewModels.Pages
 
         partial void OnSearchTextChanged(string value)
         {
-            FilteredProjects?.Refresh();
+            DebouncedRefreshFilter();
         }
 
         partial void OnSelectedStatusFilterChanged(string? value)
         {
+            // 状态过滤器立即响应，不需要防抖
             FilteredProjects?.Refresh();
+        }
+
+        /// <summary>
+        /// 防抖刷新过滤器
+        /// </summary>
+        private void DebouncedRefreshFilter()
+        {
+            _filterDebounceCts?.Cancel();
+            _filterDebounceCts = new CancellationTokenSource();
+            var token = _filterDebounceCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(_filterDebounceDelay, token);
+                    if (!token.IsCancellationRequested)
+                    {
+                        Application.Current?.Dispatcher.Invoke(() => FilteredProjects?.Refresh());
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // 忽略取消
+                }
+            }, token);
         }
 
         private bool FilterProjects(object obj)
         {
             if (obj is not Project project) return false;
 
-            // 搜索文本筛选
+            // 搜索文本筛选 - 使用OrdinalIgnoreCase替代ToLower以提高性能
             if (!string.IsNullOrEmpty(SearchText))
             {
-                var searchLower = SearchText.ToLower();
-                if (!project.Name.ToLower().Contains(searchLower) &&
-                    !project.Description.ToLower().Contains(searchLower) &&
-                    !project.Framework.ToLower().Contains(searchLower))
+                var hasMatch = project.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                               project.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                               project.Framework.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+                if (!hasMatch)
                 {
                     return false;
                 }
@@ -457,26 +487,37 @@ namespace ProjectManager.ViewModels.Pages
 
         private void OnProjectPropertyChanged(object? sender, ProjectPropertyChangedEventArgs e)
         {
+            // 只有在导航到此页面时才响应属性变化
+            if (!_isNavigatedTo) return;
+            
             if (e.PropertyName is nameof(Project.Name) or nameof(Project.Description) or nameof(Project.Framework) or nameof(Project.Status))
             {
-                Application.Current.Dispatcher.Invoke(() => FilteredProjects?.Refresh());
+                DebouncedRefreshFilter();
             }
         }
 
         public void OnNavigatedTo()
         {
+            _isNavigatedTo = true;
             _ = LoadProjects();
         }
 
-        public void OnNavigatedFrom() { }
+        public void OnNavigatedFrom()
+        {
+            _isNavigatedTo = false;
+            _filterDebounceCts?.Cancel();
+        }
 
         public async Task OnNavigatedToAsync()
         {
+            _isNavigatedTo = true;
             await LoadProjects();
         }
 
         public async Task OnNavigatedFromAsync()
         {
+            _isNavigatedTo = false;
+            _filterDebounceCts?.Cancel();
             await Task.CompletedTask;
         }
 

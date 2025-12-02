@@ -41,6 +41,13 @@ namespace ProjectManager.Models
         private Process? _process;
         private readonly object _lockObject = new();
         private bool _nextAtLineStart = true;
+        
+        // 输出缓冲区，用于批量处理
+        private readonly List<string> _outputBuffer = new();
+        private DateTime _lastFlushTime = DateTime.MinValue;
+        private readonly TimeSpan _flushInterval = TimeSpan.FromMilliseconds(50);
+        private System.Threading.Timer? _flushTimer;
+        private const int MaxOutputLines = 5000; // 限制最大输出行数
 
         [JsonIgnore]
         public Process? Process
@@ -55,13 +62,7 @@ namespace ProjectManager.Models
         /// <param name="line">输出内容</param>
         public void AddOutputLine(string line)
         {
-            lock (_lockObject)
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    OutputLines.Add($"[{DateTime.Now:HH:mm:ss}] {line}");
-                });
-            }
+            AddToBuffer($"[{DateTime.Now:HH:mm:ss}] {line}");
         }
 
         /// <summary>
@@ -72,12 +73,83 @@ namespace ProjectManager.Models
         public void AddOutputRaw(string fragment)
         {
             if (fragment == null) return;
+            AddToBuffer(fragment);
+        }
+
+        /// <summary>
+        /// 添加到缓冲区并计划刷新
+        /// </summary>
+        private void AddToBuffer(string content)
+        {
             lock (_lockObject)
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                _outputBuffer.Add(content);
+                
+                // 如果缓冲区较大或距离上次刷新超过间隔，立即刷新
+                var now = DateTime.Now;
+                if (_outputBuffer.Count >= 20 || (now - _lastFlushTime) >= _flushInterval)
                 {
-                    OutputLines.Add(fragment);
-                });
+                    FlushBuffer();
+                }
+                else if (_flushTimer == null)
+                {
+                    // 启动定时刷新
+                    _flushTimer = new System.Threading.Timer(
+                        _ => FlushBuffer(),
+                        null,
+                        _flushInterval,
+                        System.Threading.Timeout.InfiniteTimeSpan);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新缓冲区到UI
+        /// </summary>
+        private void FlushBuffer()
+        {
+            List<string>? toAdd = null;
+            lock (_lockObject)
+            {
+                if (_outputBuffer.Count == 0) return;
+                
+                toAdd = new List<string>(_outputBuffer);
+                _outputBuffer.Clear();
+                _lastFlushTime = DateTime.Now;
+                
+                // 停止定时器
+                _flushTimer?.Dispose();
+                _flushTimer = null;
+            }
+
+            if (toAdd != null && toAdd.Count > 0)
+            {
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher != null && !dispatcher.CheckAccess())
+                {
+                    dispatcher.BeginInvoke(() => AddOutputLinesToCollection(toAdd));
+                }
+                else
+                {
+                    AddOutputLinesToCollection(toAdd);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将输出行添加到集合
+        /// </summary>
+        private void AddOutputLinesToCollection(List<string> lines)
+        {
+            foreach (var line in lines)
+            {
+                OutputLines.Add(line);
+            }
+            
+            // 限制最大行数，防止内存溢出
+            while (OutputLines.Count > MaxOutputLines)
+            {
+                OutputLines.RemoveAt(0);
             }
         }
 
@@ -96,6 +168,7 @@ namespace ProjectManager.Models
                 return;
             }
 
+            string stamped;
             lock (_lockObject)
             {
                 var nowTag = $"[{DateTime.Now:HH:mm:ss}] ";
@@ -124,12 +197,10 @@ namespace ProjectManager.Models
                     }
                 }
 
-                var stamped = sb.ToString();
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    OutputLines.Add(stamped);
-                });
+                stamped = sb.ToString();
             }
+            
+            AddToBuffer(stamped);
         }
 
         /// <summary>
@@ -139,11 +210,20 @@ namespace ProjectManager.Models
         {
             lock (_lockObject)
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    OutputLines.Clear();
-                    _nextAtLineStart = true;
-                });
+                _outputBuffer.Clear();
+                _flushTimer?.Dispose();
+                _flushTimer = null;
+                _nextAtLineStart = true;
+            }
+            
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.BeginInvoke(() => OutputLines.Clear());
+            }
+            else
+            {
+                OutputLines.Clear();
             }
         }
 
@@ -154,11 +234,20 @@ namespace ProjectManager.Models
         /// <param name="isRunning">是否运行中</param>
         public void UpdateStatus(string status, bool isRunning)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.BeginInvoke(() =>
+                {
+                    Status = status;
+                    IsRunning = isRunning;
+                });
+            }
+            else
             {
                 Status = status;
                 IsRunning = isRunning;
-            });
+            }
         }
     }
 }

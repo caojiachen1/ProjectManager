@@ -21,6 +21,8 @@ namespace ProjectManager.ViewModels.Pages
         private CancellationTokenSource? _monitoringCts;
 
         private readonly TimeSpan _refreshInterval = TimeSpan.FromSeconds(1);
+        private DateTime _lastRefreshTime = DateTime.MinValue;
+        private readonly object _refreshLock = new();
 
         [ObservableProperty]
         private ObservableCollection<ProjectPerformanceSnapshot> _projectMetrics = new();
@@ -193,23 +195,53 @@ namespace ProjectManager.ViewModels.Pages
 
         private void ApplySnapshots(IList<ProjectPerformanceSnapshot> ordered)
         {
-            ProjectMetrics.Clear();
-            // Normalize GPU values: some sources may provide 0..1 fractions, others 0..100 percentages.
-            foreach (var snapshot in ordered)
+            // 使用增量更新而不是清空重建，减少UI闪烁
+            var existingIds = new HashSet<string>(ProjectMetrics.Select(m => m.ProjectId));
+            var newIds = new HashSet<string>(ordered.Select(m => m.ProjectId));
+            
+            // 移除不再存在的项目
+            for (int i = ProjectMetrics.Count - 1; i >= 0; i--)
             {
+                if (!newIds.Contains(ProjectMetrics[i].ProjectId))
+                {
+                    ProjectMetrics.RemoveAt(i);
+                }
+            }
+
+            // 更新或添加项目
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                var snapshot = ordered[i];
+                
+                // Normalize GPU values
                 if (snapshot.GpuUsagePercent.HasValue)
                 {
                     var v = snapshot.GpuUsagePercent.Value;
-                    // if value looks like a fraction (<= 1), treat as 0..1 and convert to percent
-                    if (v <= 1d)
-                        v = v * 100d;
-
-                    // clamp to 0..100
+                    if (v <= 1d) v = v * 100d;
                     v = Math.Clamp(v, 0d, 100d);
                     snapshot.GpuUsagePercent = Math.Round(v, 1);
                 }
 
-                ProjectMetrics.Add(snapshot);
+                var existingIndex = -1;
+                for (int j = 0; j < ProjectMetrics.Count; j++)
+                {
+                    if (ProjectMetrics[j].ProjectId == snapshot.ProjectId)
+                    {
+                        existingIndex = j;
+                        break;
+                    }
+                }
+
+                if (existingIndex >= 0)
+                {
+                    // 更新现有项目
+                    ProjectMetrics[existingIndex] = snapshot;
+                }
+                else
+                {
+                    // 添加新项目
+                    ProjectMetrics.Add(snapshot);
+                }
             }
 
             TotalProjects = ordered.Count;

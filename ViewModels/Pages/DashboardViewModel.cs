@@ -20,6 +20,9 @@ namespace ProjectManager.ViewModels.Pages
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IErrorDisplayService _errorDisplayService;
+        private CancellationTokenSource? _debounceCts;
+        private readonly TimeSpan _debounceDelay = TimeSpan.FromMilliseconds(150);
+        private bool _isNavigatedTo = false;
 
         [ObservableProperty]
         private int _totalProjects = 0;
@@ -136,10 +139,37 @@ namespace ProjectManager.ViewModels.Pages
 
         private void OnProjectPropertyChanged(object? sender, ProjectPropertyChangedEventArgs e)
         {
+            // 只有在导航到此页面时才响应属性变化
+            if (!_isNavigatedTo) return;
+            
             if (e.PropertyName is nameof(Project.Status) or nameof(Project.LastModified))
             {
-                Application.Current.Dispatcher.Invoke(RecalculateDashboard);
+                // 使用防抖减少频繁刷新
+                DebouncedRecalculateDashboard();
             }
+        }
+
+        private void DebouncedRecalculateDashboard()
+        {
+            _debounceCts?.Cancel();
+            _debounceCts = new CancellationTokenSource();
+            var token = _debounceCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(_debounceDelay, token);
+                    if (!token.IsCancellationRequested)
+                    {
+                        Application.Current?.Dispatcher.Invoke(RecalculateDashboard);
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // 忽略取消
+                }
+            }, token);
         }
 
         private void RecalculateDashboard()
@@ -165,18 +195,26 @@ namespace ProjectManager.ViewModels.Pages
 
         public void OnNavigatedTo()
         {
+            _isNavigatedTo = true;
             _ = LoadDashboardData();
         }
 
-        public void OnNavigatedFrom() { }
+        public void OnNavigatedFrom()
+        {
+            _isNavigatedTo = false;
+            _debounceCts?.Cancel();
+        }
 
         public async Task OnNavigatedToAsync()
         {
+            _isNavigatedTo = true;
             await LoadDashboardData();
         }
 
         public async Task OnNavigatedFromAsync()
         {
+            _isNavigatedTo = false;
+            _debounceCts?.Cancel();
             await Task.CompletedTask;
         }
     }

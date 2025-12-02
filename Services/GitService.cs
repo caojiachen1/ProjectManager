@@ -9,6 +9,7 @@ namespace ProjectManager.Services
         private readonly ISettingsService _settingsService;
         private readonly IErrorDisplayService _errorDisplayService;
         private string? _cachedGitExe;
+        private readonly SemaphoreSlim _gitCommandSemaphore = new(5); // 限制并发Git命令数
 
         public GitService(ISettingsService settingsService, IErrorDisplayService errorDisplayService)
         {
@@ -591,6 +592,7 @@ namespace ProjectManager.Services
 
     private async Task<(bool IsSuccess, string Output)> RunGitCommandAsync(string workingDirectory, string arguments)
         {
+            await _gitCommandSemaphore.WaitAsync();
             try
             {
                 var gitExe = await GetGitExecutableAsync();
@@ -608,16 +610,32 @@ namespace ProjectManager.Services
 
                 process.Start();
                 
-                var output = await process.StandardOutput.ReadToEndAsync();
-                var error = await process.StandardError.ReadToEndAsync();
+                // 使用并行读取避免死锁
+                var outputTask = process.StandardOutput.ReadToEndAsync();
+                var errorTask = process.StandardError.ReadToEndAsync();
                 
-                await process.WaitForExitAsync();
+                // 添加超时限制
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
+                var completedTask = await Task.WhenAny(process.WaitForExitAsync(), timeoutTask);
+                
+                if (completedTask == timeoutTask)
+                {
+                    try { process.Kill(); } catch { }
+                    return (false, "Git命令超时");
+                }
+
+                var output = await outputTask;
+                var error = await errorTask;
 
                 return (process.ExitCode == 0, string.IsNullOrEmpty(error) ? output : error);
             }
             catch (Exception ex)
             {
                 return (false, ex.Message);
+            }
+            finally
+            {
+                _gitCommandSemaphore.Release();
             }
         }
 

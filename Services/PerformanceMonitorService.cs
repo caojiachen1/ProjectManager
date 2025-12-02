@@ -12,6 +12,9 @@ namespace ProjectManager.Services
         private readonly IProjectService _projectService;
         private readonly Dictionary<int, CpuSample> _cpuSamples = new();
         private readonly object _cpuLock = new();
+        private readonly SemaphoreSlim _processQuerySemaphore = new(4); // 限制并发进程查询
+        private double? _cachedTotalMemory;
+        private DateTime _lastMemoryCheck = DateTime.MinValue;
 
         public PerformanceMonitorService(IProjectService projectService)
         {
@@ -22,16 +25,24 @@ namespace ProjectManager.Services
         {
             var projects = await _projectService.GetProjectsAsync();
             cancellationToken.ThrowIfCancellationRequested();
-            var snapshots = new List<ProjectPerformanceSnapshot>(projects.Count);
+            
             var now = DateTime.Now;
-
-            foreach (var project in projects)
+            
+            // 并行处理所有项目的快照
+            var tasks = projects.Select(async project =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var snapshot = CreateSnapshot(project, now);
-                snapshots.Add(snapshot);
-            }
+                await _processQuerySemaphore.WaitAsync(cancellationToken);
+                try
+                {
+                    return CreateSnapshot(project, now);
+                }
+                finally
+                {
+                    _processQuerySemaphore.Release();
+                }
+            });
 
+            var snapshots = await Task.WhenAll(tasks);
             return snapshots;
         }
 
@@ -113,12 +124,21 @@ namespace ProjectManager.Services
 
         private double GetTotalPhysicalMemoryMb()
         {
+            // 缓存总内存值，每10秒刷新一次
+            var now = DateTime.Now;
+            if (_cachedTotalMemory.HasValue && (now - _lastMemoryCheck).TotalSeconds < 10)
+            {
+                return _cachedTotalMemory.Value;
+            }
+
             try
             {
                 var mem = new MEMORYSTATUSEX();
                 if (GlobalMemoryStatusEx(mem))
                 {
-                    return mem.ullTotalPhys / 1024d / 1024d;
+                    _cachedTotalMemory = mem.ullTotalPhys / 1024d / 1024d;
+                    _lastMemoryCheck = now;
+                    return _cachedTotalMemory.Value;
                 }
             }
             catch (Exception ex)
