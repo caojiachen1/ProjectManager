@@ -158,6 +158,7 @@
                                              CanUserDeleteRows="False"
                                              IsReadOnly="True"
                                              RowHeaderWidth="0"
+                                             HeadersVisibility="Column"
                                              RowStyle="{StaticResource EnvDataGridRowStyle}"
                                              CellStyle="{StaticResource EnvDataGridCellStyle}"
                                              SelectionMode="Single">
@@ -240,6 +241,7 @@
                                          CanUserDeleteRows="False"
                                          IsReadOnly="True"
                                          RowHeaderWidth="0"
+                                         HeadersVisibility="Column"
                                          RowStyle="{StaticResource EnvDataGridRowStyle}"
                                          CellStyle="{StaticResource EnvDataGridCellStyle}"
                                          SelectionMode="Single">
