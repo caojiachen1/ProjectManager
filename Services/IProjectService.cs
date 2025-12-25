@@ -16,6 +16,7 @@ namespace ProjectManager.Services
         Task StopProjectAsync(Project project);
         Task<string> GetProjectLogsAsync(string projectId);
         Task<bool> UpdateProjectRuntimeStatusAsync(string projectName, Process? process, ProjectStatus status);
+        Task RefreshAllProjectsGitInfoAsync();
         event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
         event EventHandler<ProjectPropertyChangedEventArgs>? ProjectPropertyChanged;
     }

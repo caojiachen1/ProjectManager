@@ -89,6 +89,18 @@ namespace ProjectManager.Services
             return snapshot;
         }
 
+        public async Task RefreshAllProjectsGitInfoAsync()
+        {
+            await EnsureInitializedAsync();
+            var projects = _projects.ToList();
+            // 强制刷新，忽略缓存
+            foreach (var project in projects)
+            {
+                InvalidateGitInfoCache(project.Id);
+            }
+            await BatchRefreshGitInfoAsync(projects);
+        }
+
         /// <summary>
         /// 批量刷新Git信息
         /// </summary>

@@ -402,11 +402,14 @@ namespace ProjectManager.ViewModels.Pages
                 // 直接导航到终端页面
                 _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
             }
+            
         }
 
         [RelayCommand]
         private async Task Refresh()
         {
+            // 强制刷新所有项目的Git信息
+            await _projectService.RefreshAllProjectsGitInfoAsync();
             await LoadProjects();
         }
 
