@@ -43,6 +43,9 @@ namespace ProjectManager.Models
         private ProjectStatus _status = ProjectStatus.Stopped;
 
         [ObservableProperty]
+        private int? _processId;
+
+        [ObservableProperty]
         [JsonIgnore]
         private Process? _runningProcess;
 

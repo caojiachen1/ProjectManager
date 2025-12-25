@@ -17,6 +17,7 @@ public class PersistedProject
     public DateTime CreatedDate { get; set; } = DateTime.Now;
     public DateTime LastModified { get; set; } = DateTime.Now;
     public ProjectStatus Status { get; set; } = ProjectStatus.Stopped; // 读取时会重置为 Stopped
+    public int? ProcessId { get; set; }
     public string LogOutput { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = new();
     public bool AutoStart { get; set; }
@@ -41,6 +42,7 @@ internal static class ProjectPersistenceMapper
         CreatedDate = p.CreatedDate,
         LastModified = p.LastModified,
         Status = p.Status, // 保存当前状态（读取时会安全处理）
+        ProcessId = p.ProcessId,
         LogOutput = p.LogOutput,
         Tags = new List<string>(p.Tags),
         AutoStart = p.AutoStart,
@@ -64,7 +66,8 @@ internal static class ProjectPersistenceMapper
             Framework = dto.Framework,
             CreatedDate = dto.CreatedDate,
             LastModified = dto.LastModified,
-            Status = ProjectStatus.Stopped, // 启动时不恢复 Running 状态
+            Status = dto.Status, // 尝试恢复状态，后续会验证
+            ProcessId = dto.ProcessId,
             LogOutput = dto.LogOutput,
             Tags = new List<string>(dto.Tags),
             AutoStart = dto.AutoStart,

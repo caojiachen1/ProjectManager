@@ -261,15 +261,23 @@ namespace ProjectManager.Services
                 {
                     // 如果终端会话启动成功，同步项目状态
                     project.RunningProcess = terminalSession.Process;
+                    project.ProcessId = terminalSession.Process?.Id;
                     project.Status = ProjectStatus.Running;
                     
                     // 监听进程退出事件
                     if (terminalSession.Process != null)
                     {
+                        try 
+                        {
+                            terminalSession.Process.EnableRaisingEvents = true;
+                        }
+                        catch { /* Ignore if already exited */ }
+
                         terminalSession.Process.Exited += (sender, e) =>
                         {
                             project.Status = ProjectStatus.Stopped;
                             project.RunningProcess = null;
+                            project.ProcessId = null;
                         };
                     }
                 }
@@ -293,7 +301,8 @@ namespace ProjectManager.Services
 
         public async Task StopProjectAsync(Project project)
         {
-            if (project.Status != ProjectStatus.Running || project.RunningProcess == null)
+            // 允许停止的情况：状态为运行中，或者有残留的进程对象/ID
+            if (project.Status != ProjectStatus.Running && project.RunningProcess == null && project.ProcessId == null)
                 return;
 
             try
@@ -308,19 +317,56 @@ namespace ProjectManager.Services
                     _terminalService.StopSession(terminalSession);
                 }
 
-                project.RunningProcess.Kill(true);
+                // 尝试停止进程对象
+                if (project.RunningProcess != null)
+                {
+                    if (!project.RunningProcess.HasExited)
+                    {
+                        try
+                        {
+                            project.RunningProcess.Kill(true);
+                        }
+                        catch (Exception)
+                        {
+                            // 忽略无法终止已退出进程的错误
+                        }
+                    }
+                }
+                // 如果进程对象为空但有PID（例如重启后），尝试通过PID终止
+                else if (project.ProcessId.HasValue)
+                {
+                    try
+                    {
+                        var p = Process.GetProcessById(project.ProcessId.Value);
+                        p.Kill(true);
+                    }
+                    catch (Exception)
+                    {
+                        // 忽略找不到进程或无法访问的错误
+                    }
+                }
+
                 project.RunningProcess = null;
+                project.ProcessId = null;
                 project.Status = ProjectStatus.Stopped;
                 
                 _ = await SaveProjectAsync(project);
             }
             catch (Exception ex)
             {
-                project.Status = ProjectStatus.Error;
-                project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 停止失败: {ex.Message}\n";
-                
-                // 显示错误消息
-                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目停止失败: {ex.Message}", "项目停止错误"));
+                // 如果是由于进程已退出导致的异常，不应视为错误
+                if (project.RunningProcess == null && project.ProcessId == null)
+                {
+                    project.Status = ProjectStatus.Stopped;
+                }
+                else
+                {
+                    project.Status = ProjectStatus.Error;
+                    project.LogOutput += $"[{DateTime.Now:HH:mm:ss}] 停止失败: {ex.Message}\n";
+                    
+                    // 显示错误消息
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"项目停止失败: {ex.Message}", "项目停止错误"));
+                }
             }
         }
 
@@ -395,6 +441,41 @@ namespace ProjectManager.Services
                         try
                         {
                             var model = ProjectPersistenceMapper.ToModel(dto);
+
+                            // 尝试恢复运行状态
+                            if (model.Status == ProjectStatus.Running && model.ProcessId.HasValue)
+                            {
+                                try
+                                {
+                                    var process = Process.GetProcessById(model.ProcessId.Value);
+                                    if (process != null && !process.HasExited)
+                                    {
+                                        model.RunningProcess = process;
+                                        try { process.EnableRaisingEvents = true; } catch { }
+                                        process.Exited += (s, e) =>
+                                        {
+                                            model.Status = ProjectStatus.Stopped;
+                                            model.RunningProcess = null;
+                                            model.ProcessId = null;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        model.Status = ProjectStatus.Stopped;
+                                        model.ProcessId = null;
+                                    }
+                                }
+                                catch
+                                {
+                                    model.Status = ProjectStatus.Stopped;
+                                    model.ProcessId = null;
+                                }
+                            }
+                            else if (model.Status != ProjectStatus.Stopped)
+                            {
+                                model.Status = ProjectStatus.Stopped;
+                            }
+
                             AttachProject(model);
                             _projects.Add(model);
                         }
@@ -420,12 +501,7 @@ namespace ProjectManager.Services
             try
             {
                 var dtoList = _projects.Select(ProjectPersistenceMapper.ToDto).ToList();
-                // 强制保存时排除运行中状态，避免误恢复
-                foreach (var dto in dtoList)
-                {
-                    if (dto.Status == ProjectStatus.Running || dto.Status == ProjectStatus.Starting || dto.Status == ProjectStatus.Stopping)
-                        dto.Status = ProjectStatus.Stopped;
-                }
+                
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = true,
