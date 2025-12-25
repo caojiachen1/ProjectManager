@@ -29,6 +29,7 @@
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
             <local:FrameworkToDescriptionConverter x:Key="FrameworkToDescriptionConverter"/>
+            <local:FrameworkToLocalizedNameConverter x:Key="FrameworkToLocalizedNameConverter"/>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <local:BooleanToInverseBooleanConverter x:Key="BooleanToInverseBooleanConverter"/>
             <converters:GitStatusToBadgeConverter x:Key="GitStatusToBadgeConverter"/>

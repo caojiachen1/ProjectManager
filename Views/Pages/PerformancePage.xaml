@@ -52,7 +52,7 @@
                                                         <TextBlock Text="{Binding ProjectName}" FontSize="20" FontWeight="SemiBold" />
                                                         <ui:Badge Content="{Binding StatusDisplay}" Margin="8,0,0,0" />
                                                     </StackPanel>
-                                                    <TextBlock Text="{Binding Framework}" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{Binding Framework, Converter={StaticResource FrameworkToLocalizedNameConverter}}" Opacity="0.6" FontSize="12" />
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">

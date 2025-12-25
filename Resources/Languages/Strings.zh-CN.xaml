@@ -40,6 +40,17 @@
     <!-- 过滤器 -->
     <system:String x:Key="Filter_All">全部</system:String>
     
+    <!-- 框架 -->
+    <system:String x:Key="Framework_ComfyUI">ComfyUI</system:String>
+    <system:String x:Key="Framework_NodeJS">Node.js</system:String>
+    <system:String x:Key="Framework_DotNet">.NET</system:String>
+    <system:String x:Key="Framework_Other">其他</system:String>
+    
+    <system:String x:Key="FrameworkDesc_ComfyUI">ComfyUI图像生成工作流</system:String>
+    <system:String x:Key="FrameworkDesc_NodeJS">Node.js JavaScript运行时</system:String>
+    <system:String x:Key="FrameworkDesc_DotNet">.NET应用程序</system:String>
+    <system:String x:Key="FrameworkDesc_Other">自定义项目类型</system:String>
+    
     <!-- Git 状态 -->
     <system:String x:Key="GitStatus_Clean">干净</system:String>
     <system:String x:Key="GitStatus_Modified">有修改</system:String>

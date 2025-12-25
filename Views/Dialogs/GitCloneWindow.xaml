@@ -132,7 +132,7 @@
                                     </Style>
                                 </ui:SymbolIcon.Style>
                             </ui:SymbolIcon>
-                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Converter={StaticResource FrameworkToLocalizedNameConverter}}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

@@ -184,7 +184,7 @@
 
                         <!-- 框架文本和 ComfyUI 插件按钮 -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
-                            <TextBlock Text="{Binding Framework}" Opacity="0.6" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding Framework, Converter={StaticResource FrameworkToLocalizedNameConverter}}" Opacity="0.6" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <!-- ComfyUI 插件管理按钮：紧跟在 ComfyUI 文本右侧，仅在 ComfyUI 项目中显示 -->
                             <ui:Button
                                 Width="32"

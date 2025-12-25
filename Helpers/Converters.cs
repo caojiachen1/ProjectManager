@@ -104,8 +104,14 @@ namespace ProjectManager.Helpers
         {
             if (value is string framework && !string.IsNullOrEmpty(framework))
             {
-                var config = FrameworkConfigService.GetFrameworkConfig(framework);
-                return config?.Description ?? "";
+                return framework switch
+                {
+                    "ComfyUI" => Application.Current.FindResource("FrameworkDesc_ComfyUI") ?? "ComfyUI image generation workflow",
+                    "Node.js" => Application.Current.FindResource("FrameworkDesc_NodeJS") ?? "Node.js JavaScript runtime",
+                    ".NET" => Application.Current.FindResource("FrameworkDesc_DotNet") ?? ".NET application",
+                    "其他" => Application.Current.FindResource("FrameworkDesc_Other") ?? "Custom project type",
+                    _ => ""
+                };
             }
             return "";
         }
@@ -317,6 +323,30 @@ namespace ProjectManager.Helpers
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class FrameworkToLocalizedNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string framework && !string.IsNullOrEmpty(framework))
+            {
+                return framework switch
+                {
+                    "ComfyUI" => Application.Current.FindResource("Framework_ComfyUI") ?? "ComfyUI",
+                    "Node.js" => Application.Current.FindResource("Framework_NodeJS") ?? "Node.js",
+                    ".NET" => Application.Current.FindResource("Framework_DotNet") ?? ".NET",
+                    "其他" => Application.Current.FindResource("Framework_Other") ?? "Other",
+                    _ => framework
+                };
+            }
+            return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

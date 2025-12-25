@@ -40,6 +40,17 @@
     <!-- Filters -->
     <system:String x:Key="Filter_All">All</system:String>
     
+    <!-- Frameworks -->
+    <system:String x:Key="Framework_ComfyUI">ComfyUI</system:String>
+    <system:String x:Key="Framework_NodeJS">Node.js</system:String>
+    <system:String x:Key="Framework_DotNet">.NET</system:String>
+    <system:String x:Key="Framework_Other">Other</system:String>
+    
+    <system:String x:Key="FrameworkDesc_ComfyUI">ComfyUI image generation workflow</system:String>
+    <system:String x:Key="FrameworkDesc_NodeJS">Node.js JavaScript runtime</system:String>
+    <system:String x:Key="FrameworkDesc_DotNet">.NET application</system:String>
+    <system:String x:Key="FrameworkDesc_Other">Custom project type</system:String>
+    
     <!-- Git Status -->
     <system:String x:Key="GitStatus_Clean">Clean</system:String>
     <system:String x:Key="GitStatus_Modified">Modified</system:String>

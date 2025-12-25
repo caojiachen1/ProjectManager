@@ -147,7 +147,7 @@
                                         </ui:SymbolIcon.Style>
                                     </ui:SymbolIcon>
                                     <StackPanel>
-                                        <TextBlock Text="{Binding}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Converter={StaticResource FrameworkToLocalizedNameConverter}}" FontWeight="SemiBold"/>
                                         <TextBlock FontSize="11" Opacity="0.7">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
