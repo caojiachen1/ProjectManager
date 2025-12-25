@@ -35,6 +35,17 @@
     <system:String x:Key="Status_Error">错误</system:String>
     <system:String x:Key="Status_Starting">启动中</system:String>
     <system:String x:Key="Status_Stopping">停止中</system:String>
+    <system:String x:Key="Status_Unknown">未知</system:String>
+    
+    <!-- 过滤器 -->
+    <system:String x:Key="Filter_All">全部</system:String>
+    
+    <!-- Git 状态 -->
+    <system:String x:Key="GitStatus_Clean">干净</system:String>
+    <system:String x:Key="GitStatus_Modified">有修改</system:String>
+    <system:String x:Key="GitStatus_Staged">已暂存</system:String>
+    <system:String x:Key="GitStatus_Conflicted">有冲突</system:String>
+    <system:String x:Key="GitStatus_Untracked">有未跟踪文件</system:String>
     
     <!-- 项目管理页面 -->
     <system:String x:Key="Projects_AddProject">添加项目</system:String>

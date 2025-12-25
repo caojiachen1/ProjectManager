@@ -1,3 +1,4 @@
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ProjectManager.Models
@@ -39,12 +40,12 @@ namespace ProjectManager.Models
 
         public string StatusDisplay => Status switch
         {
-            GitStatus.Clean => "干净",
-            GitStatus.Modified => "有修改",
-            GitStatus.Staged => "已暂存",
-            GitStatus.Conflicted => "有冲突",
-            GitStatus.Untracked => "有未跟踪文件",
-            _ => "未知"
+            GitStatus.Clean => Application.Current.FindResource("GitStatus_Clean")?.ToString() ?? "Clean",
+            GitStatus.Modified => Application.Current.FindResource("GitStatus_Modified")?.ToString() ?? "Modified",
+            GitStatus.Staged => Application.Current.FindResource("GitStatus_Staged")?.ToString() ?? "Staged",
+            GitStatus.Conflicted => Application.Current.FindResource("GitStatus_Conflicted")?.ToString() ?? "Conflicted",
+            GitStatus.Untracked => Application.Current.FindResource("GitStatus_Untracked")?.ToString() ?? "Untracked",
+            _ => Application.Current.FindResource("Status_Unknown")?.ToString() ?? "Unknown"
         };
 
         public string LastCommitDateDisplay => LastCommitDate == DateTime.MinValue 

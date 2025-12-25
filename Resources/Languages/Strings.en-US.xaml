@@ -35,6 +35,17 @@
     <system:String x:Key="Status_Error">Error</system:String>
     <system:String x:Key="Status_Starting">Starting</system:String>
     <system:String x:Key="Status_Stopping">Stopping</system:String>
+    <system:String x:Key="Status_Unknown">Unknown</system:String>
+    
+    <!-- Filters -->
+    <system:String x:Key="Filter_All">All</system:String>
+    
+    <!-- Git Status -->
+    <system:String x:Key="GitStatus_Clean">Clean</system:String>
+    <system:String x:Key="GitStatus_Modified">Modified</system:String>
+    <system:String x:Key="GitStatus_Staged">Staged</system:String>
+    <system:String x:Key="GitStatus_Conflicted">Conflicted</system:String>
+    <system:String x:Key="GitStatus_Untracked">Untracked</system:String>
     
     <!-- Projects Page -->
     <system:String x:Key="Projects_AddProject">Add Project</system:String>

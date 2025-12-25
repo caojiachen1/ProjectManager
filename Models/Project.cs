@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ProjectManager.Models
@@ -79,12 +80,12 @@ namespace ProjectManager.Models
         [JsonIgnore]
         public string StatusDisplay => Status switch
         {
-            ProjectStatus.Running => "运行中",
-            ProjectStatus.Stopped => "已停止",
-            ProjectStatus.Starting => "启动中",
-            ProjectStatus.Stopping => "停止中",
-            ProjectStatus.Error => "错误",
-            _ => "未知"
+            ProjectStatus.Running => Application.Current.FindResource("Status_Running")?.ToString() ?? "Running",
+            ProjectStatus.Stopped => Application.Current.FindResource("Status_Stopped")?.ToString() ?? "Stopped",
+            ProjectStatus.Starting => Application.Current.FindResource("Status_Starting")?.ToString() ?? "Starting",
+            ProjectStatus.Stopping => Application.Current.FindResource("Status_Stopping")?.ToString() ?? "Stopping",
+            ProjectStatus.Error => Application.Current.FindResource("Status_Error")?.ToString() ?? "Error",
+            _ => Application.Current.FindResource("Status_Unknown")?.ToString() ?? "Unknown"
         };
 
         [JsonIgnore]

@@ -179,15 +179,15 @@ namespace ProjectManager.Helpers
             {
                 return status switch
                 {
-                    ProjectStatus.Running => "停止",
-                    ProjectStatus.Starting => "启动中...",
-                    ProjectStatus.Stopping => "停止中...",
-                    ProjectStatus.Stopped => "启动",
-                    ProjectStatus.Error => "启动",
-                    _ => "启动"
+                    ProjectStatus.Running => Application.Current.FindResource("Button_Stop") ?? "Stop",
+                    ProjectStatus.Starting => Application.Current.FindResource("Status_Starting") ?? "Starting",
+                    ProjectStatus.Stopping => Application.Current.FindResource("Status_Stopping") ?? "Stopping",
+                    ProjectStatus.Stopped => Application.Current.FindResource("Button_Start") ?? "Start",
+                    ProjectStatus.Error => Application.Current.FindResource("Button_Start") ?? "Start",
+                    _ => Application.Current.FindResource("Button_Start") ?? "Start"
                 };
             }
-            return "启动";
+            return Application.Current.FindResource("Button_Start") ?? "Start";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

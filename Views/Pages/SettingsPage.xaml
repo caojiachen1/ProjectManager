@@ -319,7 +319,7 @@
                          ItemsSource="{Binding AvailableLanguages}" 
                          SelectedValue="{Binding SelectedLanguage}"
                          SelectedValuePath="Code"
-                         Width="200" VerticalAlignment="Center">
+                         Width="260" VerticalAlignment="Center">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock>

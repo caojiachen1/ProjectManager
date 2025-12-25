@@ -39,7 +39,7 @@ namespace ProjectManager.ViewModels.Pages
         private string? _selectedStatusFilter;
 
         [ObservableProperty]
-        private List<string> _statusFilters = new() { "全部", "运行中", "已停止", "错误" };
+        private List<string> _statusFilters = new();
 
         [ObservableProperty]
         private bool _hasProjects = true;
@@ -54,7 +54,8 @@ namespace ProjectManager.ViewModels.Pages
             _errorDisplayService = errorDisplayService;
             _languageService = languageService;
 
-            SelectedStatusFilter = "全部";
+            UpdateStatusFilters();
+            _languageService.LanguageChanged += (s, e) => UpdateStatusFilters();
 
             Projects = _projectService.Projects;
 
@@ -127,16 +128,20 @@ namespace ProjectManager.ViewModels.Pages
             }
 
             // 状态筛选
-            if (!string.IsNullOrEmpty(SelectedStatusFilter) && SelectedStatusFilter != "全部")
+            if (!string.IsNullOrEmpty(SelectedStatusFilter) && SelectedStatusFilter != _languageService.GetString("Filter_All"))
             {
-                var statusMatch = SelectedStatusFilter switch
+                if (SelectedStatusFilter == _languageService.GetString("Status_Running"))
                 {
-                    "运行中" => project.Status == ProjectStatus.Running,
-                    "已停止" => project.Status == ProjectStatus.Stopped,
-                    "错误" => project.Status == ProjectStatus.Error,
-                    _ => true
-                };
-                if (!statusMatch) return false;
+                    if (project.Status != ProjectStatus.Running) return false;
+                }
+                else if (SelectedStatusFilter == _languageService.GetString("Status_Stopped"))
+                {
+                    if (project.Status != ProjectStatus.Stopped) return false;
+                }
+                else if (SelectedStatusFilter == _languageService.GetString("Status_Error"))
+                {
+                    if (project.Status != ProjectStatus.Error) return false;
+                }
             }
 
             return true;
@@ -524,6 +529,22 @@ namespace ProjectManager.ViewModels.Pages
             _isNavigatedTo = false;
             _filterDebounceCts?.Cancel();
             await Task.CompletedTask;
+        }
+
+        private void UpdateStatusFilters()
+        {
+            var all = _languageService.GetString("Filter_All");
+            var running = _languageService.GetString("Status_Running");
+            var stopped = _languageService.GetString("Status_Stopped");
+            var error = _languageService.GetString("Status_Error");
+
+            StatusFilters = new List<string> { all, running, stopped, error };
+
+            // 如果当前选中的过滤器不在新列表中，或者为空，重置为“全部”
+            if (string.IsNullOrEmpty(SelectedStatusFilter) || !StatusFilters.Contains(SelectedStatusFilter))
+            {
+                SelectedStatusFilter = all;
+            }
         }
 
         private async Task ShowErrorMessage(string message)
