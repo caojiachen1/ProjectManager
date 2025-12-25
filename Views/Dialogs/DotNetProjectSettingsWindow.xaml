@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title=".NET项目设置"
+    Title="{DynamicResource DotNet_SettingsTitle}"
     Width="700"
     Height="800"
     MinWidth="600"
@@ -25,7 +25,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title=".NET项目设置"
+            Title="{DynamicResource DotNet_SettingsTitle}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -39,13 +39,13 @@
                 <ui:Card Margin="0,0,0,16" Padding="16">
                     <StackPanel>
                         <TextBlock Text="{Binding ProjectName}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text=".NET应用程序项目" Opacity="0.7" FontSize="12"/>
+                        <TextBlock Text="{DynamicResource DotNet_ProjectInfo}" Opacity="0.7" FontSize="12"/>
                         <TextBlock Text="{Binding ProjectPath}" Opacity="0.6" FontSize="11" Margin="0,4,0,0"/>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- .NET特定配置 -->
-                <Expander Header=".NET配置" IsExpanded="True" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource DotNet_Settings}" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="启动命令" Margin="0,0,0,4"/>

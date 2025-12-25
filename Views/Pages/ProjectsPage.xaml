@@ -92,7 +92,7 @@
         </Style>
 
         <DataTemplate x:Key="ProjectCardTemplate" DataType="{x:Type models:Project}">
-            <ui:Card Margin="0,4,4,0" Padding="12" Width="450" Height="210" Style="{StaticResource RoundedCardStyle}">
+            <ui:Card Margin="0,4,4,0" Padding="12" Width="450" MaxHeight="350" Style="{StaticResource RoundedCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -118,7 +118,7 @@
                                 Height="24"
                                 Margin="0,0,8,0"
                                 Background="Transparent"
-                                ToolTip="按住拖动以排序"
+                                ToolTip="{DynamicResource Projects_DragToSort}"
                                 Cursor="SizeAll"
                                 behaviors:DragDropReorder.IsDragHandle="True">
                             <ui:SymbolIcon Symbol="ReOrderDotsVertical24" FontSize="20" Opacity="0.7"/>
@@ -142,7 +142,7 @@
                             <ui:Button.ContextMenu>
                                 <ContextMenu>
                                     <!-- 基础操作 -->
-                                    <MenuItem Header="在资源管理器中打开" 
+                                    <MenuItem Header="{DynamicResource Projects_OpenInExplorer}" 
                                               Command="{Binding OpenProjectInExplorerCommand}"
                                               CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                         <MenuItem.Icon>
@@ -153,7 +153,7 @@
                                     <Separator/>
                                     
                                     <!-- 删除操作 -->
-                                    <MenuItem Header="删除项目" 
+                                    <MenuItem Header="{DynamicResource Projects_DeleteProject}" 
                                               Command="{Binding DeleteProjectCommand}"
                                               CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                         <MenuItem.Icon>
@@ -166,7 +166,7 @@
                     </Grid>
                     
                     <!-- 项目描述 -->
-                    <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" MaxHeight="60"/>
+                    <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" MaxHeight="120"/>
                     
                     <!-- 项目状态、Git信息和框架/插件按钮 -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
@@ -193,7 +193,7 @@
                                 Margin="0,0,0,0"
                                 Background="Transparent"
                                 BorderThickness="0"
-                                ToolTip="管理 ComfyUI 插件 (custom_nodes)"
+                                ToolTip="{DynamicResource Projects_ManageComfyUIPlugins}"
                                 Command="{Binding DataContext.ManageComfyUIPluginsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                 CommandParameter="{Binding}"
                                 Visibility="{Binding Framework, Converter={StaticResource ComfyUIFrameworkToVisibilityConverter}}">
@@ -208,7 +208,7 @@
                     <TextBlock Grid.Row="3" Text="{Binding LocalPath}" FontSize="12" Opacity="0.6" TextTrimming="CharacterEllipsis" Margin="0,0,0,8"/>
                     
                     <!-- 最后修改时间 -->
-                    <TextBlock Grid.Row="4" Text="{Binding LastModifiedDisplay, StringFormat='最后修改: {0}'}" FontSize="11" Opacity="0.5" Margin="0,0,0,8"/>
+                    <TextBlock Grid.Row="4" Text="{Binding LastModifiedDisplay, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" FontSize="11" Opacity="0.5" Margin="0,0,0,8"/>
                     
                     <!-- 空白区域 -->
                     <Grid Grid.Row="5"/>
@@ -227,26 +227,26 @@
                             </ui:Button.Icon>
                         </ui:Button>
                         <ui:Button 
-                            Content="Git" 
+                            Content="{DynamicResource Projects_Git}" 
                             Icon="{ui:SymbolIcon Branch24}"
                             Command="{Binding DataContext.ManageGitCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             Visibility="{Binding ., Converter={StaticResource HasGitRepositoryToVisibilityConverter}}"
                             Margin="0,0,4,4"/>
                         <ui:Button 
-                            Content="环境变量" 
+                            Content="{DynamicResource Projects_EnvVars}" 
                             Icon="{ui:SymbolIcon Settings24}"
                             Command="{Binding DataContext.ManageEnvironmentVariablesCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             Margin="0,0,4,4"/>
                         <ui:Button 
-                            Content="设置" 
+                            Content="{DynamicResource Projects_Settings}" 
                             Icon="{ui:SymbolIcon Options24}"
                             Command="{Binding DataContext.EditProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
                             Margin="0,0,4,4"/>
                         <ui:Button 
-                            Content="终端" 
+                            Content="{DynamicResource Projects_Terminal}" 
                             Icon="{ui:SymbolIcon WindowConsole20}"
                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}"
@@ -280,10 +280,10 @@
                     VerticalAlignment="Center"
                     Visibility="{Binding HasProjects, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <ui:SymbolIcon Symbol="Apps24" FontSize="64" Opacity="0.3" Margin="0,0,0,16"/>
-            <TextBlock Text="还没有项目" FontSize="18" Opacity="0.6" Margin="0,0,0,8"/>
-            <TextBlock Text="点击'新建项目'开始创建您的第一个项目" Opacity="0.4" Margin="0,0,0,16"/>
+            <TextBlock Text="{DynamicResource Projects_NoProjects}" FontSize="18" Opacity="0.6" Margin="0,0,0,8"/>
+            <TextBlock Text="{DynamicResource Projects_NoProjectsDesc}" Opacity="0.4" Margin="0,0,0,16"/>
             <ui:Button 
-                Content="新建项目" 
+                Content="{DynamicResource Projects_NewProject}" 
                 Icon="{ui:SymbolIcon Add24}"
                 Appearance="Primary"
                 Command="{Binding CreateProjectCommand}"/>

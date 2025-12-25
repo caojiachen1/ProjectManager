@@ -18,6 +18,7 @@ namespace ProjectManager.ViewModels.Pages
     {
         private readonly IPerformanceMonitorService _performanceMonitorService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private CancellationTokenSource? _monitoringCts;
 
         private readonly TimeSpan _refreshInterval = TimeSpan.FromSeconds(1);
@@ -54,10 +55,11 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _hasGpuData;
 
-        public PerformanceViewModel(IPerformanceMonitorService performanceMonitorService, IErrorDisplayService errorDisplayService)
+        public PerformanceViewModel(IPerformanceMonitorService performanceMonitorService, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _performanceMonitorService = performanceMonitorService;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
         }
 
         public void OnNavigatedTo()
@@ -95,7 +97,7 @@ namespace ProjectManager.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                await _errorDisplayService.ShowErrorAsync($"刷新性能数据失败: {ex.Message}", "性能监控错误");
+                await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Performance_RefreshFailed")}: {ex.Message}", _languageService.GetString("Error_Performance_Error"));
             }
         }
 
@@ -116,7 +118,7 @@ namespace ProjectManager.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                _ = _errorDisplayService.ShowErrorAsync($"无法打开资源管理器: {ex.Message}", "打开路径失败");
+                _ = _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Performance_OpenExplorerFailed")}: {ex.Message}", _languageService.GetString("Error_Performance_OpenPathFailed"));
             }
         }
 
@@ -156,7 +158,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 catch (Exception ex)
                 {
-                    await _errorDisplayService.ShowErrorAsync($"性能监控失败: {ex.Message}", "性能监控错误");
+                    await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Performance_MonitoringFailed")}: {ex.Message}", _languageService.GetString("Error_Performance_Error"));
                 }
 
                 try

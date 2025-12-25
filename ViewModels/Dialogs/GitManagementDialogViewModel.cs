@@ -14,6 +14,7 @@ namespace ProjectManager.ViewModels.Dialogs
         private readonly IGitService _gitService;
         private readonly IContentDialogService _contentDialogService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private bool _isPopulatingRepositories = false;
 
         [ObservableProperty]
@@ -54,11 +55,12 @@ namespace ProjectManager.ViewModels.Dialogs
 
         public event EventHandler<Project>? GitInfoUpdated;
 
-        public GitManagementDialogViewModel(IGitService gitService, IContentDialogService contentDialogService, IErrorDisplayService errorDisplayService)
+        public GitManagementDialogViewModel(IGitService gitService, IContentDialogService contentDialogService, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _gitService = gitService;
             _contentDialogService = contentDialogService;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
         }
 
         public async Task LoadProjectAsync(Project project)
@@ -393,7 +395,7 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private async Task ShowErrorMessage(string message)
         {
-            await _errorDisplayService.ShowErrorAsync(message, "错误");
+            await _errorDisplayService.ShowErrorAsync(message, _languageService.GetString("Error_ProjectStart"));
         }
     }
 }

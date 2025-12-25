@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Collections.ObjectModel;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 using ProjectManager.Services;
@@ -12,6 +13,7 @@ namespace ProjectManager.ViewModels.Pages
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
         private readonly ISettingsService _settingsService;
+        private readonly ILanguageService _languageService;
         private bool _isInitialized = false;
 
         [ObservableProperty]
@@ -68,9 +70,22 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _showTerminalTimestamps = false;
 
-        public SettingsViewModel(ISettingsService settingsService)
+        [ObservableProperty]
+        private string _selectedLanguage = "zh-CN";
+
+        [ObservableProperty]
+        private ObservableCollection<LanguageInfo> _availableLanguages = new();
+
+        public SettingsViewModel(ISettingsService settingsService, ILanguageService languageService)
         {
             _settingsService = settingsService;
+            _languageService = languageService;
+            
+            // 初始化可用语言列表
+            foreach (var lang in _languageService.SupportedLanguages)
+            {
+                AvailableLanguages.Add(lang);
+            }
             
             // 监听属性变化以自动保存设置
             PropertyChanged += OnPropertyChanged;
@@ -81,7 +96,7 @@ namespace ProjectManager.ViewModels.Pages
             if (!_isInitialized) return;
 
             // 当设置属性发生变化时自动保存
-            if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(CurrentTheme))
+            if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(CurrentTheme) && e.PropertyName != nameof(AvailableLanguages))
             {
                 await SaveAllSettingsAsync();
             }
@@ -119,6 +134,7 @@ namespace ProjectManager.ViewModels.Pages
             UseCmdChcp65001 = settings.UseCmdChcp65001;
             DefaultStartupPage = settings.DefaultStartupPage;
             ShowTerminalTimestamps = settings.ShowTerminalTimestamps;
+            SelectedLanguage = _languageService.CurrentLanguage;
 
             _isInitialized = true;
         }
@@ -141,7 +157,8 @@ namespace ProjectManager.ViewModels.Pages
                 MaxRecentProjects = MaxRecentProjects,
                 UseCmdChcp65001 = UseCmdChcp65001,
                 DefaultStartupPage = DefaultStartupPage,
-                ShowTerminalTimestamps = ShowTerminalTimestamps
+                ShowTerminalTimestamps = ShowTerminalTimestamps,
+                Language = SelectedLanguage
             };
 
             await _settingsService.SaveSettingsAsync(settings);
@@ -221,11 +238,21 @@ namespace ProjectManager.ViewModels.Pages
             var settings = new AppSettings
             {
                 DefaultProjectPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
-                DefaultStartupPage = "Dashboard"
+                DefaultStartupPage = "Dashboard",
+                Language = "zh-CN"
             };
             
             await _settingsService.SaveSettingsAsync(settings);
             await InitializeViewModelAsync();
+        }
+
+        [RelayCommand]
+        private void ChangeLanguage(string languageCode)
+        {
+            if (string.IsNullOrEmpty(languageCode)) return;
+            
+            _languageService.ChangeLanguage(languageCode);
+            SelectedLanguage = languageCode;
         }
     }
 }

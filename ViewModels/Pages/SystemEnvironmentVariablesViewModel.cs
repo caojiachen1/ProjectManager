@@ -22,6 +22,7 @@ namespace ProjectManager.ViewModels.Pages
     {
         private readonly EnvironmentVariableService _envService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private bool _isUpdatingSelection; // 防止递归更新的标志
         private bool _isInitialized = false;
         private CancellationTokenSource? _filterDebounceCts;
@@ -66,10 +67,11 @@ namespace ProjectManager.ViewModels.Pages
         public bool HasSelectedSystemVariable => SelectedSystemVariable != null;
         public bool HasSelection => SelectedUserVariable != null || SelectedSystemVariable != null;
 
-        public SystemEnvironmentVariablesViewModel(IErrorDisplayService errorDisplayService)
+        public SystemEnvironmentVariablesViewModel(IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _envService = new EnvironmentVariableService();
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
             
             FilteredUserVariables = CollectionViewSource.GetDefaultView(UserVariables);
             FilteredUserVariables.Filter = FilterUserVariables;
@@ -291,7 +293,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    await _errorDisplayService.ShowErrorAsync("删除用户环境变量失败");
+                    await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_EnvVar_DeleteUserFailed"));
                 }
             }
         }
@@ -322,7 +324,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync("删除系统环境变量失败"));
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_EnvVar_DeleteSystemFailed")));
                 }
             }
             else
@@ -390,7 +392,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    await _errorDisplayService.ShowErrorAsync("添加用户环境变量失败");
+                    await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_EnvVar_AddUserFailed"));
                 }
             }
         }
@@ -484,7 +486,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync("保存用户环境变量失败"));
+                    _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_EnvVar_SaveUserFailed")));
                 }
             }
         }
@@ -500,7 +502,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 else
                 {
-                    await _errorDisplayService.ShowErrorAsync("保存系统环境变量失败");
+                    await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_EnvVar_SaveSystemFailed"));
                 }
             }
             else

@@ -12,6 +12,7 @@ namespace ProjectManager.ViewModels.Dialogs
     {
         private readonly IProjectService _projectService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private Project? _originalProject;
         // 在加载或批量赋值阶段的标记，防止触发默认值回填覆盖用户的空值
         private bool _isLoadingProject = false;
@@ -53,10 +54,11 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
-        public ProjectEditDialogViewModel(IProjectService projectService, IErrorDisplayService errorDisplayService)
+        public ProjectEditDialogViewModel(IProjectService projectService, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _projectService = projectService;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
             
             // 初始化可用框架列表
             AvailableFrameworks = new ObservableCollection<string>(FrameworkConfigService.GetFrameworkNames());
@@ -292,7 +294,7 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private async Task ShowErrorMessage(string message)
         {
-            await _errorDisplayService.ShowErrorAsync(message, "错误");
+            await _errorDisplayService.ShowErrorAsync(message, _languageService.GetString("Error_ProjectStart"));
         }
     }
 }

@@ -18,7 +18,7 @@
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
             <ui:TextBox
                 x:Name="SearchBox"
-                PlaceholderText="搜索项目..."
+                PlaceholderText="{DynamicResource Toolbar_SearchProjects}"
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                 MinWidth="280"
                 Margin="0,0,16,0">
@@ -35,18 +35,18 @@
 
         <StackPanel Grid.Column="1" Orientation="Horizontal">
             <ui:Button
-                Content="新建项目"
+                Content="{DynamicResource Toolbar_NewProject}"
                 Icon="{ui:SymbolIcon Add24}"
                 Appearance="Primary"
                 Command="{Binding CreateProjectCommand}"
                 Margin="0,0,4,0" />
             <ui:Button
-                Content="Git克隆"
+                Content="{DynamicResource Toolbar_GitClone}"
                 Icon="{ui:SymbolIcon Branch24}"
                 Command="{Binding CloneFromGitCommand}"
                 Margin="4,0,4,0" />
             <ui:Button
-                Content="刷新"
+                Content="{DynamicResource Toolbar_Refresh}"
                 Icon="{ui:SymbolIcon ArrowSync24}"
                 Command="{Binding RefreshCommand}"
                 Margin="4,0,0,0" />

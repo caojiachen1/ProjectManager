@@ -56,7 +56,7 @@
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                    <ui:Button Content="打开目录" Appearance="Secondary" Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" />
+                                                    <ui:Button Content="{DynamicResource Performance_OpenFolder}" Appearance="Secondary" Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" />
                                                 </StackPanel>
                                             </Grid>
 
@@ -74,7 +74,7 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="CPU" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_CPU}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock FontSize="18" FontWeight="SemiBold">
                                                         <Run Text="{Binding CpuUsagePercent, StringFormat={}{0:F1}}" />
                                                         <Run Text="%" />
@@ -83,7 +83,7 @@
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1" Visibility="{Binding DataContext.HasGpuData, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisibility}}">
-                                                    <TextBlock Text="GPU" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_GPU}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock FontSize="18" FontWeight="SemiBold">
                                                         <Run Text="{Binding GpuUsagePercent, TargetNullValue=0, StringFormat={}{0:F1}}" />
                                                         <Run Text="%" />
@@ -92,12 +92,12 @@
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Left" Margin="-40,0,0,0">
-                                                    <TextBlock Text="内存 (工作集)" Opacity="0.6" FontSize="12" HorizontalAlignment="Left" />
+                                                    <TextBlock Text="{DynamicResource Performance_Memory}" Opacity="0.6" FontSize="12" HorizontalAlignment="Left" />
                                                     <TextBlock Text="{Binding MemoryUsageMb, StringFormat={}{0:F1} MB}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Left" />
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="3">
-                                                    <TextBlock Text="线程数" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_Threads}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock Text="{Binding ThreadCount}" FontSize="18" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Grid>
@@ -110,17 +110,17 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="PID" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_PID}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock Text="{Binding ProcessId, TargetNullValue=--}" FontWeight="SemiBold" />
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1">
-                                                    <TextBlock Text="启动时间" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_StartTime}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock Text="{Binding ProcessStartTime, TargetNullValue=--, StringFormat={}{0:MM-dd HH:mm}}" FontWeight="SemiBold" />
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="2">
-                                                    <TextBlock Text="运行时长" Opacity="0.6" FontSize="12" />
+                                                    <TextBlock Text="{DynamicResource Performance_Uptime}" Opacity="0.6" FontSize="12" />
                                                     <TextBlock Text="{Binding Uptime, Converter={StaticResource TimeSpanToStringConverter}}" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Grid>
@@ -130,7 +130,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Text="当前没有可监控的项目" HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="14" Opacity="0.6">
+                        <TextBlock Text="{DynamicResource Performance_NoProjects}" HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="14" Opacity="0.6">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />

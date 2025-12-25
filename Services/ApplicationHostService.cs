@@ -44,6 +44,13 @@ namespace ProjectManager.Services
         /// </summary>
         private async Task HandleActivationAsync()
         {
+            // 初始化语言服务
+            var languageService = _serviceProvider.GetService<ILanguageService>() as LanguageService;
+            if (languageService != null)
+            {
+                await languageService.InitializeAsync();
+            }
+
             if (!Application.Current.Windows.OfType<MainWindow>().Any())
             {
                 _navigationWindow = (

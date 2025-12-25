@@ -24,6 +24,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private CancellationTokenSource? _filterDebounceCts;
         private readonly TimeSpan _filterDebounceDelay = TimeSpan.FromMilliseconds(100);
         private bool _isNavigatedTo = false;
@@ -45,12 +46,13 @@ namespace ProjectManager.ViewModels.Pages
 
         public ReadOnlyObservableCollection<Project> Projects { get; }
 
-        public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
+        public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
 
             SelectedStatusFilter = "全部";
 
@@ -169,7 +171,7 @@ namespace ProjectManager.ViewModels.Pages
             // 若未配置或根目录不存在，则提示错误，不再回退到项目本地路径
             if (string.IsNullOrWhiteSpace(customNodesPath))
             {
-                await _errorDisplayService.ShowErrorAsync("未配置有效的 ComfyUI 根目录，无法定位 custom_nodes 目录。请在 ComfyUI 项目设置中指定根目录。", "路径错误");
+                await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_ComfyUI_InvalidRootDir"), _languageService.GetString("Error_ComfyUI_PathError"));
                 return;
             }
 
@@ -189,7 +191,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 catch (Exception ex)
                 {
-                    await _errorDisplayService.ShowErrorAsync($"创建 custom_nodes 目录失败: {ex.Message}", "错误");
+                    await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_ComfyUI_CreateDirFailed")}: {ex.Message}", _languageService.GetString("Error_ProjectStart"));
                     return;
                 }
             }
@@ -203,7 +205,7 @@ namespace ProjectManager.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                await _errorDisplayService.ShowErrorAsync($"打开插件管理窗口失败: {ex.Message}", "错误");
+                await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_ComfyUI_OpenPluginManagerFailed")}: {ex.Message}", _languageService.GetString("Error_ProjectStart"));
             }
         }
 
@@ -402,7 +404,7 @@ namespace ProjectManager.ViewModels.Pages
                 // 直接导航到终端页面
                 _navigationService.Navigate(typeof(Views.Pages.TerminalPage));
             }
-            
+
         }
 
         [RelayCommand]
@@ -462,7 +464,7 @@ namespace ProjectManager.ViewModels.Pages
                 }
                 catch (Exception ex)
                 {
-                    await _errorDisplayService.ShowErrorAsync($"删除项目失败: {ex.Message}");
+                    await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Project_DeleteFailed")}: {ex.Message}");
                 }
             }
         }
@@ -526,7 +528,7 @@ namespace ProjectManager.ViewModels.Pages
 
         private async Task ShowErrorMessage(string message)
         {
-            await _errorDisplayService.ShowErrorAsync(message, "错误");
+            await _errorDisplayService.ShowErrorAsync(message, _languageService.GetString("Error_ProjectStart"));
         }
     }
 }

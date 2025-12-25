@@ -13,6 +13,8 @@ namespace ProjectManager.ViewModels.Dialogs
         private readonly IProjectService _projectService;
         private readonly IProjectSettingsWindowService _settingsWindowService;
         private readonly IGitService _gitService;
+        private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
 
         [ObservableProperty]
         private string _projectName = string.Empty;
@@ -56,14 +58,13 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler? DialogCancelled;
         public Project? CreatedProject { get; private set; }
 
-        private readonly IErrorDisplayService _errorDisplayService;
-
-        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService, IGitService gitService, IErrorDisplayService errorDisplayService)
+        public NewProjectDialogViewModel(IProjectService projectService, IProjectSettingsWindowService settingsWindowService, IGitService gitService, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _projectService = projectService;
             _settingsWindowService = settingsWindowService;
             _gitService = gitService;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
             
             // 监听属性变化
             PropertyChanged += OnPropertyChanged;
@@ -164,13 +165,13 @@ namespace ProjectManager.ViewModels.Dialogs
                 }
                 else
                 {
-                    await _errorDisplayService.ShowErrorAsync("保存项目失败，请检查文件权限或路径。", "保存失败");
+                    await _errorDisplayService.ShowErrorAsync(_languageService.GetString("Error_SaveSettings"), _languageService.GetString("Error_ProjectStart"));
                     System.Diagnostics.Debug.WriteLine("保存项目失败");
                 }
             }
             catch (Exception ex)
             {
-                await _errorDisplayService.ShowErrorAsync($"创建项目失败: {ex.Message}", "创建失败");
+                await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Project_CreateFailed")}: {ex.Message}", _languageService.GetString("Error_ProjectStart"));
                 System.Diagnostics.Debug.WriteLine($"创建项目失败: {ex.Message}");
             }
         }

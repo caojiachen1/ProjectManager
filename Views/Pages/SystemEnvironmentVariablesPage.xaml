@@ -145,7 +145,7 @@
             </Grid.RowDefinitions>
 
             <!-- 用户变量 -->
-            <GroupBox Grid.Row="0" Header="用户变量" Margin="0,0,0,8" VerticalAlignment="Stretch">
+            <GroupBox Grid.Row="0" Header="{DynamicResource EnvVar_UserVariables}" Margin="0,0,0,8" VerticalAlignment="Stretch">
                             <Grid VerticalAlignment="Stretch">
                                 <ui:DataGrid ItemsSource="{Binding FilteredUserVariables}"
                                              SelectedItem="{Binding SelectedUserVariable}"
@@ -171,12 +171,12 @@
                                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                                VerticalAlignment="Center"
                                                                HorizontalAlignment="Center"
-                                                               ToolTip="用户变量"/>
+                                                               ToolTip="{DynamicResource EnvVar_UserVar}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     
-                                    <DataGridTemplateColumn Header="变量名" Width="250" MinWidth="200" DisplayIndex="1">
+                                    <DataGridTemplateColumn Header="{DynamicResource EnvVar_Name}" Width="250" MinWidth="200" DisplayIndex="1">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Name}" 
@@ -186,7 +186,7 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="变量值" Width="*">
+                                        <DataGridTemplateColumn Header="{DynamicResource EnvVar_Value}" Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Value}" 
@@ -219,7 +219,7 @@
                                            FontSize="32" 
                                            Foreground="{DynamicResource TextFillColorDisabledBrush}"
                                            Margin="0,0,0,8"/>
-                            <TextBlock Text="暂无用户变量" 
+                            <TextBlock Text="{DynamicResource EnvVar_NoUserVariables}" 
                                        FontSize="14" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
@@ -228,7 +228,7 @@
                 </GroupBox>
 
                 <!-- 系统变量 -->
-                <GroupBox Grid.Row="1" Header="系统变量" Margin="0,8,0,0" VerticalAlignment="Stretch">
+                <GroupBox Grid.Row="1" Header="{DynamicResource EnvVar_SystemVariables}" Margin="0,8,0,0" VerticalAlignment="Stretch">
                         <Grid VerticalAlignment="Stretch">
                             <ui:DataGrid ItemsSource="{Binding FilteredSystemVariables}"
                                          SelectedItem="{Binding SelectedSystemVariable}"
@@ -254,12 +254,12 @@
                                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
                                                            VerticalAlignment="Center"
                                                            HorizontalAlignment="Center"
-                                                           ToolTip="系统变量"/>
+                                                           ToolTip="{DynamicResource EnvVar_SystemVar}"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 
-                                <DataGridTemplateColumn Header="变量名" Width="250" MinWidth="200" DisplayIndex="1">
+                                <DataGridTemplateColumn Header="{DynamicResource EnvVar_Name}" Width="250" MinWidth="200" DisplayIndex="1">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding Name}" 
@@ -269,7 +269,7 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="变量值" Width="*">
+                                    <DataGridTemplateColumn Header="{DynamicResource EnvVar_Value}" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding Value}" 
@@ -302,7 +302,7 @@
                                            FontSize="32" 
                                            Foreground="{DynamicResource TextFillColorDisabledBrush}"
                                            Margin="0,0,0,8"/>
-                            <TextBlock Text="暂无系统变量" 
+                            <TextBlock Text="{DynamicResource EnvVar_NoSystemVariables}" 
                                        FontSize="14" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"/>

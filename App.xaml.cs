@@ -62,6 +62,9 @@ namespace ProjectManager
                 // Settings service
                 services.AddSingleton<ISettingsService, SettingsService>();
 
+                // Language service
+                services.AddSingleton<ILanguageService, LanguageService>();
+
                 // Terminal service
                 // Terminal service
                 services.AddSingleton<TerminalService>();

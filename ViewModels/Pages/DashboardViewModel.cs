@@ -20,6 +20,7 @@ namespace ProjectManager.ViewModels.Pages
         private readonly INavigationService _navigationService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
         private CancellationTokenSource? _debounceCts;
         private readonly TimeSpan _debounceDelay = TimeSpan.FromMilliseconds(150);
         private bool _isNavigatedTo = false;
@@ -39,12 +40,13 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<Project> _recentProjects = new();
 
-        public DashboardViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService)
+        public DashboardViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _projectService = projectService;
             _navigationService = navigationService;
             _serviceProvider = serviceProvider;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
             
             _projectService.ProjectPropertyChanged += OnProjectPropertyChanged;
         }
@@ -133,7 +135,7 @@ namespace ProjectManager.ViewModels.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"加载Dashboard数据失败: {ex.Message}");
                 // 显示关键错误给用户
-                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"加载仪表板数据失败: {ex.Message}", "数据加载错误"));
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"{_languageService.GetString("Error_Dashboard_LoadFailed")}: {ex.Message}", _languageService.GetString("Error_Dashboard_DataLoadError")));
             }
         }
 

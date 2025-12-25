@@ -119,34 +119,34 @@
                 BorderThickness="0,0,0,1"
                 Padding="12,8">
             <StackPanel Orientation="Horizontal">
-                <ui:Button Content="启动" 
+                <ui:Button Content="{DynamicResource Terminal_Start}" 
                            Icon="{ui:SymbolIcon Play24}"
                            Command="{Binding ViewModel.StartTerminalCommand}"
                            Margin="0,0,8,0"/>
-                <ui:Button Content="停止" 
+                <ui:Button Content="{DynamicResource Terminal_Stop}" 
                            Icon="{ui:SymbolIcon Stop24}"
                            Command="{Binding ViewModel.StopTerminalCommand}"
                            Margin="0,0,8,0"/>
-                <ui:Button Content="清空" 
+                <ui:Button Content="{DynamicResource Terminal_Clear}" 
                            Icon="{ui:SymbolIcon Delete24}"
                            Command="{Binding ViewModel.ClearOutputCommand}"
                            Margin="0,0,8,0"/>
-                <ui:Button Content="刷新" 
+                <ui:Button Content="{DynamicResource Terminal_Refresh}" 
                            Icon="{ui:SymbolIcon ArrowSync24}"
                            Command="{Binding ViewModel.RefreshSessionsCommand}"
                            Margin="0,0,16,0"/>
-                <ui:Button Content="打开命令提示符"
+                <ui:Button Content="{DynamicResource Terminal_OpenCmd}"
                            Icon="{ui:SymbolIcon WindowConsole20}"
                            Command="{Binding ViewModel.OpenCmdCommand}"
                            Margin="0,0,16,0"/>
                 
                 <!-- 状态显示 -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="状态:" Foreground="#CCCCCC" Margin="0,0,4,0"/>
+                    <TextBlock Text="{DynamicResource Terminal_Status}" Foreground="#CCCCCC" Margin="0,0,4,0"/>
                     <TextBlock Text="{Binding ViewModel.SelectedSession.Status}" 
                                Foreground="{Binding ViewModel.SelectedSession.IsRunning, Converter={StaticResource BooleanToColorConverter}}"
                                FontWeight="Bold"/>
-                    <TextBlock Text="项目:" Foreground="#CCCCCC" Margin="16,0,4,0"/>
+                    <TextBlock Text="{DynamicResource Terminal_Project}" Foreground="#CCCCCC" Margin="16,0,4,0"/>
                     <TextBlock Text="{Binding ViewModel.SelectedSession.ProjectName}" Foreground="#FFFFFF"/>
                 </StackPanel>
             </StackPanel>
@@ -201,12 +201,12 @@
                                            Padding="8"
                                            Margin="0,0,0,8"
                                            Click="OnScrollToTopClick"
-                                           ToolTip="滚动到顶部"
+                                           ToolTip="{DynamicResource Terminal_ScrollTop}"
                                            Opacity="0.8"/>
                                 <ui:Button Icon="{ui:SymbolIcon ArrowDown24}"
                                            Padding="8"
                                            Click="OnScrollToBottomClick"
-                                           ToolTip="滚动到底部"
+                                           ToolTip="{DynamicResource Terminal_ScrollBottom}"
                                            Opacity="0.8"/>
                             </StackPanel>
                         </Grid>
@@ -234,12 +234,12 @@
                                    Foreground="#666666"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,16"/>
-                    <TextBlock Text="暂无终端会话" 
+                    <TextBlock Text="{DynamicResource Terminal_NoSession}" 
                                FontSize="16" 
                                Foreground="#666666"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,8"/>
-                    <TextBlock Text="启动项目后将自动创建终端会话" 
+                    <TextBlock Text="{DynamicResource Terminal_NoSessionHint}" 
                                FontSize="12" 
                                Foreground="#999999"
                                HorizontalAlignment="Center"/>
@@ -259,17 +259,17 @@
                 </Grid.ColumnDefinitions>
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="工作目录:" Foreground="#CCCCCC" Margin="0,0,4,0"/>
+                    <TextBlock Text="{DynamicResource Terminal_WorkingDir}" Foreground="#CCCCCC" Margin="0,0,4,0"/>
                     <TextBlock Text="{Binding ViewModel.SelectedSession.ProjectPath}" 
                                Foreground="#FFFFFF" 
                                FontFamily="Consolas"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock Text="启动时间:" Foreground="#CCCCCC" Margin="0,0,4,0"/>
+                    <TextBlock Text="{DynamicResource Terminal_StartTime}" Foreground="#CCCCCC" Margin="0,0,4,0"/>
                     <TextBlock Text="{Binding ViewModel.SelectedSession.StartTime, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
                                Foreground="#FFFFFF"/>
-                    <TextBlock Text="会话数:" Foreground="#CCCCCC" Margin="16,0,4,0"/>
+                    <TextBlock Text="{DynamicResource Terminal_SessionCount}" Foreground="#CCCCCC" Margin="16,0,4,0"/>
                     <TextBlock Text="{Binding ViewModel.TerminalSessions.Count}" 
                                Foreground="#FFFFFF"/>
                 </StackPanel>

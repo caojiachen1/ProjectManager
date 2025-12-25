@@ -38,7 +38,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:SymbolIcon Symbol="Apps24" FontSize="24" Opacity="0.7" Margin="0,0,8,0"/>
-                        <TextBlock Text="总项目" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Dashboard_TotalProjects}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Text="{Binding ViewModel.TotalProjects}" FontSize="28" FontWeight="Bold"/>
                 </StackPanel>
@@ -49,7 +49,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:SymbolIcon Symbol="Play24" FontSize="24" Foreground="Green" Margin="0,0,8,0"/>
-                        <TextBlock Text="运行中" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Dashboard_Running}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Text="{Binding ViewModel.RunningProjects}" FontSize="28" FontWeight="Bold" Foreground="Green"/>
                 </StackPanel>
@@ -60,7 +60,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:SymbolIcon Symbol="Stop24" FontSize="24" Opacity="0.7" Margin="0,0,8,0"/>
-                        <TextBlock Text="已停止" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Dashboard_Stopped}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Text="{Binding ViewModel.StoppedProjects}" FontSize="28" FontWeight="Bold"/>
                 </StackPanel>
@@ -71,7 +71,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <ui:SymbolIcon Symbol="ErrorCircle24" FontSize="24" Foreground="Red" Margin="0,0,8,0"/>
-                        <TextBlock Text="错误" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Dashboard_Error}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Text="{Binding ViewModel.ErrorProjects}" FontSize="28" FontWeight="Bold" Foreground="Red"/>
                 </StackPanel>
@@ -81,26 +81,26 @@
         <!-- 快速操作 -->
         <ui:Card Grid.Row="2" Padding="16" Margin="0,0,0,24">
             <StackPanel>
-                <TextBlock Text="快速操作" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <TextBlock Text="{DynamicResource Dashboard_QuickActions}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button 
-                        Content="新建项目" 
+                        Content="{DynamicResource Dashboard_NewProject}" 
                         Icon="{ui:SymbolIcon Add24}"
                         Appearance="Primary"
                         Command="{Binding ViewModel.CreateProjectCommand}"
                         Margin="0,0,6,0"/>
                     <ui:Button 
-                        Content="Git克隆" 
+                        Content="{DynamicResource Dashboard_GitClone}" 
                         Icon="{ui:SymbolIcon Branch24}"
                         Command="{Binding ViewModel.GitCloneCommand}"
                         Margin="6,0,6,0"/>
                     <ui:Button 
-                        Content="查看所有项目" 
+                        Content="{DynamicResource Dashboard_ViewAllProjects}" 
                         Icon="{ui:SymbolIcon Apps24}"
                         Command="{Binding ViewModel.ViewAllProjectsCommand}"
                         Margin="6,0,6,0"/>
                     <ui:Button 
-                        Content="停止所有项目" 
+                        Content="{DynamicResource Dashboard_StopAllProjects}" 
                         Icon="{ui:SymbolIcon Stop24}"
                         Appearance="Caution"
                         Command="{Binding ViewModel.StopAllProjectsCommand}"
@@ -112,7 +112,7 @@
         <!-- 最近项目 -->
         <ui:Card Grid.Row="3" Padding="16">
             <StackPanel>
-                <TextBlock Text="最近项目" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <TextBlock Text="{DynamicResource Dashboard_RecentProjects}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
                 <ItemsControl ItemsSource="{Binding ViewModel.RecentProjects}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -146,14 +146,14 @@
                                             Command="{Binding DataContext.ViewModel.StartProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding Status, Converter={StaticResource StatusToStartEnabledConverter}}"
-                                            ToolTip="启动项目"
+                                            ToolTip="{DynamicResource Dashboard_StartProject}"
                                             Margin="0,0,2,0"/>
                                         <ui:Button 
                                             Icon="{ui:SymbolIcon Stop24}"
                                             Command="{Binding DataContext.ViewModel.StopProjectCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding Status, Converter={StaticResource StatusToStopEnabledConverter}}"
-                                            ToolTip="停止项目"
+                                            ToolTip="{DynamicResource Dashboard_StopProject}"
                                             Margin="2,0,0,0"/>
                                     </StackPanel>
                                 </Grid>

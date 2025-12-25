@@ -27,5 +27,8 @@ namespace ProjectManager.Models
         // 个性化设置
         public ApplicationTheme Theme { get; set; } = ApplicationTheme.Unknown;
         public string DefaultStartupPage { get; set; } = "Dashboard";
+        
+        // 语言设置
+        public string Language { get; set; } = "zh-CN";
     }
 }

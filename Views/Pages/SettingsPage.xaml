@@ -22,7 +22,7 @@
 
     <StackPanel>
         <!-- 常规设置 分组 -->
-        <TextBlock Text="常规设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+        <TextBlock Text="{DynamicResource Settings_General}" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
         
         <!-- Git可执行文件路径 -->
@@ -33,14 +33,14 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Git可执行文件路径" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="Git可执行文件的路径" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_GitPath}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_GitPathDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:TextBox Text="{Binding GitExecutablePath, UpdateSourceTrigger=PropertyChanged}"
-                               PlaceholderText="选择Git可执行文件路径" Width="300" Margin="0,0,8,0"/>
-                    <ui:Button Content="浏览" Icon="{ui:SymbolIcon FolderOpen24}"
+                               PlaceholderText="{DynamicResource Settings_GitPathPlaceholder}" Width="300" Margin="0,0,8,0"/>
+                    <ui:Button Content="{DynamicResource Button_Browse}" Icon="{ui:SymbolIcon FolderOpen24}"
                               Command="{Binding BrowseGitExecutablePathCommand}" Appearance="Secondary"/>
                 </StackPanel>
             </Grid>
@@ -54,12 +54,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Git用户名" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="用于提交的Git用户名" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_GitUsername}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_GitUsernameDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ui:TextBox Grid.Column="1" Text="{Binding GitUserName, UpdateSourceTrigger=PropertyChanged}"
-                           PlaceholderText="输入Git用户名" Width="300" VerticalAlignment="Center"/>
+                           PlaceholderText="{DynamicResource Settings_GitUsernamePlaceholder}" Width="300" VerticalAlignment="Center"/>
             </Grid>
         </ui:Card>
         
@@ -71,12 +71,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Git邮箱" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="用于提交的Git邮箱地址" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_GitEmail}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_GitEmailDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ui:TextBox Grid.Column="1" Text="{Binding GitUserEmail, UpdateSourceTrigger=PropertyChanged}"
-                           PlaceholderText="输入Git邮箱" Width="300" VerticalAlignment="Center"/>
+                           PlaceholderText="{DynamicResource Settings_GitEmailPlaceholder}" Width="300" VerticalAlignment="Center"/>
             </Grid>
         </ui:Card>
         
@@ -88,8 +88,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="默认Git分支" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="新仓库的默认分支名称" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_DefaultBranch}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_DefaultBranchDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ui:TextBox Grid.Column="1" Text="{Binding DefaultGitBranch, UpdateSourceTrigger=PropertyChanged}"
@@ -105,8 +105,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="自动获取Git更新" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="自动从远程仓库获取更新" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_AutoFetchGit}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_AutoFetchGitDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding AutoFetchGitUpdates}" VerticalAlignment="Center"/>
@@ -114,7 +114,7 @@
         </ui:Card>
         
         <!-- 项目设置 分组 -->
-        <TextBlock Text="项目设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+        <TextBlock Text="{DynamicResource Settings_Project}" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
         
         <!-- 默认项目路径 -->
@@ -125,14 +125,14 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="默认项目路径" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="新项目的默认目录" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_DefaultProjectPath}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_DefaultProjectPathDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:TextBox Text="{Binding DefaultProjectPath, UpdateSourceTrigger=PropertyChanged}"
-                               PlaceholderText="选择默认项目路径" Width="300" Margin="0,0,8,0"/>
-                    <ui:Button Content="浏览" Icon="{ui:SymbolIcon FolderOpen24}"
+                               PlaceholderText="{DynamicResource Settings_DefaultProjectPathPlaceholder}" Width="300" Margin="0,0,8,0"/>
+                    <ui:Button Content="{DynamicResource Button_Browse}" Icon="{ui:SymbolIcon FolderOpen24}"
                               Command="{Binding BrowseDefaultProjectPathCommand}" Appearance="Secondary"/>
                 </StackPanel>
             </Grid>
@@ -146,8 +146,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="自动启动项目" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="打开项目时自动启动" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_AutoStart}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_AutoStartDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding AutoStartProjects}" VerticalAlignment="Center"/>
@@ -162,8 +162,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="自动保存项目" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="自动保存项目更改" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_AutoSave}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_AutoSaveDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding AutoSaveProjects}" VerticalAlignment="Center"/>
@@ -178,8 +178,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="项目刷新间隔" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="刷新项目状态的频率（秒）" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_RefreshInterval}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_RefreshIntervalDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ui:NumberBox Grid.Column="1" Value="{Binding ProjectRefreshInterval}" 
@@ -195,8 +195,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="最大最近项目数" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="记住的最近项目的最大数量" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_MaxRecentProjects}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_MaxRecentProjectsDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ui:NumberBox Grid.Column="1" Value="{Binding MaxRecentProjects}" 
@@ -205,7 +205,7 @@
         </ui:Card>
         
         <!-- 应用程序设置 分组 -->
-        <TextBlock Text="应用程序设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+        <TextBlock Text="{DynamicResource Settings_Application}" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
         
         <!-- 首选终端 -->
@@ -216,8 +216,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="首选终端" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="使用的默认终端应用程序" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_PreferredTerminal}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_PreferredTerminalDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ComboBox Grid.Column="1" SelectedValue="{Binding PreferredTerminal}" SelectedValuePath="Content" 
@@ -237,8 +237,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="显示通知" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="显示桌面通知消息" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_ShowNotifications}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_ShowNotificationsDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding ShowNotifications}" VerticalAlignment="Center"/>
@@ -253,8 +253,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="终端显示时间戳" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="在终端输出前添加 [HH:mm:ss] 时间戳" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_TerminalTimestamps}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_TerminalTimestampsDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding ShowTerminalTimestamps}" VerticalAlignment="Center"/>
@@ -269,8 +269,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="CMD 使用 UTF-8 编码" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="仅对 CMD 注入 chcp 65001（不影响 PowerShell/Bash）" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_CmdUtf8}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_CmdUtf8Desc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <CheckBox Grid.Column="1" IsChecked="{Binding UseCmdChcp65001}" VerticalAlignment="Center"/>
@@ -285,23 +285,54 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="默认启动页面" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="启动应用程序时默认打开的页面" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_DefaultStartupPage}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_DefaultStartupPageDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <ComboBox Grid.Column="1" SelectedValue="{Binding DefaultStartupPage}" SelectedValuePath="Tag" 
                          Width="200" VerticalAlignment="Center">
-                    <ComboBoxItem Content="仪表板" Tag="Dashboard"/>
-                    <ComboBoxItem Content="项目管理" Tag="Projects"/>
-                    <ComboBoxItem Content="终端控制台" Tag="Terminal"/>
-                    <ComboBoxItem Content="性能监控" Tag="Performance"/>
+                    <ComboBoxItem Content="{DynamicResource Nav_Dashboard}" Tag="Dashboard"/>
+                    <ComboBoxItem Content="{DynamicResource Nav_Projects}" Tag="Projects"/>
+                    <ComboBoxItem Content="{DynamicResource Nav_Terminal}" Tag="Terminal"/>
+                    <ComboBoxItem Content="{DynamicResource Nav_Performance}" Tag="Performance"/>
                 </ComboBox>
             </Grid>
         </ui:Card>
         
         <!-- 外观设置 分组 -->
-        <TextBlock Text="外观设置" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+        <TextBlock Text="{DynamicResource Settings_Appearance}" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
+        
+        <!-- 语言设置 -->
+        <ui:Card Margin="0,0,0,8" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{DynamicResource Settings_Language}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_LanguageDesc}" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1" 
+                         ItemsSource="{Binding AvailableLanguages}" 
+                         SelectedValue="{Binding SelectedLanguage}"
+                         SelectedValuePath="Code"
+                         Width="200" VerticalAlignment="Center">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding NativeName}"/>
+                                <Run Text=" ("/>
+                                <Run Text="{Binding DisplayName}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+        </ui:Card>
         
         <!-- 主题 -->
         <ui:Card Margin="0,0,0,20" Padding="16">
@@ -311,15 +342,15 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="主题" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="选择应用程序颜色主题" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_Theme}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_ThemeDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <RadioButton Content="浅色" GroupName="themeSelect" Margin="0,0,20,0"
+                    <RadioButton Content="{DynamicResource Settings_ThemeLight}" GroupName="themeSelect" Margin="0,0,20,0"
                                Command="{Binding ChangeThemeCommand, Mode=OneWay}" CommandParameter="theme_light"
                                IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"/>
-                    <RadioButton Content="深色" GroupName="themeSelect"
+                    <RadioButton Content="{DynamicResource Settings_ThemeDark}" GroupName="themeSelect"
                                Command="{Binding ChangeThemeCommand, Mode=OneWay}" CommandParameter="theme_dark"
                                IsChecked="{Binding CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"/>
                 </StackPanel>
@@ -327,7 +358,7 @@
         </ui:Card>
         
         <!-- 操作 分组 -->
-        <TextBlock Text="操作" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
+        <TextBlock Text="{DynamicResource Settings_Actions}" FontSize="14" FontWeight="Medium" Margin="0,0,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
         
         <!-- 设置管理 -->
@@ -338,21 +369,21 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="设置管理" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="保存或重置应用程序设置" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_Management}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_ManagementDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button Content="保存设置" Icon="{ui:SymbolIcon Save24}" Appearance="Primary"
+                    <ui:Button Content="{DynamicResource Settings_Save}" Icon="{ui:SymbolIcon Save24}" Appearance="Primary"
                               Command="{Binding SaveSettingsCommand}" Margin="0,0,10,0"/>
-                    <ui:Button Content="重置设置" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Caution"
+                    <ui:Button Content="{DynamicResource Settings_Reset}" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Caution"
                               Command="{Binding ResetSettingsCommand}"/>
                 </StackPanel>
             </Grid>
         </ui:Card>
         
         <!-- 关于 分组 -->
-        <TextBlock Text="关于" FontSize="14" FontWeight="Medium" Margin="0,20,0,10" 
+        <TextBlock Text="{DynamicResource Settings_About}" FontSize="14" FontWeight="Medium" Margin="0,20,0,10" 
                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
         
         <!-- 应用程序版本 -->
@@ -363,8 +394,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="应用程序版本" FontWeight="Medium" Margin="0,0,0,4"/>
-                    <TextBlock Text="项目管理器的当前版本" FontSize="12" 
+                    <TextBlock Text="{DynamicResource Settings_AppVersion}" FontWeight="Medium" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_AppVersionDesc}" FontSize="12" 
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding AppVersion, Mode=OneWay}" VerticalAlignment="Center" 

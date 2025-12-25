@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="新建项目"
+    Title="{DynamicResource NewProject_Title}"
     Width="500"
     Height="700"
     MinWidth="450"
@@ -25,7 +25,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="新建项目"
+            Title="{DynamicResource NewProject_Title}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -37,16 +37,16 @@
             <StackPanel Margin="24">
                 <!-- 项目基本信息 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="项目信息" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <TextBlock Text="{DynamicResource NewProject_ProjectInfo}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     
                     <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="项目名称" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource NewProject_ProjectName}" Margin="0,0,0,4"/>
                         <ui:TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入项目名称"/>
+                                    PlaceholderText="{DynamicResource NewProject_ProjectNamePlaceholder}"/>
                     </StackPanel>
                     
                     <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="项目路径" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource NewProject_ProjectPath}" Margin="0,0,0,4"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -54,19 +54,19 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding ProjectPath, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="选择项目文件夹路径"
+                                        PlaceholderText="{DynamicResource NewProject_ProjectPathPlaceholder}"
                                         Margin="0,0,8,0"/>
                             <ui:Button Grid.Column="1" 
-                                       Content="浏览" 
+                                       Content="{DynamicResource Button_Browse}" 
                                        Icon="{ui:SymbolIcon FolderOpen24}"
                                        Command="{Binding BrowseProjectPathCommand}"/>
                         </Grid>
                     </StackPanel>
                     
                     <StackPanel>
-                        <TextBlock Text="项目描述（可选）" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource NewProject_ProjectDesc}" Margin="0,0,0,4"/>
                         <ui:TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入项目描述"
+                                    PlaceholderText="{DynamicResource NewProject_ProjectDescPlaceholder}"
                                     TextWrapping="Wrap"
                                     AcceptsReturn="True"
                                     MinHeight="60"/>
@@ -75,17 +75,17 @@
 
                 <!-- Git仓库扫描设置 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="Git仓库扫描" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="{DynamicResource NewProject_GitScan}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     
                     <ui:Card Padding="16" Margin="0,0,0,12">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <CheckBox IsChecked="{Binding ScanForGitRepositories}" 
-                                          Content="扫描项目中的Git仓库" 
+                                          Content="{DynamicResource NewProject_ScanGitRepos}" 
                                           FontWeight="Medium"/>
                             </StackPanel>
                             
-                            <TextBlock Text="启用后将自动扫描项目文件夹及其子文件夹中的所有Git仓库，可在Git管理界面中切换管理不同的仓库。"
+                            <TextBlock Text="{DynamicResource NewProject_GitScanDesc}"
                                        TextWrapping="Wrap"
                                        FontSize="12"
                                        Opacity="0.7"
@@ -113,10 +113,10 @@
 
                 <!-- 框架选择 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="选择项目框架" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="{DynamicResource NewProject_SelectFramework}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Warning16" Foreground="Orange" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="请谨慎选择！选择框架后将自动保存，后续无法修改框架类型" 
+                        <TextBlock Text="{DynamicResource NewProject_FrameworkWarning}" 
                                    Opacity="0.8" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                     
@@ -153,16 +153,16 @@
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding}" Value="ComfyUI">
-                                                            <Setter Property="Text" Value="AI图像生成工作流"/>
+                                                            <Setter Property="Text" Value="{DynamicResource NewProject_FrameworkComfyUI}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding}" Value="Node.js">
-                                                            <Setter Property="Text" Value="JavaScript运行时"/>
+                                                            <Setter Property="Text" Value="{DynamicResource NewProject_FrameworkNodeJS}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding}" Value=".NET">
-                                                            <Setter Property="Text" Value="微软开发平台"/>
+                                                            <Setter Property="Text" Value="{DynamicResource NewProject_FrameworkDotNet}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding}" Value="其他">
-                                                            <Setter Property="Text" Value="自定义项目类型"/>
+                                                            <Setter Property="Text" Value="{DynamicResource NewProject_FrameworkOther}"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -182,13 +182,13 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Content="下一步" 
+                        <ui:Button Content="{DynamicResource NewProject_Next}" 
                                    Icon="{ui:SymbolIcon ArrowRight24}"
                                    Appearance="Primary"
                                    Command="{Binding NextCommand}"
                                    IsEnabled="{Binding CanProceed}"
                                    Margin="0,0,8,0"/>
-                        <ui:Button Content="取消" 
+                        <ui:Button Content="{DynamicResource Button_Cancel}" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"/>
                     </StackPanel>

@@ -5,7 +5,7 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  mc:Ignorable="d"
-                 Title="从Git仓库克隆项目"
+                 Title="{DynamicResource Git_CloneTitle}"
                  Height="500"
                  Width="700"
                  WindowStartupLocation="CenterOwner"
@@ -42,7 +42,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="从Git仓库克隆项目"
+            Title="{DynamicResource Git_CloneTitle}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -63,10 +63,13 @@
 
         <!-- Git仓库URL -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
-            <TextBlock Text="Git仓库URL *" FontWeight="Medium" Margin="0,0,0,5"/>
+            <TextBlock FontWeight="Medium" Margin="0,0,0,5">
+                <Run Text="{DynamicResource Git_RepoUrl}"/>
+                <Run Text=" *" Foreground="Red"/>
+            </TextBlock>
             <ui:TextBox x:Name="UrlTextBox"
                         Text="{Binding RepositoryUrl, UpdateSourceTrigger=PropertyChanged}"
-                        PlaceholderText="https://github.com/username/repository.git"
+                        PlaceholderText="{DynamicResource Git_RepoUrlPlaceholder}"
                         Icon="{ui:SymbolIcon Link24}"/>
             <TextBlock Text="{Binding UrlValidationMessage}" 
                        Foreground="#FF6B6B" 
@@ -77,10 +80,12 @@
 
         <!-- 本地路径 -->
         <StackPanel Grid.Row="1" Margin="0,0,0,15">
-            <TextBlock Text="本地存储路径 *" 
-                       FontWeight="Medium" 
+            <TextBlock FontWeight="Medium" 
                        Margin="0,0,0,5"
-                       Style="{StaticResource DarkTextBlockStyle}"/>
+                       Style="{StaticResource DarkTextBlockStyle}">
+                <Run Text="{DynamicResource Git_LocalPath}"/>
+                <Run Text=" *" Foreground="Red"/>
+            </TextBlock>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -88,10 +93,10 @@
                 </Grid.ColumnDefinitions>
                 <ui:TextBox Grid.Column="0"
                             Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}"
-                            PlaceholderText="选择项目存储位置"
+                            PlaceholderText="{DynamicResource Git_LocalPathPlaceholder}"
                             Icon="{ui:SymbolIcon Folder24}"/>
                 <ui:Button Grid.Column="1" 
-                           Content="浏览" 
+                           Content="{DynamicResource Button_Browse}" 
                            Command="{Binding BrowseLocalPathCommand}"
                            Margin="10,0,0,0"
                            Appearance="Secondary"/>
@@ -100,7 +105,7 @@
 
         <!-- 框架选择 -->
         <StackPanel Grid.Row="2" Margin="0,0,0,15">
-            <TextBlock Text="项目框架" FontWeight="Medium" Margin="0,0,0,5" Style="{StaticResource DarkTextBlockStyle}"/>
+            <TextBlock Text="{DynamicResource Git_Framework}" FontWeight="Medium" Margin="0,0,0,5" Style="{StaticResource DarkTextBlockStyle}"/>
             <ComboBox SelectedItem="{Binding SelectedFramework}" 
                       ItemsSource="{Binding AvailableFrameworks}"
                       HorizontalAlignment="Stretch">
@@ -136,7 +141,7 @@
 
         <!-- 其他选项 -->
         <StackPanel Grid.Row="3" Margin="0,0,0,15">
-            <CheckBox Content="克隆完成后自动添加到项目管理器" 
+            <CheckBox Content="{DynamicResource Git_AutoAddToManager}" 
                       IsChecked="{Binding AutoAddToManager}"/>
         </StackPanel>
 
@@ -144,7 +149,7 @@
         <StackPanel Grid.Row="4" 
                     Margin="0,0,0,15"
                     Visibility="{Binding IsCloning, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Text="克隆进度" 
+            <TextBlock Text="{DynamicResource Git_CloneProgress}" 
                        FontWeight="Medium" 
                        Margin="0,0,0,5"
                        Style="{StaticResource DarkTextBlockStyle}"/>
@@ -161,7 +166,7 @@
 
         <!-- 日志输出 -->
         <GroupBox Grid.Row="5" 
-                  Header="克隆日志" 
+                  Header="{DynamicResource Git_CloneLog}" 
                   Margin="0,0,0,15"
                   Style="{StaticResource DarkGroupBoxStyle}">
             <ScrollViewer x:Name="LogScrollViewer" 
@@ -181,12 +186,12 @@
             <StackPanel Grid.Row="6" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
-                <ui:Button Content="克隆" 
+                <ui:Button Content="{DynamicResource Git_Clone}" 
                            Command="{Binding CloneCommand}"
                            IsEnabled="{Binding CanClone}"
                            Appearance="Primary"
                            Margin="0,0,10,0"/>
-                <ui:Button Content="取消" 
+                <ui:Button Content="{DynamicResource Button_Cancel}" 
                            Click="CancelButton_Click"
                            Appearance="Secondary"/>
             </StackPanel>
