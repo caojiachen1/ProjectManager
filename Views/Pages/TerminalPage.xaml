@@ -194,6 +194,21 @@
                                 behaviors:AnsiRichTextBehavior.EnableAnsiParsing="True"
                                 behaviors:AnsiRichTextBehavior.PreferFontFamilies="Cascadia Mono"
                                 behaviors:AnsiRichTextBehavior.MaxParagraphs="2000"/>
+
+                            <!-- 悬浮按钮 -->
+                            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="24">
+                                <ui:Button Icon="{ui:SymbolIcon ArrowUp24}"
+                                           Padding="8"
+                                           Margin="0,0,0,8"
+                                           Click="OnScrollToTopClick"
+                                           ToolTip="滚动到顶部"
+                                           Opacity="0.8"/>
+                                <ui:Button Icon="{ui:SymbolIcon ArrowDown24}"
+                                           Padding="8"
+                                           Click="OnScrollToBottomClick"
+                                           ToolTip="滚动到底部"
+                                           Opacity="0.8"/>
+                            </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </TabControl.ContentTemplate>

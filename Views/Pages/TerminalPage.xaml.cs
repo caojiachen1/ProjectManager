@@ -1,3 +1,6 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using ProjectManager.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
 
@@ -16,6 +19,40 @@ namespace ProjectManager.Views.Pages
             DataContext = this;
 
             InitializeComponent();
+        }
+
+        private void OnScrollToTopClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && 
+                element.Parent is Panel stackPanel && 
+                stackPanel.Parent is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    if (child is RichTextBox rtb)
+                    {
+                        rtb.ScrollToHome();
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void OnScrollToBottomClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && 
+                element.Parent is Panel stackPanel && 
+                stackPanel.Parent is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    if (child is RichTextBox rtb)
+                    {
+                        rtb.ScrollToEnd();
+                        break;
+                    }
+                }
+            }
         }
     }
 }

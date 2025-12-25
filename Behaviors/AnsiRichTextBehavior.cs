@@ -181,6 +181,36 @@ namespace ProjectManager.Behaviors
                 };
                 newCol.CollectionChanged += handler;
                 _handlers[rtb] = handler;
+
+                // 监听滚动事件以处理自动滚动逻辑
+                rtb.RemoveHandler(ScrollViewer.ScrollChangedEvent, (ScrollChangedEventHandler)OnScrollChanged);
+                rtb.AddHandler(ScrollViewer.ScrollChangedEvent, (ScrollChangedEventHandler)OnScrollChanged);
+            }
+        }
+
+        private static void OnScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (sender is not RichTextBox rtb) return;
+
+            // 如果滚动到底部（允许一定的误差，例如2像素），重新启用自动滚动
+            if (e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - 2.0)
+            {
+                if (!GetAutoScroll(rtb))
+                {
+                    SetAutoScroll(rtb, true);
+                }
+            }
+            else
+            {
+                // 如果用户向上滚动，或者在非底部位置发生滚动变化
+                // 我们禁用自动滚动
+                if (e.VerticalChange < 0 || (e.VerticalChange > 0 && e.VerticalOffset + e.ViewportHeight < e.ExtentHeight - 2.0))
+                {
+                    if (GetAutoScroll(rtb))
+                    {
+                        SetAutoScroll(rtb, false);
+                    }
+                }
             }
         }
 
