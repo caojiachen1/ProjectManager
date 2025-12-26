@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="Node.js项目设置"
+    Title="{DynamicResource NodeJS_SettingsTitle}"
     Width="700"
     Height="750"
     MinWidth="600"
@@ -25,7 +25,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="Node.js项目设置"
+            Title="{DynamicResource NodeJS_SettingsTitle}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -39,16 +39,16 @@
                 <ui:Card Margin="0,0,0,16" Padding="16">
                     <StackPanel>
                         <TextBlock Text="{Binding ProjectName}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="Node.js JavaScript运行时项目" Opacity="0.7" FontSize="12"/>
+                        <TextBlock Text="{DynamicResource NodeJS_ProjectInfo}" Opacity="0.7" FontSize="12"/>
                         <TextBlock Text="{Binding ProjectPath}" Opacity="0.6" FontSize="11" Margin="0,4,0,0"/>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- Node.js特定配置 -->
-                <Expander Header="Node.js配置" IsExpanded="True" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource NodeJS_Config}" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_StartCommand}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding StartCommand}" 
                                       IsEditable="True"
                                       Text="{Binding StartCommand}">
@@ -64,7 +64,7 @@
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="服务端口" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_Port}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding Port}" 
                                           Minimum="1024" 
                                           Maximum="65535"
@@ -72,13 +72,13 @@
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Node.js版本要求" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_VersionReq}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding NodeVersion, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="例如: >=16.0.0"/>
+                                        PlaceholderText="{DynamicResource NodeJS_VersionReqPlaceholder}"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="包管理器" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_PackageManager}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding PackageManager}">
                                 <ComboBoxItem Content="npm"/>
                                 <ComboBoxItem Content="yarn"/>
@@ -86,34 +86,34 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <CheckBox Content="启用开发模式 (NODE_ENV=development)" 
+                        <CheckBox Content="{DynamicResource NodeJS_EnableDevMode}" 
                                   IsChecked="{Binding DevelopmentMode}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用热重载/监听模式" 
+                        <CheckBox Content="{DynamicResource NodeJS_EnableHotReload}" 
                                   IsChecked="{Binding HotReload}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用调试模式 (--inspect)" 
+                        <CheckBox Content="{DynamicResource NodeJS_EnableDebug}" 
                                   IsChecked="{Binding DebugMode}"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 构建配置 -->
-                <Expander Header="构建配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource NodeJS_BuildConfig}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="构建命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_BuildCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding BuildCommand, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="npm run build"/>
+                                        PlaceholderText="{DynamicResource NodeJS_BuildCommandPlaceholder}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="测试命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_TestCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding TestCommand, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="npm test"/>
+                                        PlaceholderText="{DynamicResource NodeJS_TestCommandPlaceholder}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="输出目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_OutputPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -121,25 +121,25 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding BuildOutputPath, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="./dist 或 ./build"
+                                            PlaceholderText="{DynamicResource NodeJS_OutputPathPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource AddProject_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseBuildOutputPathCommand}"/>
                             </Grid>
                         </StackPanel>
 
-                        <CheckBox Content="构建前自动运行测试" 
+                        <CheckBox Content="{DynamicResource NodeJS_RunTestsBeforeBuild}" 
                                   IsChecked="{Binding RunTestsBeforeBuild}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="构建后自动压缩代码" 
+                        <CheckBox Content="{DynamicResource NodeJS_MinifyOutput}" 
                                   IsChecked="{Binding MinifyOutput}"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 环境变量 -->
-                <Expander Header="环境变量" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource NodeJS_EnvVars}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
@@ -148,18 +148,18 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding EnvironmentFile, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText=".env 文件路径"
+                                        PlaceholderText="{DynamicResource NodeJS_EnvFile}"
                                         Margin="0,0,8,0"/>
                             <ui:Button Grid.Column="1" 
-                                       Content="浏览" 
+                                       Content="{DynamicResource AddProject_Browse}" 
                                        Icon="{ui:SymbolIcon FolderOpen24}"
                                        Command="{Binding BrowseEnvironmentFileCommand}"/>
                         </Grid>
                         
                         <StackPanel>
-                            <TextBlock Text="自定义环境变量" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource NodeJS_CustomEnvVars}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding CustomEnvironmentVars, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="KEY1=value1;KEY2=value2"
+                                        PlaceholderText="{DynamicResource NodeJS_CustomEnvVarsPlaceholder}"
                                         TextWrapping="Wrap"
                                         MinHeight="60"/>
                         </StackPanel>
@@ -167,10 +167,10 @@
                 </Expander>
 
                 <!-- 标签 -->
-                <Expander Header="项目标签" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource NodeJS_ProjectTags}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入标签，用逗号分隔（例如：JavaScript,Node.js,后端,Web API）"/>
+                                    PlaceholderText="{DynamicResource NodeJS_TagsPlaceholder}"/>
                     </StackPanel>
                 </Expander>
 
@@ -182,17 +182,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Content="保存" 
+                        <ui:Button Content="{DynamicResource ProjectSettings_Save}" 
                                    Icon="{ui:SymbolIcon Save24}"
                                    Appearance="Primary"
                                    Command="{Binding SaveCommand}"
                                    Margin="0,0,8,0"/>
-                        <ui:Button Content="取消" 
+                        <ui:Button Content="{DynamicResource ProjectSettings_Cancel}" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="2" 
-                               Content="删除项目" 
+                               Content="{DynamicResource NodeJS_DeleteProject}" 
                                Icon="{ui:SymbolIcon Delete24}"
                                Appearance="Danger"
                                Command="{Binding DeleteCommand}"

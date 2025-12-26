@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:helpers="clr-namespace:ProjectManager.Helpers"
     xmlns:converters="clr-namespace:ProjectManager.Converters"
-    Title="ComfyUI项目设置"
+    Title="{DynamicResource ComfyUI_SettingsTitle}"
     Width="700"
     Height="800"
     MinWidth="600"
@@ -38,7 +38,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="ComfyUI项目设置"
+            Title="{DynamicResource ComfyUI_SettingsTitle}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -52,17 +52,17 @@
                 <ui:Card Margin="0,0,0,16" Padding="16">
                     <StackPanel>
                         <TextBlock Text="{Binding ProjectName}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="ComfyUI 工作流项目" Opacity="0.7" FontSize="12"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_ProjectInfo}" Opacity="0.7" FontSize="12"/>
                         <TextBlock Text="{Binding ProjectPath}" Opacity="0.6" FontSize="11" Margin="0,4,0,0"/>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- ComfyUI特定配置 -->
-                <Expander Header="基础配置" IsExpanded="True" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_BasicConfig}" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
                         <!-- ComfyUI 根目录：自动/手动决定 main.py 和 custom_nodes 的基准路径 -->
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="ComfyUI 根目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_RootPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -70,13 +70,13 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0"
                                             Text="{Binding ComfyUIRootPath, UpdateSourceTrigger=PropertyChanged}"
-                                            PlaceholderText="例如：D:\ComfyUI 或 项目内的 ComfyUI 目录"
+                                            PlaceholderText="{DynamicResource ComfyUI_RootPathPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <ui:Button Content="自动检测"
+                                    <ui:Button Content="{DynamicResource ComfyUI_AutoDetect}"
                                                Margin="0,0,8,0"
                                                Command="{Binding DetectComfyUIRootCommand}"/>
-                                    <ui:Button Content="浏览"
+                                    <ui:Button Content="{DynamicResource AddProject_Browse}"
                                                Icon="{ui:SymbolIcon FolderOpen24}"
                                                Command="{Binding BrowseComfyUIRootCommand}"/>
                                 </StackPanel>
@@ -84,18 +84,18 @@
                             <TextBlock Margin="0,4,0,0"
                                        FontSize="10"
                                        Foreground="#666666">
-                                <Run Text="用于推断 main.py 与 custom_nodes 的所在目录；留空则根据项目路径自动尝试。"/>
+                                <Run Text="{DynamicResource ComfyUI_RootPathDesc}"/>
                             </TextBlock>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_StartCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="python main.py --listen --port 8188"/>
+                                        PlaceholderText="{DynamicResource ComfyUI_StartCommandPlaceholder}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="服务端口" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_Port}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding Port, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NullableToDoubleConverter}}" 
                                           Minimum="1" 
                                           Maximum="65535"
@@ -105,13 +105,13 @@
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="监听地址" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_ListenAddress}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding ListenAddress, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="127.0.0.1"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Python环境路径（可选）" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_PythonPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -119,10 +119,10 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding PythonPath, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用系统默认Python"
+                                            PlaceholderText="{DynamicResource ComfyUI_PythonPathPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource AddProject_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowsePythonPathCommand}"/>
                             </Grid>
@@ -130,48 +130,48 @@
                                        FontSize="10"
                                        Foreground="#FF5555"
                                        Visibility="{Binding IsPythonPathValid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                <Run Text="⚠ 请输入有效的Python可执行文件路径 (python.exe)"/>
+                                <Run Text="{DynamicResource ComfyUI_PythonPathInvalid}"/>
                             </TextBlock>
                         </StackPanel>
 
 
-                        <CheckBox Content="启动时监听所有网络接口 (--listen)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_ListenAll}" 
                                   IsChecked="{Binding ListenAllInterfaces}" 
                                   Margin="0,0,0,8"/>
                         
-                        <TextBlock Text="浏览器启动模式" FontWeight="SemiBold" Margin="0,4,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_BrowserLaunchMode}" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <ComboBox SelectedValue="{Binding BrowserAutoLaunchMode}" 
                                   SelectedValuePath="Tag" 
                                   Margin="0,0,0,8">
-                            <ComboBoxItem Content="默认行为" Tag="Default"/>
-                            <ComboBoxItem Content="自动启动浏览器 (--auto-launch)" Tag="AutoLaunch"/>
-                            <ComboBoxItem Content="禁用自动启动浏览器 (--disable-auto-launch)" Tag="DisableAutoLaunch"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BrowserLaunch_Default}" Tag="Default"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BrowserLaunch_Auto}" Tag="AutoLaunch"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BrowserLaunch_Disable}" Tag="DisableAutoLaunch"/>
                         </ComboBox>
                     </StackPanel>
                 </Expander>
 
                 <!-- 内存和GPU设置 -->
-                <Expander Header="内存和GPU设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_MemoryGpuSettings}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="内存管理模式" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_MemoryMode}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding MemoryManagementMode}"
                                   SelectedValuePath="Tag"
                                   Margin="0,0,0,12">
-                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
-                            <ComboBoxItem Content="仅使用GPU (--gpu-only)" Tag="GpuOnly"/>
-                            <ComboBoxItem Content="高显存模式 (--highvram)" Tag="HighVram"/>
-                            <ComboBoxItem Content="标准显存模式 (--normalvram)" Tag="NormalVram"/>
-                            <ComboBoxItem Content="低显存模式 (--lowvram)" Tag="LowVram"/>
-                            <ComboBoxItem Content="无显存模式 (--novram)" Tag="NoVram"/>
-                            <ComboBoxItem Content="使用CPU运行 (--cpu)" Tag="CpuMode"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_GpuOnly}" Tag="GpuOnly"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_HighVram}" Tag="HighVram"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_NormalVram}" Tag="NormalVram"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_LowVram}" Tag="LowVram"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_NoVram}" Tag="NoVram"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Memory_Cpu}" Tag="CpuMode"/>
                         </ComboBox>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="预留显存 (GB)" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_ReserveVram}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding ReserveVram, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="0" 
                                           Maximum="32768"
-                                          PlaceholderText="留空使用默认"
+                                          PlaceholderText="{DynamicResource ComfyUI_Memory_None}"
                                           ValidationMode="InvalidInputOverwritten"
                                           SpinButtonPlacementMode="Inline"
                                           SmallChange="0.5"
@@ -179,11 +179,11 @@
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="CUDA设备ID" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_CudaDevice}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding CudaDevice, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="0" 
                                           Maximum="15"
-                                          PlaceholderText="留空使用默认"
+                                          PlaceholderText="{DynamicResource ComfyUI_Memory_None}"
                                           ValidationMode="InvalidInputOverwritten"
                                           SpinButtonPlacementMode="Inline"
                                           SmallChange="1"
@@ -191,11 +191,11 @@
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="DirectML设备ID" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_DirectmlDevice}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding DirectmlDevice, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource OptionalNumberConverter}}" 
                                           Minimum="-1" 
                                           Maximum="15"
-                                          PlaceholderText="-1表示自动检测"
+                                          PlaceholderText="{DynamicResource ComfyUI_Directml_Auto}"
                                           ValidationMode="InvalidInputOverwritten"
                                           SpinButtonPlacementMode="Inline"
                                           SmallChange="1"
@@ -203,138 +203,138 @@
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="CUDA内存分配器" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_CudaAllocator}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <ComboBox SelectedValue="{Binding CudaMemoryAllocatorMode}" 
                                       SelectedValuePath="Tag">
-                                <ComboBoxItem Content="默认分配器" Tag="Default"/>
-                                <ComboBoxItem Content="使用CUDA分配器 (--cuda-malloc)" Tag="CudaMalloc"/>
-                                <ComboBoxItem Content="禁用CUDA分配器 (--disable-cuda-malloc)" Tag="DisableCudaMalloc"/>
+                                <ComboBoxItem Content="{DynamicResource ComfyUI_CudaAllocator_Default}" Tag="Default"/>
+                                <ComboBoxItem Content="{DynamicResource ComfyUI_CudaAllocator_CudaMalloc}" Tag="CudaMalloc"/>
+                                <ComboBoxItem Content="{DynamicResource ComfyUI_CudaAllocator_Disable}" Tag="DisableCudaMalloc"/>
                             </ComboBox>
                         </StackPanel>
 
-                        <CheckBox Content="异步卸载 (--async-offload)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_AsyncOffload}" 
                                   IsChecked="{Binding AsyncOffload}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="强制非阻塞操作 (--force-non-blocking)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_ForceNonBlocking}" 
                                   IsChecked="{Binding ForceNonBlocking}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用智能内存管理 (--disable-smart-memory)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableSmartMemory}" 
                                   IsChecked="{Binding DisableSmartMemory}"
                                   Margin="0,0,0,8"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 精度设置 -->
-                <Expander Header="精度设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_PrecisionSettings}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="全局精度设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_GlobalPrecision}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding GlobalPrecisionForceMode}" 
                                   SelectedValuePath="Tag" 
                                   Margin="0,0,0,12">
-                            <ComboBoxItem Content="不强制（默认）" Tag="None"/>
-                            <ComboBoxItem Content="强制FP32 (--force-fp32)" Tag="ForceFP32"/>
-                            <ComboBoxItem Content="强制FP16 (--force-fp16)" Tag="ForceFP16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Precision_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_ForceFP32}" Tag="ForceFP32"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_ForceFP16}" Tag="ForceFP16"/>
                         </ComboBox>
 
-                        <TextBlock Text="UNet模型精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_UnetPrecision}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding UnetPrecisionMode}"
                                   SelectedValuePath="Tag"
                                   Margin="0,0,0,12">
-                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
-                            <ComboBoxItem Content="FP32 UNet (--fp32-unet)" Tag="FP32"/>
-                            <ComboBoxItem Content="FP64 UNet (--fp64-unet)" Tag="FP64"/>
-                            <ComboBoxItem Content="BF16 UNet (--bf16-unet)" Tag="BF16"/>
-                            <ComboBoxItem Content="FP16 UNet (--fp16-unet)" Tag="FP16"/>
-                            <ComboBoxItem Content="FP8 E4M3FN UNet (--fp8_e4m3fn-unet)" Tag="FP8_E4M3FN"/>
-                            <ComboBoxItem Content="FP8 E5M2 UNet (--fp8_e5m2-unet)" Tag="FP8_E5M2"/>
-                            <ComboBoxItem Content="FP8 E8M0FNU UNet (--fp8_e8m0fnu-unet)" Tag="FP8_E8M0FNU"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Precision_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP32_UNet}" Tag="FP32"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP64_UNet}" Tag="FP64"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BF16_UNet}" Tag="BF16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP16_UNet}" Tag="FP16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP8_E4M3FN_UNet}" Tag="FP8_E4M3FN"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP8_E5M2_UNet}" Tag="FP8_E5M2"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP8_E8M0FNU_UNet}" Tag="FP8_E8M0FNU"/>
                         </ComboBox>
 
-                        <TextBlock Text="VAE模型精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_VaePrecision}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding VaePrecisionMode}"
                                   SelectedValuePath="Tag"
                                   Margin="0,0,0,12">
-                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
-                            <ComboBoxItem Content="FP16 VAE (--fp16-vae)" Tag="FP16"/>
-                            <ComboBoxItem Content="FP32 VAE (--fp32-vae)" Tag="FP32"/>
-                            <ComboBoxItem Content="BF16 VAE (--bf16-vae)" Tag="BF16"/>
-                            <ComboBoxItem Content="CPU VAE (--cpu-vae)" Tag="CPU"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Precision_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP16_VAE}" Tag="FP16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP32_VAE}" Tag="FP32"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BF16_VAE}" Tag="BF16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_CPU_VAE}" Tag="CPU"/>
                         </ComboBox>
 
-                        <TextBlock Text="文本编码器精度" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_TextEncPrecision}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding TextEncoderPrecisionMode}" 
                                   SelectedValuePath="Tag" 
                                   Margin="0,0,0,8">
-                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
-                            <ComboBoxItem Content="FP8 E4M3FN Text Encoder (--fp8_e4m3fn-text-enc)" Tag="FP8_E4M3FN"/>
-                            <ComboBoxItem Content="FP8 E5M2 Text Encoder (--fp8_e5m2-text-enc)" Tag="FP8_E5M2"/>
-                            <ComboBoxItem Content="FP16 Text Encoder (--fp16-text-enc)" Tag="FP16"/>
-                            <ComboBoxItem Content="FP32 Text Encoder (--fp32-text-enc)" Tag="FP32"/>
-                            <ComboBoxItem Content="BF16 Text Encoder (--bf16-text-enc)" Tag="BF16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Precision_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP8_E4M3FN_TextEnc}" Tag="FP8_E4M3FN"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP8_E5M2_TextEnc}" Tag="FP8_E5M2"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP16_TextEnc}" Tag="FP16"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FP32_TextEnc}" Tag="FP32"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BF16_TextEnc}" Tag="BF16"/>
                         </ComboBox>
 
-                        <CheckBox Content="强制通道在最后 (--force-channels-last)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_ForceChannelsLast}" 
                                   IsChecked="{Binding ForceChannelsLast}"
                                   Margin="0,0,0,8"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 注意力机制设置 -->
-                <Expander Header="注意力机制设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_AttentionSettings}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="注意力算法" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_AttentionAlgo}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding AttentionAlgorithmMode}"
                                   SelectedValuePath="Tag"
                                   Margin="0,0,0,12">
-                            <ComboBoxItem Content="不设置（默认）" Tag="None"/>
-                            <ComboBoxItem Content="分割交叉注意力 (--use-split-cross-attention)" Tag="SplitCrossAttention"/>
-                            <ComboBoxItem Content="四元交叉注意力 (--use-quad-cross-attention)" Tag="QuadCrossAttention"/>
-                            <ComboBoxItem Content="PyTorch交叉注意力 (--use-pytorch-cross-attention)" Tag="PytorchCrossAttention"/>
-                            <ComboBoxItem Content="Sage注意力 (--use-sage-attention)" Tag="SageAttention"/>
-                            <ComboBoxItem Content="Flash注意力 (--use-flash-attention)" Tag="FlashAttention"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Precision_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_SplitCrossAttention}" Tag="SplitCrossAttention"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_QuadCrossAttention}" Tag="QuadCrossAttention"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_PytorchCrossAttention}" Tag="PytorchCrossAttention"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_SageAttention}" Tag="SageAttention"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_FlashAttention}" Tag="FlashAttention"/>
                         </ComboBox>
 
-                        <TextBlock Text="其他注意力设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用Xformers (--disable-xformers)" 
+                        <TextBlock Text="{DynamicResource ComfyUI_OtherAttention}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableXformers}" 
                                   IsChecked="{Binding DisableXformers}" 
                                   Margin="0,0,0,8"/>
                         
-                        <TextBlock Text="注意力上投模式" FontWeight="SemiBold" Margin="0,4,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_AttentionUpcast}" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <ComboBox SelectedValue="{Binding AttentionUpcastMode}" 
                                   SelectedValuePath="Tag" 
                                   Margin="0,0,0,8">
-                            <ComboBoxItem Content="默认行为" Tag="Default"/>
-                            <ComboBoxItem Content="强制上变换注意力 (--force-upcast-attention)" Tag="ForceUpcast"/>
-                            <ComboBoxItem Content="禁用上变换注意力 (--dont-upcast-attention)" Tag="DontUpcast"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_BrowserLaunch_Default}" Tag="Default"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_ForceUpcast}" Tag="ForceUpcast"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_DontUpcast}" Tag="DontUpcast"/>
                         </ComboBox>
                     </StackPanel>
                 </Expander>
 
                 <!-- 缓存和性能设置 -->
-                <Expander Header="缓存和性能设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_CachePerformance}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="缓存模式" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_CacheMode}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ComboBox SelectedValue="{Binding CacheMode}"
                                   SelectedValuePath="Tag"
                                   Margin="0,0,0,8">
-                            <ComboBoxItem Content="默认缓存模式" Tag="Default"/>
-                            <ComboBoxItem Content="经典缓存 (--cache-classic)" Tag="Classic"/>
-                            <ComboBoxItem Content="无缓存 (--cache-none)" Tag="None"/>
-                            <ComboBoxItem Content="LRU缓存 (--cache-lru)" Tag="LRU"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Cache_Default}" Tag="Default"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Cache_Classic}" Tag="Classic"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Cache_None}" Tag="None"/>
+                            <ComboBoxItem Content="{DynamicResource ComfyUI_Cache_LRU}" Tag="LRU"/>
                         </ComboBox>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="LRU缓存大小（当选择LRU缓存时）" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_CacheLruSize}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding CacheLru, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="0" 
                                           Maximum="1000"
-                                          PlaceholderText="0表示禁用"
+                                          PlaceholderText="{DynamicResource ComfyUI_CacheLruSizePlaceholder}"
                                           ValidationMode="InvalidInputOverwritten"
                                           SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
-                        <TextBlock Text="预览设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_PreviewSettings}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="预览方法" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_PreviewMethod}" Margin="0,0,0,4"/>
                             <ComboBox SelectedValue="{Binding PreviewMethod}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="none"/>
                                 <ComboBoxItem Content="auto"/>
@@ -343,7 +343,7 @@
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="预览大小" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_PreviewSize}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding PreviewSize, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="64" 
                                           Maximum="2048"
@@ -352,33 +352,33 @@
                                           SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
-                        <TextBlock Text="性能优化" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <CheckBox Content="确定性算法 (--deterministic)" 
+                        <TextBlock Text="{DynamicResource ComfyUI_PerformanceOpt}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <CheckBox Content="{DynamicResource ComfyUI_Deterministic}" 
                                   IsChecked="{Binding Deterministic}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="快速FP16累积 (--fast fp16_accumulation)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_FastFp16Accum}" 
                                   IsChecked="{Binding FastFp16Accumulation}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="快速FP8矩阵乘法 (--fast fp8_matrix_mult)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_FastFp8Matrix}" 
                                   IsChecked="{Binding FastFp8MatrixMult}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="快速CUBLAS操作 (--fast cublas_ops)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_FastCublas}" 
                                   IsChecked="{Binding FastCublasOps}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="内存映射Torch文件 (--mmap-torch-files)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_MmapTorch}" 
                                   IsChecked="{Binding MmapTorchFiles}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用内存映射 (--disable-mmap)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableMmap}" 
                                   IsChecked="{Binding DisableMmap}"
                                   Margin="0,0,0,8"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 模型配置 -->
-                <Expander Header="目录和模型配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_DirModelConfig}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="基础目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_BaseDir}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -386,17 +386,17 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding BaseDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用默认"
+                                            PlaceholderText="{DynamicResource Generic_DefaultPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseBaseDirectoryCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="模型文件夹路径" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_ModelsPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -407,14 +407,14 @@
                                             PlaceholderText="./models"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseModelsPathCommand}"/>
                             </Grid>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="输出文件夹路径" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_OutputPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -425,14 +425,14 @@
                                             PlaceholderText="./output"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseOutputPathCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="输入文件夹路径" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_InputDir}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -440,17 +440,17 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding InputDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用默认"
+                                            PlaceholderText="{DynamicResource Generic_DefaultPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseInputDirectoryCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="临时文件夹路径" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_TempDir}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -458,17 +458,17 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding TempDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用默认"
+                                            PlaceholderText="{DynamicResource Generic_DefaultPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseTempDirectoryCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="用户目录路径" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_UserDir}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -476,17 +476,17 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding UserDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用默认"
+                                            PlaceholderText="{DynamicResource Generic_DefaultPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseUserDirectoryCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel>
-                            <TextBlock Text="额外模型路径配置文件" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_ExtraModelPaths}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -497,7 +497,7 @@
                                             PlaceholderText="extra_model_paths.yaml"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseExtraModelPathsConfigCommand}"/>
                             </Grid>
@@ -506,10 +506,10 @@
                 </Expander>
 
                 <!-- 网络和安全设置 -->
-                <Expander Header="网络和安全设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_NetworkSecurity}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="最大上传大小 (MB)" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_MaxUploadSize}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding MaxUploadSize, UpdateSourceTrigger=PropertyChanged}" 
                                           Minimum="1" 
                                           Maximum="10240"
@@ -518,18 +518,18 @@
                                           SpinButtonPlacementMode="Inline"/>
                         </StackPanel>
 
-                        <CheckBox Content="启用CORS (--enable-cors-header)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_EnableCors}" 
                                   IsChecked="{Binding EnableCorsHeader}" 
                                   Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="CORS来源" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_CorsOrigin}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding CorsOrigin, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="*"/>
                         </StackPanel>
 
-                        <TextBlock Text="TLS/SSL设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_TlsSslSettings}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="TLS密钥文件" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_TlsKey}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -540,14 +540,14 @@
                                             PlaceholderText="server.key"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseTlsKeyFileCommand}"/>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel>
-                            <TextBlock Text="TLS证书文件" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_TlsCert}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -558,7 +558,7 @@
                                             PlaceholderText="server.crt"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseTlsCertFileCommand}"/>
                             </Grid>
@@ -567,10 +567,10 @@
                 </Expander>
 
                 <!-- 工作流配置 -->
-                <Expander Header="工作流和自定义节点配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_WorkflowConfig}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="自定义节点文件夹" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_CustomNodesDir}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -581,43 +581,43 @@
                                             PlaceholderText="./custom_nodes"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseCustomNodesPathCommand}"/>
                             </Grid>
                         </StackPanel>
                         
-                        <CheckBox Content="启动时自动加载默认工作流" 
+                        <CheckBox Content="{DynamicResource ComfyUI_AutoLoadWorkflow}" 
                                   IsChecked="{Binding AutoLoadWorkflow}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用工作流快照保存" 
+                        <CheckBox Content="{DynamicResource ComfyUI_EnableWorkflowSnapshots}" 
                                   IsChecked="{Binding EnableWorkflowSnapshots}"
                                   Margin="0,0,0,8"/>
 
-                        <TextBlock Text="自定义节点管理" FontWeight="SemiBold" Margin="0,12,0,8"/>
-                        <CheckBox Content="禁用所有自定义节点 (--disable-all-custom-nodes)" 
+                        <TextBlock Text="{DynamicResource ComfyUI_CustomNodesMgmt}" FontWeight="SemiBold" Margin="0,12,0,8"/>
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableAllCustomNodes}" 
                                   IsChecked="{Binding DisableAllCustomNodes}" 
                                   Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="白名单自定义节点" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_WhitelistNodes}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding WhitelistCustomNodes, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="用空格分隔节点文件夹名称"/>
+                                        PlaceholderText="{DynamicResource ComfyUI_WhitelistNodesPlaceholder}"/>
                         </StackPanel>
-                        <CheckBox Content="禁用API节点 (--disable-api-nodes)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableApiNodes}" 
                                   IsChecked="{Binding DisableApiNodes}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="禁用元数据 (--disable-metadata)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_DisableMetadata}" 
                                   IsChecked="{Binding DisableMetadata}"
                                   Margin="0,0,0,8"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 高级设置 -->
-                <Expander Header="高级设置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_AdvancedSettings}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="日志和调试" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_LogDebug}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="日志级别" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_LogLevel}" Margin="0,0,0,4"/>
                             <ComboBox SelectedValue="{Binding Verbose}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="DEBUG"/>
                                 <ComboBoxItem Content="INFO"/>
@@ -628,7 +628,7 @@
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="哈希函数" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_HashFunction}" Margin="0,0,0,4"/>
                             <ComboBox SelectedValue="{Binding DefaultHashingFunction}" SelectedValuePath="Content">
                                 <ComboBoxItem Content="md5"/>
                                 <ComboBoxItem Content="sha1"/>
@@ -637,27 +637,27 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <CheckBox Content="输出日志到标准输出 (--log-stdout)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_LogStdout}" 
                                   IsChecked="{Binding LogStdout}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="不打印服务器输出 (--dont-print-server)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_DontPrintServer}" 
                                   IsChecked="{Binding DontPrintServer}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="Windows独立构建 (--windows-standalone-build)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_WindowsStandalone}" 
                                   IsChecked="{Binding WindowsStandaloneBuild}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="多用户模式 (--multi-user)" 
-                                  IsChecked="{Binding MultiUser}" 
+                        <CheckBox Content="{DynamicResource ComfyUI_MultiUser}" 
+                                  IsChecked="{Binding MultiUser}"
                                   Margin="0,0,0,12"/>
 
-                        <TextBlock Text="前端设置" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{DynamicResource ComfyUI_FrontEndSettings}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="前端版本" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_FrontEndVersion}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding FrontEndVersion, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="comfyanonymous/ComfyUI@latest"/>
                         </StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="前端根目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_FrontEndRoot}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -665,33 +665,33 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:TextBox Grid.Column="0" 
                                             Text="{Binding FrontEndRoot, UpdateSourceTrigger=PropertyChanged}" 
-                                            PlaceholderText="留空使用默认"
+                                            PlaceholderText="{DynamicResource Generic_DefaultPlaceholder}"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource Generic_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseFrontEndRootCommand}"/>
                             </Grid>
                         </StackPanel>
 
-                        <CheckBox Content="启用响应体压缩 (--enable-compress-response-body)" 
+                        <CheckBox Content="{DynamicResource ComfyUI_EnableCompressResponse}" 
                                   IsChecked="{Binding EnableCompressResponseBody}" 
                                   Margin="0,0,0,8"/>
 
                         <StackPanel>
-                            <TextBlock Text="额外启动参数" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource ComfyUI_ExtraArgs}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding ExtraArgs, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="其他未包含的启动参数"
+                                        PlaceholderText="{DynamicResource ComfyUI_ExtraArgsPlaceholder}"
                                         TextWrapping="Wrap"/>
                         </StackPanel>
                     </StackPanel>
                 </Expander>
 
                 <!-- 标签 -->
-                <Expander Header="项目标签" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource ComfyUI_ProjectTags}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入标签，用逗号分隔（例如：AI绘画,图像生成,工作流）"/>
+                                    PlaceholderText="{DynamicResource ComfyUI_TagsPlaceholder}"/>
                     </StackPanel>
                 </Expander>
 
@@ -703,18 +703,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Content="保存" 
+                        <ui:Button Content="{DynamicResource Generic_Save}" 
                                    Icon="{ui:SymbolIcon Save24}"
                                    Appearance="Primary"
                                    Command="{Binding SaveCommand}"
                                    Margin="0,0,8,0"/>
-                        <ui:Button Content="取消" 
+                        <ui:Button Content="{DynamicResource Generic_Cancel}" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="2" 
-                               Content="删除项目" 
-                               Icon="{ui:SymbolIcon Delete24}"
+                               Content="{DynamicResource ComfyUI_DeleteProject}" 
                                Appearance="Danger"
                                Command="{Binding DeleteCommand}"
                                Margin="16,0,0,0"/>

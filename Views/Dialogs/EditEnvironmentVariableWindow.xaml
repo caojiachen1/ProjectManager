@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="编辑环境变量"
+    Title="{DynamicResource EnvVar_EditTitle}"
     Width="600"
     Height="320"
     MinWidth="500"
@@ -27,7 +27,7 @@
         </Grid.ColumnDefinitions>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="编辑环境变量"
+            Title="{DynamicResource EnvVar_EditTitle}"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True"
             Padding="5,0,0,0" Grid.ColumnSpan="2">
@@ -45,10 +45,10 @@
 
             <!-- 变量名 -->
             <StackPanel Grid.Row="0" Margin="0,30,0,16">
-                <TextBlock Text="变量名:" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                <TextBlock Text="{DynamicResource EnvVar_Edit_Name}" Margin="0,0,0,4" FontWeight="SemiBold"/>
                 <ui:TextBox Text="{Binding VariableName, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding CanEditName}"
-                            PlaceholderText="输入变量名">
+                            PlaceholderText="{DynamicResource EnvVar_NamePlaceholder}">
                     <ui:TextBox.Icon>
                         <ui:SymbolIcon Symbol="Tag24"/>
                     </ui:TextBox.Icon>
@@ -64,9 +64,9 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="变量值:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="0" Text="{DynamicResource EnvVar_Edit_Value}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ui:Button Grid.Column="1" 
-                               Content="编辑路径..."
+                               Content="{DynamicResource EnvVar_EditPath}"
                                Command="{Binding EditPathCommand}"
                                Appearance="Secondary"
                                Margin="8,0,8,0"
@@ -77,7 +77,7 @@
                         </ui:Button.Icon>
                     </ui:Button>
                     <ui:Button Grid.Column="2" 
-                               Content="浏览目录..."
+                               Content="{DynamicResource EnvVar_BrowseFolder}"
                                Appearance="Secondary"
                                Command="{Binding BrowseFolderCommand}"
                                Margin="0,0,8,0"
@@ -87,7 +87,7 @@
                         </ui:Button.Icon>
                     </ui:Button>
                     <ui:Button Grid.Column="3" 
-                               Content="浏览文件..."
+                               Content="{DynamicResource EnvVar_BrowseFile}"
                                Appearance="Secondary"
                                Command="{Binding BrowseFileCommand}"
                                Padding="12,4">
@@ -101,7 +101,7 @@
                             TextWrapping="Wrap"
                             MaxHeight="120"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            PlaceholderText="输入变量值，可以包含多个路径用分号分隔">
+                            PlaceholderText="{DynamicResource EnvVar_ValuePlaceholder}">
                     <ui:TextBox.Icon>
                         <ui:SymbolIcon Symbol="TextFont24"/>
                     </ui:TextBox.Icon>
@@ -112,13 +112,13 @@
             <StackPanel Grid.Row="2" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
-                <ui:Button Content="取消" 
+                <ui:Button Content="{DynamicResource Button_Cancel}" 
                            Appearance="Secondary"
                            IsCancel="True"
                            Click="CancelButton_Click"
                            Margin="0,0,8,0"
                            Padding="24,8"/>
-                <ui:Button Content="确定" 
+                <ui:Button Content="{DynamicResource Button_OK}" 
                            Appearance="Primary"
                            IsDefault="True"
                            Command="{Binding SaveCommand}"

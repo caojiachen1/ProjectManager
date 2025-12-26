@@ -48,66 +48,66 @@
                 <Expander Header="{DynamicResource DotNet_Settings}" IsExpanded="True" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_StartCommand}" Margin="0,0,0,4"/>
                             <ComboBox Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
                                       ItemsSource="{Binding StartCommandOptions}"
                                       IsEditable="True"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="目标框架" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_TargetFramework}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding TargetFramework}"
                                       ItemsSource="{Binding TargetFrameworkOptions}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="项目类型" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_ProjectType}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding ProjectType}"
                                       ItemsSource="{Binding ProjectTypeOptions}"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="服务端口（Web项目）" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_Port}" Margin="0,0,0,4"/>
                             <ui:NumberBox Value="{Binding Port}" 
                                           Minimum="1024" 
                                           Maximum="65535"
                                           PlaceholderText="5000"/>
                         </StackPanel>
 
-                        <CheckBox Content="启用热重载 (dotnet watch)" 
+                        <CheckBox Content="{DynamicResource DotNet_EnableHotReload}" 
                                   IsChecked="{Binding EnableHotReload}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用HTTPS重定向" 
+                        <CheckBox Content="{DynamicResource DotNet_EnableHttps}" 
                                   IsChecked="{Binding EnableHttpsRedirection}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用开发者异常页面" 
+                        <CheckBox Content="{DynamicResource DotNet_EnableDevPage}" 
                                   IsChecked="{Binding EnableDeveloperExceptionPage}"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 构建配置 -->
-                <Expander Header="构建配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource DotNet_BuildConfig}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="构建配置" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_BuildConfig}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding BuildConfiguration}"
                                       ItemsSource="{Binding BuildConfigurationOptions}"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="构建命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_BuildCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding BuildCommand, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="dotnet build"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="测试命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_TestCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding TestCommand, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="dotnet test"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="输出目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_OutputPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -118,40 +118,40 @@
                                             PlaceholderText="./bin/Debug"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource AddProject_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowseOutputPathCommand}"/>
                             </Grid>
                         </StackPanel>
 
-                        <CheckBox Content="构建前自动运行测试" 
+                        <CheckBox Content="{DynamicResource DotNet_RunTestsBeforeBuild}" 
                                   IsChecked="{Binding RunTestsBeforeBuild}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用代码分析" 
+                        <CheckBox Content="{DynamicResource DotNet_EnableCodeAnalysis}" 
                                   IsChecked="{Binding EnableCodeAnalysis}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="警告视为错误" 
+                        <CheckBox Content="{DynamicResource DotNet_TreatWarningsAsErrors}" 
                                   IsChecked="{Binding TreatWarningsAsErrors}"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 发布配置 -->
-                <Expander Header="发布配置" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource DotNet_PublishConfig}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="发布命令" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_PublishCommand}" Margin="0,0,0,4"/>
                             <ui:TextBox Text="{Binding PublishCommand, UpdateSourceTrigger=PropertyChanged}" 
                                         PlaceholderText="dotnet publish"/>
                         </StackPanel>
                         
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="目标运行时" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_TargetRuntime}" Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding TargetRuntime}"
                                       ItemsSource="{Binding TargetRuntimeOptions}"/>
                         </StackPanel>
                         
                         <StackPanel>
-                            <TextBlock Text="发布输出目录" Margin="0,0,0,4"/>
+                            <TextBlock Text="{DynamicResource DotNet_PublishPath}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -162,28 +162,28 @@
                                             PlaceholderText="./publish"
                                             Margin="0,0,8,0"/>
                                 <ui:Button Grid.Column="1" 
-                                           Content="浏览" 
+                                           Content="{DynamicResource AddProject_Browse}" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"
                                            Command="{Binding BrowsePublishPathCommand}"/>
                             </Grid>
                         </StackPanel>
 
-                        <CheckBox Content="单文件发布" 
+                        <CheckBox Content="{DynamicResource DotNet_SingleFilePublish}" 
                                   IsChecked="{Binding SingleFilePublish}" 
                                   Margin="0,8,0,8"/>
-                        <CheckBox Content="自包含发布" 
+                        <CheckBox Content="{DynamicResource DotNet_SelfContainedPublish}" 
                                   IsChecked="{Binding SelfContainedPublish}" 
                                   Margin="0,0,0,8"/>
-                        <CheckBox Content="启用ReadyToRun" 
+                        <CheckBox Content="{DynamicResource DotNet_EnableReadyToRun}" 
                                   IsChecked="{Binding EnableReadyToRun}"/>
                     </StackPanel>
                 </Expander>
 
                 <!-- 标签 -->
-                <Expander Header="项目标签" IsExpanded="False" Margin="0,0,0,16">
+                <Expander Header="{DynamicResource DotNet_ProjectTags}" IsExpanded="False" Margin="0,0,0,16">
                     <StackPanel>
                         <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="输入标签，用逗号分隔（例如：.NET,C#,后端,Web API）"/>
+                                    PlaceholderText="{DynamicResource DotNet_TagsPlaceholder}"/>
                     </StackPanel>
                 </Expander>
 
@@ -195,17 +195,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Content="保存" 
+                        <ui:Button Content="{DynamicResource ProjectSettings_Save}" 
                                    Icon="{ui:SymbolIcon Save24}"
                                    Appearance="Primary"
                                    Command="{Binding SaveCommand}"
                                    Margin="0,0,8,0"/>
-                        <ui:Button Content="取消" 
+                        <ui:Button Content="{DynamicResource ProjectSettings_Cancel}" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="2" 
-                               Content="删除项目" 
+                               Content="{DynamicResource DotNet_DeleteProject}" 
                                Icon="{ui:SymbolIcon Delete24}"
                                Appearance="Danger"
                                Command="{Binding DeleteCommand}"

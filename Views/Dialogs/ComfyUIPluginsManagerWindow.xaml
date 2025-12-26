@@ -7,7 +7,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:dialogs="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:viewModels="clr-namespace:ProjectManager.ViewModels.Dialogs"
-    Title="ComfyUI 插件管理"
+    Title="{DynamicResource ComfyUI_PluginsTitle}"
     Width="900"
     Height="480"
     MinWidth="800"
@@ -23,7 +23,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="ComfyUI 插件管理"
+            Title="{DynamicResource ComfyUI_PluginsTitle}"
             Padding="8,0,0,0" />
 
         <Grid Margin="0,32,0,0">
@@ -73,45 +73,45 @@
                         </Style>
                     </ui:DataGrid.Resources>
                     <ui:DataGrid.Columns>
-                        <DataGridCheckBoxColumn Header="启用"
+                        <DataGridCheckBoxColumn Header="{DynamicResource ComfyUI_PluginEnabled}"
                                                 Binding="{Binding IsEnabled}"
                                                 Width="Auto" />
 
-                        <DataGridTextColumn Header="插件名"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginName}"
                                             Binding="{Binding Name}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
-                        <DataGridTextColumn Header="远端地址"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginRemoteUrl}"
                                             Binding="{Binding RemoteUrl}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
-                        <DataGridTextColumn Header="当前分支"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginBranch}"
                                             Binding="{Binding Branch}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
-                        <DataGridTextColumn Header="版本 ID"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginVersionId}"
                                             Binding="{Binding VersionId}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
-                        <DataGridTextColumn Header="最后提交信息"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginLastCommit}"
                                             Binding="{Binding LastCommitMessage}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
-                        <DataGridTextColumn Header="更新日期"
+                        <DataGridTextColumn Header="{DynamicResource ComfyUI_PluginLastUpdate}"
                                             Binding="{Binding LastUpdated}"
                                             Width="SizeToCells"
                                             ElementStyle="{StaticResource TightTextCellStyle}" />
 
                         <!-- 操作列：移除按钮 -->
-                        <DataGridTemplateColumn Header="操作" Width="80">
+                        <DataGridTemplateColumn Header="{DynamicResource ComfyUI_PluginActions}" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                        <Button Content="移除"
+                                        <Button Content="{DynamicResource ComfyUI_PluginRemove}"
                                             Padding="6,2"
                                             Margin="6,0"
                                             HorizontalAlignment="Center"

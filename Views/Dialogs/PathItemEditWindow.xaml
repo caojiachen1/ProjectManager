@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="编辑路径项"
+    Title="{DynamicResource PathEditor_ItemTitle}"
     Width="500"
     Height="250"
     MinWidth="400"
@@ -23,7 +23,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="编辑路径项"
+            Title="{DynamicResource PathEditor_ItemTitle}"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True"
             Padding="5,0,0,0">
@@ -41,9 +41,9 @@
 
             <!-- 路径输入 -->
             <StackPanel Grid.Row="0" Margin="0,20,0,16">
-                <TextBlock Text="路径:" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                <TextBlock Text="{DynamicResource PathEditor_PathLabel}" Margin="0,0,0,8" FontWeight="SemiBold"/>
                 <ui:TextBox Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
-                            PlaceholderText="输入路径或使用浏览按钮选择...">
+                            PlaceholderText="{DynamicResource PathEditor_PathPlaceholder}">
                     <ui:TextBox.Icon>
                         <ui:SymbolIcon Symbol="Folder24"/>
                     </ui:TextBox.Icon>
@@ -52,12 +52,12 @@
 
             <!-- 浏览按钮 -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,16">
-                <ui:Button Content="浏览文件夹..." 
+                <ui:Button Content="{DynamicResource EnvVar_BrowseFolder}" 
                            Command="{Binding BrowseFolderCommand}"
                            Appearance="Secondary"
                            Margin="0,0,8,0"
                            Padding="16,6"/>
-                <ui:Button Content="浏览文件..." 
+                <ui:Button Content="{DynamicResource EnvVar_BrowseFile}" 
                            Command="{Binding BrowseFileCommand}"
                            Appearance="Secondary"
                            Padding="16,6"/>
@@ -67,13 +67,13 @@
             <StackPanel Grid.Row="2" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
-                <ui:Button Content="确定" 
+                <ui:Button Content="{DynamicResource Button_Confirm}" 
                            Command="{Binding SaveCommand}"
                            Appearance="Primary"
                            IsDefault="True"
                            Margin="0,0,20,0"
                            Padding="20,8"/>
-                <ui:Button Content="取消" 
+                <ui:Button Content="{DynamicResource Button_Cancel}" 
                            Command="{Binding CancelCommand}"
                            Appearance="Secondary"
                            IsCancel="True"

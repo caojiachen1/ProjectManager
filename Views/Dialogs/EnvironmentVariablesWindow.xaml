@@ -219,7 +219,7 @@
                         Margin="0,0,8,0"/>
             
             <ui:Button Grid.Column="2" 
-                       Content="添加"
+                       Content="{DynamicResource Button_Add}"
                        Icon="{ui:SymbolIcon Add24}"
                        Appearance="Primary"
                        Command="{Binding AddVariableCommand}"
@@ -236,12 +236,12 @@
         <StackPanel Grid.Row="4" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
-            <ui:Button Content="取消" 
+            <ui:Button Content="{DynamicResource Button_Cancel}" 
                        Appearance="Secondary"
                        Click="CancelButton_Click"
                        Margin="0,0,8,0"
                        Padding="24,8"/>
-            <ui:Button Content="保存" 
+            <ui:Button Content="{DynamicResource Button_Save}" 
                        Appearance="Primary"
                        Click="SaveButton_Click"
                        Padding="24,8"/>

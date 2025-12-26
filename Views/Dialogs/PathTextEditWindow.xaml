@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="编辑路径文本"
+    Title="{DynamicResource PathEditor_TextTitle}"
     Width="600"
     Height="400"
     MinWidth="500"
@@ -27,7 +27,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="编辑路径文本"
+            Title="{DynamicResource PathEditor_TextTitle}"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True"
             Padding="5,0,0,0">
@@ -45,7 +45,7 @@
 
             <!-- 说明文本 -->
             <TextBlock Grid.Row="0" 
-                       Text="以分号分隔的路径列表，每个路径占一行：" 
+                       Text="{DynamicResource PathEditor_TextDescription}" 
                        FontWeight="SemiBold" 
                        Margin="0,0,0,16"
                        TextWrapping="Wrap"/>
@@ -70,13 +70,13 @@
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right"
                         Margin="0,16,0,0">
-                <ui:Button Content="取消" 
+                <ui:Button Content="{DynamicResource Button_Cancel}" 
                            Command="{Binding CancelCommand}"
                            Appearance="Secondary"
                            IsCancel="True"
                            Margin="0,0,8,0"
                            Padding="20,8"/>
-                <ui:Button Content="确定" 
+                <ui:Button Content="{DynamicResource Button_Confirm}" 
                            Command="{Binding SaveCommand}"
                            Appearance="Primary"
                            IsDefault="True"

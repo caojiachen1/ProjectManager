@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:ProjectManager.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="项目设置"
+    Title="{DynamicResource ProjectEdit_Title}"
     Width="600"
     Height="650"
     MinWidth="550"
@@ -25,7 +25,7 @@
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="项目设置"
+            Title="{DynamicResource ProjectEdit_Title}"
             Grid.Row="0"
             Padding="5,0,0,0">
             <ui:TitleBar.Icon>
@@ -37,10 +37,10 @@
             <StackPanel Margin="24">
                 <!-- 路径配置 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="路径配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <TextBlock Text="{DynamicResource Generic_PathConfig}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     
                     <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="项目本地路径" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource Generic_LocalPath}" Margin="0,0,0,4"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -48,16 +48,16 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding LocalPath, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="选择项目文件夹路径"
+                                        PlaceholderText="{DynamicResource Generic_LocalPathPlaceholder}"
                                         Margin="0,0,8,0"/>
                             <ui:Button Grid.Column="1" 
-                                       Content="浏览" 
+                                       Content="{DynamicResource Generic_Browse}" 
                                        Icon="{ui:SymbolIcon FolderOpen24}"
                                        Command="{Binding BrowseLocalPathCommand}"/>
                         </Grid>
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock Text="工作目录" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource Generic_WorkingDirectory}" Margin="0,0,0,4"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -65,10 +65,10 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding WorkingDirectory, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="设置启动工作目录（默认为项目路径）"
+                                        PlaceholderText="{DynamicResource Generic_WorkingDirectoryPlaceholder}"
                                         Margin="0,0,8,0"/>
                             <ui:Button Grid.Column="1" 
-                                       Content="浏览" 
+                                       Content="{DynamicResource Generic_Browse}" 
                                        Icon="{ui:SymbolIcon FolderOpen24}"
                                        Command="{Binding BrowseWorkingDirectoryCommand}"/>
                         </Grid>
@@ -77,10 +77,10 @@
 
                 <!-- 启动配置 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="启动配置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <TextBlock Text="{DynamicResource Generic_StartConfig}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     
                     <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="启动命令" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource Generic_StartCommand}" Margin="0,0,0,4"/>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -88,7 +88,7 @@
                             </Grid.RowDefinitions>
                             <ui:TextBox Grid.Row="0"
                                         Text="{Binding StartCommand, UpdateSourceTrigger=PropertyChanged}" 
-                                        PlaceholderText="例如: python app.py 或 streamlit run app.py"
+                                        PlaceholderText="{DynamicResource Generic_StartCommandPlaceholder}"
                                         TextWrapping="Wrap"/>
                             <!-- 框架推荐命令 -->
                             <ItemsControl Grid.Row="1" 
@@ -109,20 +109,20 @@
                                                    Margin="0,0,4,4"
                                                    Command="{Binding DataContext.ApplyFrameworkCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                    CommandParameter="{Binding}"
-                                                   ToolTip="点击应用此命令"/>
+                                                   ToolTip="{DynamicResource Generic_ApplyCommandToolTip}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Grid>
                     </StackPanel>
-                    <CheckBox Content="应用启动时自动启动此项目" IsChecked="{Binding AutoStart}"/>
+                    <CheckBox Content="{DynamicResource Generic_AutoStart}" IsChecked="{Binding AutoStart}"/>
                 </StackPanel>
 
                 <!-- 标签 -->
                 <StackPanel Margin="0,0,0,24">
-                    <TextBlock Text="标签" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <TextBlock Text="{DynamicResource Generic_Tags}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     <ui:TextBox Text="{Binding TagsString, UpdateSourceTrigger=PropertyChanged}" 
-                                PlaceholderText="输入标签，用逗号分隔（例如：机器学习,图像处理,API）"/>
+                                PlaceholderText="{DynamicResource Generic_TagsPlaceholder}"/>
                 </StackPanel>
 
                 <!-- 操作按钮 -->
@@ -133,18 +133,18 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Content="保存" 
+                        <ui:Button Content="{DynamicResource Generic_Save}" 
                                    Icon="{ui:SymbolIcon Save24}"
                                    Appearance="Primary"
                                    Command="{Binding SaveCommand}"
                                    Margin="0,0,4,0"/>
-                        <ui:Button Content="取消" 
+                        <ui:Button Content="{DynamicResource Generic_Cancel}" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"
                                    Margin="4,0,0,0"/>
                     </StackPanel>
                     <ui:Button Grid.Column="2" 
-                               Content="删除项目" 
+                               Content="{DynamicResource Generic_DeleteProject}" 
                                Icon="{ui:SymbolIcon Delete24}"
                                Appearance="Danger"
                                Command="{Binding DeleteCommand}"
