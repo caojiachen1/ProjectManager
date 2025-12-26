@@ -17,7 +17,7 @@
         <UniformGrid Columns="4" Margin="0,0,0,12">
             <ui:Card Padding="16" Margin="0,0,12,0">
                 <StackPanel>
-                    <TextBlock Text="运行项目" FontSize="12" Opacity="0.7" />
+                    <TextBlock Text="{DynamicResource Performance_RunningProjects}" FontSize="12" Opacity="0.7" />
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding RunningProjects}" FontSize="26" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding TotalProjects, StringFormat='/{0}'}" FontSize="14" Opacity="0.6" Margin="6,0,0,0" />
@@ -27,7 +27,7 @@
 
             <ui:Card Padding="16" Margin="0,0,12,0">
                 <StackPanel>
-                    <TextBlock Text="总 CPU 占用" FontSize="12" Opacity="0.7" />
+                    <TextBlock Text="{DynamicResource Performance_TotalCpuUsage}" FontSize="12" Opacity="0.7" />
                     <TextBlock FontSize="26" FontWeight="SemiBold">
                         <Run Text="{Binding TotalCpuUsage, StringFormat={}{0:F1}}" />
                         <Run Text="%" />
@@ -37,7 +37,7 @@
 
             <ui:Card Padding="16" Margin="0,0,12,0">
                 <StackPanel>
-                    <TextBlock Text="总内存占用" FontSize="12" Opacity="0.7" />
+                    <TextBlock Text="{DynamicResource Performance_TotalMemoryUsage}" FontSize="12" Opacity="0.7" />
                     <TextBlock FontSize="26" FontWeight="SemiBold">
                         <Run Text="{Binding TotalMemoryUsageMb, TargetNullValue=0, StringFormat={}{0:F1}}" />
                         <Run Text=" MB" />
@@ -47,7 +47,7 @@
 
             <ui:Card Padding="16">
                 <StackPanel>
-                    <TextBlock Text="最近更新" FontSize="12" Opacity="0.7" />
+                    <TextBlock Text="{DynamicResource Performance_LastUpdate}" FontSize="12" Opacity="0.7" />
                     <TextBlock Text="{Binding LastUpdated, StringFormat={}{0:HH:mm:ss}}" FontSize="26" FontWeight="SemiBold" />
                 </StackPanel>
             </ui:Card>
@@ -61,7 +61,7 @@
                              Visibility="{Binding IsMonitoringActive, Converter={StaticResource BoolToVisibility}}" />
             </StackPanel>
 
-            <ui:Button Content="刷新" Icon="{ui:SymbolIcon ArrowClockwise24}" Command="{Binding RefreshNowCommand}"
+            <ui:Button Content="{DynamicResource Performance_Refresh}" Icon="{ui:SymbolIcon ArrowClockwise24}" Command="{Binding RefreshNowCommand}"
                       DockPanel.Dock="Right" />
         </DockPanel>
     </StackPanel>

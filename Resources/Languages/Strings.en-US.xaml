@@ -271,6 +271,7 @@
     <system:String x:Key="AddProject_CloneFrom">Clone from Git</system:String>
     
     <!-- Terminal Page -->
+    <system:String x:Key="Terminal_Title">Terminal</system:String>
     <system:String x:Key="Terminal_Start">Start</system:String>
     <system:String x:Key="Terminal_Stop">Stop</system:String>
     <system:String x:Key="Terminal_Clear">Clear</system:String>
@@ -296,6 +297,32 @@
     <system:String x:Key="Performance_Count">Count</system:String>
     <system:String x:Key="Performance_AvgTime">Avg Time</system:String>
     <system:String x:Key="Performance_TotalTime">Total Time</system:String>
+    <system:String x:Key="Performance_RunningProjects">Running Projects</system:String>
+    <system:String x:Key="Performance_TotalCpuUsage">Total CPU Usage</system:String>
+    <system:String x:Key="Performance_TotalMemoryUsage">Total Memory Usage</system:String>
+    <system:String x:Key="Performance_Status_Waiting">Waiting for monitoring to start...</system:String>
+    <system:String x:Key="Performance_Status_Paused">Monitoring paused</system:String>
+    <system:String x:Key="Performance_Status_Monitoring">Monitoring · {0}/{1} projects</system:String>
+    <system:String x:Key="Performance_Status_NoRunning">No running projects</system:String>
+    <system:String x:Key="Performance_LastUpdate">Last Update</system:String>
+    
+    <!-- Environment Variables Page -->
+    <system:String x:Key="EnvVars_SearchPlaceholder">Search environment variables...</system:String>
+    <system:String x:Key="EnvVars_FilterAll">All Variables</system:String>
+    <system:String x:Key="EnvVars_FilterUser">User Variables</system:String>
+    <system:String x:Key="EnvVars_FilterSystem">System Variables</system:String>
+    <system:String x:Key="EnvVars_UserCount">User: {0}</system:String>
+    <system:String x:Key="EnvVars_SystemCount">System: {0}</system:String>
+    <system:String x:Key="EnvVars_AddUser">Add User Variable</system:String>
+    <system:String x:Key="EnvVars_AddSystem">Add System Variable</system:String>
+    <system:String x:Key="EnvVars_EditSelected">Edit Selected</system:String>
+    <system:String x:Key="EnvVars_DeleteSelected">Delete Selected</system:String>
+    <system:String x:Key="EnvVars_Refresh">Refresh List</system:String>
+    <system:String x:Key="EnvVars_AddUserTooltip">Add new user environment variable</system:String>
+    <system:String x:Key="EnvVars_AddSystemTooltip">Add new system environment variable (requires admin privileges)</system:String>
+    <system:String x:Key="EnvVars_EditTooltip">Edit currently selected environment variable</system:String>
+    <system:String x:Key="EnvVars_DeleteTooltip">Delete currently selected environment variable</system:String>
+    <system:String x:Key="EnvVars_RefreshTooltip">Reload environment variables list</system:String>
     
     <!-- Git Dialog -->
     <system:String x:Key="Git_CloneTitle">Clone from Git</system:String>

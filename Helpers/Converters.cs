@@ -97,7 +97,26 @@ namespace ProjectManager.Helpers
             throw new NotImplementedException();
         }
     }
+    public class ResourceStringFormatConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (parameter is string resourceKey)
+            {
+                var format = Application.Current.TryFindResource(resourceKey) as string;
+                if (!string.IsNullOrEmpty(format))
+                {
+                    return string.Format(format, value);
+                }
+            }
+            return value?.ToString() ?? string.Empty;
+        }
 
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class FrameworkToDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

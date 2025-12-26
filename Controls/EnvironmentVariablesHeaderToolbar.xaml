@@ -16,13 +16,21 @@
         </Grid.ColumnDefinitions>
 
         <!-- 搜索和筛选区域 -->
-        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+        <Grid Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
             <ui:TextBox
+                Grid.Column="0"
                 x:Name="SearchBox"
-                PlaceholderText="搜索环境变量..."
+                PlaceholderText="{DynamicResource EnvVars_SearchPlaceholder}"
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                 MinWidth="280"
-                Margin="0,0,16,0">
+                Margin="0,0,16,0"
+                VerticalAlignment="Center">
                 <ui:TextBox.Icon>
                     <ui:SymbolIcon Symbol="Search24" />
                 </ui:TextBox.Icon>
@@ -30,83 +38,87 @@
 
             <!-- 变量类型筛选 -->
             <ComboBox
+                Grid.Column="1"
                 x:Name="FilterComboBox"
                 SelectedIndex="{Binding SelectedFilterIndex}"
                 MinWidth="100"
-                Margin="0,0,16,0">
-                <ComboBoxItem Content="全部变量"/>
-                <ComboBoxItem Content="用户变量"/>
-                <ComboBoxItem Content="系统变量"/>
+                Margin="0,0,16,0"
+                VerticalAlignment="Center">
+                <ComboBoxItem Content="{DynamicResource EnvVars_FilterAll}"/>
+                <ComboBoxItem Content="{DynamicResource EnvVars_FilterUser}"/>
+                <ComboBoxItem Content="{DynamicResource EnvVars_FilterSystem}"/>
             </ComboBox>
 
-            <!-- 统计信息 -->
-            <ui:Card Padding="8,4" Margin="0,0,16,0" Background="Transparent">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="People24" FontSize="16" Margin="0,0,4,0"/>
-                    <TextBlock Text="{Binding UserVariablesCount, StringFormat='用户: {0}'}" FontSize="12" VerticalAlignment="Center"/>
-                </StackPanel>
-            </ui:Card>
+            <!-- 统计信息：仅这两个标签在空间不足时自动上下排列 -->
+            <WrapPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:Card Padding="8,4" Margin="0,2,12,2" Background="Transparent">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="People24" FontSize="16" Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding UserVariablesCount, Converter={StaticResource ResourceStringFormatConverter}, ConverterParameter=EnvVars_UserCount}" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Card>
 
-            <ui:Card Padding="8,4" Background="Transparent">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Shield24" FontSize="16" Margin="0,0,4,0"/>
-                    <TextBlock Text="{Binding SystemVariablesCount, StringFormat='系统: {0}'}" FontSize="12" VerticalAlignment="Center"/>
-                </StackPanel>
-            </ui:Card>
-        </StackPanel>
+                <ui:Card Padding="8,4" Margin="0,2,0,2" Background="Transparent">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Shield24" FontSize="16" Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding SystemVariablesCount, Converter={StaticResource ResourceStringFormatConverter}, ConverterParameter=EnvVars_SystemCount}" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Card>
+            </WrapPanel>
+        </Grid>
 
         <!-- 操作按钮区域 -->
-        <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
             <!-- 新建用户变量 -->
             <ui:Button 
-                Content="添加用户变量" 
+                Content="{DynamicResource EnvVars_AddUser}" 
                 Icon="{ui:SymbolIcon People24}"
                 Appearance="Primary"
                 Command="{Binding AddUserVariableCommand}"
                 Margin="0,0,4,0"
                 Padding="12,6"
-                ToolTip="添加新的用户环境变量"/>
+                ToolTip="{DynamicResource EnvVars_AddUserTooltip}"/>
 
             <!-- 新建系统变量 -->
             <ui:Button 
-                Content="添加系统变量" 
+                Content="{DynamicResource EnvVars_AddSystem}" 
                 Icon="{ui:SymbolIcon Shield24}"
                 Appearance="Primary"
                 Command="{Binding AddSystemVariableCommand}"
                 Margin="0,0,8,0"
                 Padding="12,6"
-                ToolTip="添加新的系统环境变量（需要管理员权限）"/>
+                ToolTip="{DynamicResource EnvVars_AddSystemTooltip}"/>
 
             <!-- 编辑按钮 -->
             <ui:Button 
-                Content="编辑选中项" 
+                Content="{DynamicResource EnvVars_EditSelected}" 
                 Icon="{ui:SymbolIcon Edit24}"
                 Appearance="Secondary"
                 Command="{Binding EditSelectedCommand}"
                 IsEnabled="{Binding HasSelection}"
                 Margin="0,0,4,0"
                 Padding="12,6"
-                ToolTip="编辑当前选中的环境变量"/>
+                ToolTip="{DynamicResource EnvVars_EditTooltip}"/>
 
             <!-- 删除按钮 -->
             <ui:Button 
-                Content="删除选中项" 
+                Content="{DynamicResource EnvVars_DeleteSelected}" 
                 Icon="{ui:SymbolIcon Delete24}"
                 Appearance="Danger"
                 Command="{Binding DeleteSelectedCommand}"
                 IsEnabled="{Binding HasSelection}"
                 Margin="4,0,8,0"
                 Padding="12,6"
-                ToolTip="删除当前选中的环境变量"/>
+                ToolTip="{DynamicResource EnvVars_DeleteTooltip}"/>
 
             <!-- 刷新按钮 -->
             <ui:Button 
-                Content="刷新列表" 
+                Content="{DynamicResource EnvVars_Refresh}" 
                 Icon="{ui:SymbolIcon ArrowClockwise24}"
                 Appearance="Secondary"
                 Command="{Binding RefreshCommand}"
                 Padding="12,6"
-                ToolTip="重新加载环境变量列表"/>
+                ToolTip="{DynamicResource EnvVars_RefreshTooltip}"/>
         </StackPanel>
     </Grid>
 </UserControl>

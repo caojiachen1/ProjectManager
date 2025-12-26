@@ -271,6 +271,7 @@
     <system:String x:Key="AddProject_CloneFrom">从Git克隆</system:String>
     
     <!-- 终端页面 -->
+    <system:String x:Key="Terminal_Title">终端</system:String>
     <system:String x:Key="Terminal_Start">启动</system:String>
     <system:String x:Key="Terminal_Stop">停止</system:String>
     <system:String x:Key="Terminal_Clear">清空</system:String>
@@ -296,6 +297,32 @@
     <system:String x:Key="Performance_Count">次数</system:String>
     <system:String x:Key="Performance_AvgTime">平均时间</system:String>
     <system:String x:Key="Performance_TotalTime">总时间</system:String>
+    <system:String x:Key="Performance_RunningProjects">运行项目</system:String>
+    <system:String x:Key="Performance_TotalCpuUsage">总 CPU 占用</system:String>
+    <system:String x:Key="Performance_TotalMemoryUsage">总内存占用</system:String>
+    <system:String x:Key="Performance_Status_Waiting">等待监控启动...</system:String>
+    <system:String x:Key="Performance_Status_Paused">监控已暂停</system:String>
+    <system:String x:Key="Performance_Status_Monitoring">监控中 · {0}/{1} 个项目</system:String>
+    <system:String x:Key="Performance_Status_NoRunning">暂无运行中的项目</system:String>
+    <system:String x:Key="Performance_LastUpdate">最近更新</system:String>
+    
+    <!-- 环境变量页面 -->
+    <system:String x:Key="EnvVars_SearchPlaceholder">搜索环境变量...</system:String>
+    <system:String x:Key="EnvVars_FilterAll">全部变量</system:String>
+    <system:String x:Key="EnvVars_FilterUser">用户变量</system:String>
+    <system:String x:Key="EnvVars_FilterSystem">系统变量</system:String>
+    <system:String x:Key="EnvVars_UserCount">用户: {0}</system:String>
+    <system:String x:Key="EnvVars_SystemCount">系统: {0}</system:String>
+    <system:String x:Key="EnvVars_AddUser">添加用户变量</system:String>
+    <system:String x:Key="EnvVars_AddSystem">添加系统变量</system:String>
+    <system:String x:Key="EnvVars_EditSelected">编辑选中项</system:String>
+    <system:String x:Key="EnvVars_DeleteSelected">删除选中项</system:String>
+    <system:String x:Key="EnvVars_Refresh">刷新列表</system:String>
+    <system:String x:Key="EnvVars_AddUserTooltip">添加新的用户环境变量</system:String>
+    <system:String x:Key="EnvVars_AddSystemTooltip">添加新的系统环境变量（需要管理员权限）</system:String>
+    <system:String x:Key="EnvVars_EditTooltip">编辑当前选中的环境变量</system:String>
+    <system:String x:Key="EnvVars_DeleteTooltip">删除当前选中的环境变量</system:String>
+    <system:String x:Key="EnvVars_RefreshTooltip">重新加载环境变量列表</system:String>
     
     <!-- Git对话框 -->
     <system:String x:Key="Git_CloneTitle">从Git克隆项目</system:String>

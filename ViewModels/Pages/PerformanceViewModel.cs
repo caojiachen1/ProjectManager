@@ -35,7 +35,7 @@ namespace ProjectManager.ViewModels.Pages
         private bool _isMonitoringActive;
 
         [ObservableProperty]
-        private string _statusMessage = "等待监控启动...";
+        private string _statusMessage = string.Empty;
 
         [ObservableProperty]
         private double _totalCpuUsage;
@@ -60,6 +60,27 @@ namespace ProjectManager.ViewModels.Pages
             _performanceMonitorService = performanceMonitorService;
             _errorDisplayService = errorDisplayService;
             _languageService = languageService;
+
+            _languageService.LanguageChanged += (s, e) => UpdateStatusMessage();
+            UpdateStatusMessage();
+        }
+
+        private void UpdateStatusMessage()
+        {
+            if (!IsMonitoringActive && _monitoringCts == null)
+            {
+                StatusMessage = _languageService.GetString("Performance_Status_Waiting");
+            }
+            else if (!IsMonitoringActive && _monitoringCts != null)
+            {
+                StatusMessage = _languageService.GetString("Performance_Status_Paused");
+            }
+            else
+            {
+                StatusMessage = RunningProjects > 0
+                    ? string.Format(_languageService.GetString("Performance_Status_Monitoring"), RunningProjects, TotalProjects)
+                    : _languageService.GetString("Performance_Status_NoRunning");
+            }
         }
 
         public void OnNavigatedTo()
@@ -140,7 +161,7 @@ namespace ProjectManager.ViewModels.Pages
             _monitoringCts.Dispose();
             _monitoringCts = null;
             IsMonitoringActive = false;
-            StatusMessage = "监控已暂停";
+            UpdateStatusMessage();
         }
 
         private async Task MonitorLoopAsync(CancellationToken token)
@@ -258,9 +279,7 @@ namespace ProjectManager.ViewModels.Pages
             var totalMem = ordered.Where(s => s.IsRunning).Sum(s => s.MemoryUsageMb);
             TotalMemoryUsageMb = Math.Round(totalMem, 1);
             LastUpdated = DateTime.Now;
-            StatusMessage = RunningProjects > 0
-                ? $"监控中 · {RunningProjects}/{TotalProjects} 个项目"
-                : "暂无运行中的项目";
+            UpdateStatusMessage();
         }
     }
 }
