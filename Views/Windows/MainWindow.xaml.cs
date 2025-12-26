@@ -14,19 +14,16 @@ namespace ProjectManager.Views.Windows
     public partial class MainWindow : FluentWindow, INavigationWindow
     {
         public MainWindowViewModel ViewModel { get; }
-        private readonly ISettingsService _settingsService;
         private readonly INavigationService _navigationService;
 
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
-            IContentDialogService contentDialogService,
-            ISettingsService settingsService
+            IContentDialogService contentDialogService
         )
         {
             ViewModel = viewModel;
-            _settingsService = settingsService;
             _navigationService = navigationService;
             DataContext = this;
 
@@ -44,38 +41,10 @@ namespace ProjectManager.Views.Windows
             this.Loaded += MainWindow_Loaded;
         }
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // 使用正确的方式最大化窗口
             this.WindowState = WindowState.Maximized;
-            
-            // 导航到默认启动页面
-            await NavigateToDefaultStartupPage();
-        }
-
-        private async Task NavigateToDefaultStartupPage()
-        {
-            try
-            {
-                var settings = await _settingsService.GetSettingsAsync();
-                var defaultPage = settings.DefaultStartupPage;
-
-                Type? pageType = defaultPage switch
-                {
-                    "Dashboard" => typeof(Views.Pages.DashboardPage),
-                    "Projects" => typeof(Views.Pages.ProjectsPage),
-                    "Terminal" => typeof(Views.Pages.TerminalPage),
-                    "Performance" => typeof(Views.Pages.PerformancePage),
-                    _ => typeof(Views.Pages.DashboardPage) // 默认为仪表板
-                };
-
-                _navigationService.Navigate(pageType);
-            }
-            catch
-            {
-                // 如果出错，默认导航到仪表板
-                _navigationService.Navigate(typeof(Views.Pages.DashboardPage));
-            }
         }
 
         #region INavigationWindow methods

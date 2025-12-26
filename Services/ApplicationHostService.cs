@@ -65,7 +65,28 @@ namespace ProjectManager.Services
                     contentDialogService.SetDialogHost(mainWindow.RootContentDialog);
                 }
 
-                _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
+                // 根据设置导航到默认启动页面
+                var settingsService = _serviceProvider.GetService<ISettingsService>();
+                if (settingsService != null)
+                {
+                    var settings = await settingsService.GetSettingsAsync();
+                    var defaultPage = settings.DefaultStartupPage;
+
+                    Type pageType = defaultPage switch
+                    {
+                        "Dashboard" => typeof(Views.Pages.DashboardPage),
+                        "Projects" => typeof(Views.Pages.ProjectsPage),
+                        "Terminal" => typeof(Views.Pages.TerminalPage),
+                        "Performance" => typeof(Views.Pages.PerformancePage),
+                        _ => typeof(Views.Pages.DashboardPage)
+                    };
+
+                    _navigationWindow.Navigate(pageType);
+                }
+                else
+                {
+                    _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
+                }
             }
 
             await Task.CompletedTask;
