@@ -39,20 +39,20 @@ namespace ProjectManager.Helpers
 
         private class DataGridBindingErrorListener : TraceListener
         {
-            public override void Write(string message)
+            public override void Write(string? message)
             {
                 // Suppress CellsPanelHorizontalOffset binding errors - more comprehensive filtering
-                if (IsCellsPanelHorizontalOffsetError(message))
+                if (message != null && IsCellsPanelHorizontalOffsetError(message))
                     return;
                 
                 // Write other messages to the default listener
                 Debug.Write(message);
             }
 
-            public override void WriteLine(string message)
+            public override void WriteLine(string? message)
             {
                 // Suppress CellsPanelHorizontalOffset binding errors - more comprehensive filtering
-                if (IsCellsPanelHorizontalOffsetError(message))
+                if (message != null && IsCellsPanelHorizontalOffsetError(message))
                     return;
                 
                 // Write other messages to the default listener

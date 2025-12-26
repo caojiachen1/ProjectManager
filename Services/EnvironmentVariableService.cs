@@ -50,7 +50,7 @@ namespace ProjectManager.Services
             try
             {
                 // 使用注册表直接设置系统环境变量
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", true))
+                using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", true))
                 {
                     if (key != null)
                     {
@@ -198,7 +198,11 @@ namespace ProjectManager.Services
                 var envVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
                 foreach (System.Collections.DictionaryEntry entry in envVars)
                 {
-                    variables[entry.Key.ToString()] = entry.Value?.ToString() ?? "";
+                    string key = entry.Key.ToString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        variables[key] = entry.Value?.ToString() ?? "";
+                    }
                 }
             }
             catch (Exception ex)
@@ -219,7 +223,11 @@ namespace ProjectManager.Services
                 var envVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
                 foreach (System.Collections.DictionaryEntry entry in envVars)
                 {
-                    variables[entry.Key.ToString()] = entry.Value?.ToString() ?? "";
+                    string key = entry.Key.ToString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        variables[key] = entry.Value?.ToString() ?? "";
+                    }
                 }
             }
             catch (Exception ex)
