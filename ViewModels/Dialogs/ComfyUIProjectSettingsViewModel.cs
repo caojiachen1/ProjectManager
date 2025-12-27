@@ -2381,6 +2381,9 @@ namespace ProjectManager.ViewModels.Dialogs
                 
                 // 更新启动命令建议
                 UpdateStartCommandSuggestions();
+                
+                // 根据加载的设置重新生成启动命令（确保StartCommand包含所有配置的参数）
+                UpdateStartCommand();
             }
             finally
             {
