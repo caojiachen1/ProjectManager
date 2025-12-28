@@ -11,6 +11,7 @@ namespace ProjectManager.ViewModels.Dialogs
     public partial class ComfyUIProjectSettingsViewModel : ObservableObject
     {
         private readonly IProjectService _projectService;
+        private readonly ILanguageService _languageService;
         private Project? _project;
         private bool _isUpdatingCommand = false;
 
@@ -1845,9 +1846,10 @@ namespace ProjectManager.ViewModels.Dialogs
         public event EventHandler<string>? ProjectDeleted;
         public event EventHandler? DialogCancelled;
 
-        public ComfyUIProjectSettingsViewModel(IProjectService projectService)
+        public ComfyUIProjectSettingsViewModel(IProjectService projectService, ILanguageService languageService)
         {
             _projectService = projectService;
+            _languageService = languageService;
             
             // 确保有默认的启动命令（始终使用 ComfyUI 根目录下的 main.py）
             if (string.IsNullOrEmpty(StartCommand))
@@ -2808,7 +2810,7 @@ namespace ProjectManager.ViewModels.Dialogs
 
             var dialog = new OpenFileDialog
             {
-                Title = "选择Python可执行文件",
+                Title = _languageService.GetString("ComfyUI_SelectPythonExecutable"),
                 Filter = "Python可执行文件 (python.exe)|python.exe",
                 InitialDirectory = initialDir ?? string.Empty,
                 CheckFileExists = true,
@@ -2825,7 +2827,7 @@ namespace ProjectManager.ViewModels.Dialogs
                 else
                 {
                     // TODO: 可以添加错误提示，但这里由于过滤器限制，理论上不会发生
-                    System.Diagnostics.Debug.WriteLine("只能选择python.exe文件");
+                    System.Diagnostics.Debug.WriteLine(_languageService.GetString("ComfyUI_OnlyPythonExeAllowed"));
                 }
             }
         }
@@ -2897,7 +2899,7 @@ namespace ProjectManager.ViewModels.Dialogs
             // 使用文件选择器模拟目录选择：用户选中任意文件，我们取其所在目录
             var dialog = new OpenFileDialog
             {
-                Title = "选择 ComfyUI 目录中的任意文件（例如 main.py）",
+                Title = _languageService.GetString("ComfyUI_SelectComfyUIDirectory"),
                 CheckFileExists = true,
                 CheckPathExists = true,
                 Filter = "Python 脚本 (*.py)|*.py|所有文件 (*.*)|*.*"
@@ -2924,43 +2926,43 @@ namespace ProjectManager.ViewModels.Dialogs
         [RelayCommand]
         private void BrowseModelsPath()
         {
-            BrowseFolderPath("选择模型文件夹", path => ModelsPath = path);
+            BrowseFolderPath("ComfyUI_SelectModelsFolder", path => ModelsPath = path);
         }
 
         [RelayCommand]
         private void BrowseOutputPath()
         {
-            BrowseFolderPath("选择输出文件夹", path => OutputPath = path);
+            BrowseFolderPath("ComfyUI_SelectOutputFolder", path => OutputPath = path);
         }
 
         [RelayCommand]
         private void BrowseCustomNodesPath()
         {
-            BrowseFolderPath("选择自定义节点文件夹", path => CustomNodesPath = path);
+            BrowseFolderPath("ComfyUI_SelectCustomNodesFolder", path => CustomNodesPath = path);
         }
 
         [RelayCommand]
         private void BrowseBaseDirectory()
         {
-            BrowseFolderPath("选择基础目录", path => BaseDirectory = path);
+            BrowseFolderPath("ComfyUI_SelectBaseDirectory", path => BaseDirectory = path);
         }
 
         [RelayCommand]
         private void BrowseInputDirectory()
         {
-            BrowseFolderPath("选择输入文件夹", path => InputDirectory = path);
+            BrowseFolderPath("ComfyUI_SelectInputFolder", path => InputDirectory = path);
         }
 
         [RelayCommand]
         private void BrowseTempDirectory()
         {
-            BrowseFolderPath("选择临时文件夹", path => TempDirectory = path);
+            BrowseFolderPath("ComfyUI_SelectTempFolder", path => TempDirectory = path);
         }
 
         [RelayCommand]
         private void BrowseUserDirectory()
         {
-            BrowseFolderPath("选择用户目录", path => UserDirectory = path);
+            BrowseFolderPath("ComfyUI_SelectUserDirectory", path => UserDirectory = path);
         }
 
         [RelayCommand]
@@ -2968,7 +2970,7 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             var dialog = new OpenFileDialog
             {
-                Title = "选择额外模型路径配置文件",
+                Title = _languageService.GetString("ComfyUI_SelectExtraModelPathsConfig"),
                 Filter = "YAML文件 (*.yaml)|*.yaml|所有文件 (*.*)|*.*",
                 CheckFileExists = true,
                 CheckPathExists = true
@@ -2985,7 +2987,7 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             var dialog = new OpenFileDialog
             {
-                Title = "选择TLS密钥文件",
+                Title = _languageService.GetString("ComfyUI_SelectTLSKeyFile"),
                 Filter = "密钥文件 (*.key)|*.key|所有文件 (*.*)|*.*",
                 CheckFileExists = true,
                 CheckPathExists = true
@@ -3002,7 +3004,7 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             var dialog = new OpenFileDialog
             {
-                Title = "选择TLS证书文件",
+                Title = _languageService.GetString("ComfyUI_SelectTLSCertFile"),
                 Filter = "证书文件 (*.crt;*.pem)|*.crt;*.pem|所有文件 (*.*)|*.*",
                 CheckFileExists = true,
                 CheckPathExists = true
@@ -3017,17 +3019,17 @@ namespace ProjectManager.ViewModels.Dialogs
         [RelayCommand]
         private void BrowseFrontEndRoot()
         {
-            BrowseFolderPath("选择前端根目录", path => FrontEndRoot = path);
+            BrowseFolderPath("ComfyUI_SelectFrontendRoot", path => FrontEndRoot = path);
         }
 
-        private void BrowseFolderPath(string title, Action<string> setPath)
+        private void BrowseFolderPath(string titleKey, Action<string> setPath)
         {
             var dialog = new OpenFileDialog
             {
-                Title = title,
+                Title = _languageService.GetString(titleKey),
                 CheckFileExists = false,
                 CheckPathExists = true,
-                FileName = "选择文件夹"
+                FileName = _languageService.GetString("ComfyUI_SelectFolder")
             };
 
             if (dialog.ShowDialog() == true)

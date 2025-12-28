@@ -713,4 +713,21 @@
     <system:String x:Key="Common_Yes">是</system:String>
     <system:String x:Key="Common_No">否</system:String>
     
+    <!-- ComfyUI 项目设置对话框 -->
+    <system:String x:Key="ComfyUI_SelectPythonExecutable">选择Python可执行文件</system:String>
+    <system:String x:Key="ComfyUI_SelectComfyUIDirectory">选择 ComfyUI 目录中的任意文件（例如 main.py）</system:String>
+    <system:String x:Key="ComfyUI_SelectModelsFolder">选择模型文件夹</system:String>
+    <system:String x:Key="ComfyUI_SelectOutputFolder">选择输出文件夹</system:String>
+    <system:String x:Key="ComfyUI_SelectCustomNodesFolder">选择自定义节点文件夹</system:String>
+    <system:String x:Key="ComfyUI_SelectBaseDirectory">选择基础目录</system:String>
+    <system:String x:Key="ComfyUI_SelectInputFolder">选择输入文件夹</system:String>
+    <system:String x:Key="ComfyUI_SelectTempFolder">选择临时文件夹</system:String>
+    <system:String x:Key="ComfyUI_SelectUserDirectory">选择用户目录</system:String>
+    <system:String x:Key="ComfyUI_SelectExtraModelPathsConfig">选择额外模型路径配置文件</system:String>
+    <system:String x:Key="ComfyUI_SelectTLSKeyFile">选择TLS密钥文件</system:String>
+    <system:String x:Key="ComfyUI_SelectTLSCertFile">选择TLS证书文件</system:String>
+    <system:String x:Key="ComfyUI_SelectFrontendRoot">选择前端根目录</system:String>
+    <system:String x:Key="ComfyUI_SelectFolder">选择文件夹</system:String>
+    <system:String x:Key="ComfyUI_OnlyPythonExeAllowed">只能选择python.exe文件</system:String>
+    
 </ResourceDictionary>

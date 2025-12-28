@@ -713,4 +713,21 @@
     <system:String x:Key="Common_Yes">Yes</system:String>
     <system:String x:Key="Common_No">No</system:String>
     
+    <!-- ComfyUI Project Settings Dialog -->
+    <system:String x:Key="ComfyUI_SelectPythonExecutable">Select Python Executable</system:String>
+    <system:String x:Key="ComfyUI_SelectComfyUIDirectory">Select any file in ComfyUI directory (e.g., main.py)</system:String>
+    <system:String x:Key="ComfyUI_SelectModelsFolder">Select Models Folder</system:String>
+    <system:String x:Key="ComfyUI_SelectOutputFolder">Select Output Folder</system:String>
+    <system:String x:Key="ComfyUI_SelectCustomNodesFolder">Select Custom Nodes Folder</system:String>
+    <system:String x:Key="ComfyUI_SelectBaseDirectory">Select Base Directory</system:String>
+    <system:String x:Key="ComfyUI_SelectInputFolder">Select Input Folder</system:String>
+    <system:String x:Key="ComfyUI_SelectTempFolder">Select Temp Folder</system:String>
+    <system:String x:Key="ComfyUI_SelectUserDirectory">Select User Directory</system:String>
+    <system:String x:Key="ComfyUI_SelectExtraModelPathsConfig">Select Extra Model Paths Config File</system:String>
+    <system:String x:Key="ComfyUI_SelectTLSKeyFile">Select TLS Key File</system:String>
+    <system:String x:Key="ComfyUI_SelectTLSCertFile">Select TLS Certificate File</system:String>
+    <system:String x:Key="ComfyUI_SelectFrontendRoot">Select Frontend Root Directory</system:String>
+    <system:String x:Key="ComfyUI_SelectFolder">Select Folder</system:String>
+    <system:String x:Key="ComfyUI_OnlyPythonExeAllowed">Only python.exe files are allowed</system:String>
+    
 </ResourceDictionary>
