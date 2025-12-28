@@ -317,7 +317,7 @@
                 </StackPanel>
                 <ComboBox Grid.Column="1" 
                          ItemsSource="{Binding AvailableLanguages}" 
-                         SelectedValue="{Binding SelectedLanguage}"
+                         SelectedValue="{Binding SelectedLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          SelectedValuePath="Code"
                          Width="260" VerticalAlignment="Center">
                     <ComboBox.ItemTemplate>

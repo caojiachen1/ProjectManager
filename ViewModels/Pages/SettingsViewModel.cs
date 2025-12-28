@@ -95,6 +95,16 @@ namespace ProjectManager.ViewModels.Pages
         {
             if (!_isInitialized) return;
 
+            // 处理语言变更 - 实时切换
+            if (e.PropertyName == nameof(SelectedLanguage))
+            {
+                if (!string.IsNullOrEmpty(SelectedLanguage))
+                {
+                    _languageService.ChangeLanguage(SelectedLanguage);
+                }
+                return;
+            }
+
             // 当设置属性发生变化时自动保存
             if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(CurrentTheme) && e.PropertyName != nameof(AvailableLanguages))
             {
