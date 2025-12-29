@@ -33,7 +33,18 @@ namespace ProjectManager.Models
         private ObservableCollection<string> _outputLines = new();
 
         [ObservableProperty]
-        private string _status = "已停止";
+        [NotifyPropertyChangedFor(nameof(StatusDisplay))]
+        private TerminalStatus _status = TerminalStatus.Stopped;
+
+        [JsonIgnore]
+        public string StatusDisplay => Status switch
+        {
+            TerminalStatus.Running => Application.Current.TryFindResource("Terminal_Running")?.ToString() ?? "Running",
+            TerminalStatus.Stopped => Application.Current.TryFindResource("Terminal_Stopped")?.ToString() ?? "Stopped",
+            TerminalStatus.Starting => Application.Current.TryFindResource("Terminal_Starting")?.ToString() ?? "Starting",
+            TerminalStatus.StartFailed => Application.Current.TryFindResource("Terminal_StartFailed")?.ToString() ?? "Start Failed",
+            _ => Application.Current.TryFindResource("Terminal_Stopped")?.ToString() ?? "Stopped"
+        };
 
         [ObservableProperty]
         private Dictionary<string, string> _environmentVariables = new();
@@ -204,6 +215,14 @@ namespace ProjectManager.Models
         }
 
         /// <summary>
+        /// 刷新状态显示（用于语言切换）
+        /// </summary>
+        public void RefreshStatus()
+        {
+            OnPropertyChanged(nameof(StatusDisplay));
+        }
+
+        /// <summary>
         /// 清空输出
         /// </summary>
         public void ClearOutput()
@@ -230,9 +249,9 @@ namespace ProjectManager.Models
         /// <summary>
         /// 更新状态
         /// </summary>
-        /// <param name="status">状态文本</param>
+        /// <param name="status">状态</param>
         /// <param name="isRunning">是否运行中</param>
-        public void UpdateStatus(string status, bool isRunning)
+        public void UpdateStatus(TerminalStatus status, bool isRunning)
         {
             var dispatcher = Application.Current?.Dispatcher;
             if (dispatcher != null && !dispatcher.CheckAccess())
@@ -249,5 +268,16 @@ namespace ProjectManager.Models
                 IsRunning = isRunning;
             }
         }
+    }
+
+    /// <summary>
+    /// 终端状态枚举
+    /// </summary>
+    public enum TerminalStatus
+    {
+        Stopped,
+        Starting,
+        Running,
+        StartFailed
     }
 }

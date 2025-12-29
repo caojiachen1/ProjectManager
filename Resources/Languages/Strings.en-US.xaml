@@ -286,6 +286,22 @@
     <system:String x:Key="Terminal_SessionCount">Sessions:</system:String>
     <system:String x:Key="Terminal_ScrollTop">Scroll to top</system:String>
     <system:String x:Key="Terminal_ScrollBottom">Scroll to bottom</system:String>
+    <system:String x:Key="Terminal_AlreadyRunning">Terminal is already running</system:String>
+    <system:String x:Key="Terminal_Starting">Starting...</system:String>
+    <system:String x:Key="Terminal_StartCommand">Start command: </system:String>
+    <system:String x:Key="Terminal_SettingEnvVars">Setting environment variables:</system:String>
+    <system:String x:Key="Terminal_Stopped">Stopped</system:String>
+    <system:String x:Key="Terminal_ProcessExited">Process exited with code: </system:String>
+    <system:String x:Key="Terminal_ChildProcessDetected">Detected child process PID={0} ({1})</system:String>
+    <system:String x:Key="Terminal_Running">Running</system:String>
+    <system:String x:Key="Terminal_Started">Terminal started</system:String>
+    <system:String x:Key="Terminal_StartFailed">Start failed</system:String>
+    <system:String x:Key="Terminal_StartFailedMessage">Start failed: {0}</system:String>
+    <system:String x:Key="Terminal_StartError">Terminal Start Error</system:String>
+    <system:String x:Key="Terminal_ForceStopped">Terminal force stopped</system:String>
+    <system:String x:Key="Terminal_StopFailed">Stop failed</system:String>
+    <system:String x:Key="Terminal_StopFailedMessage">Stop failed: {0}</system:String>
+    <system:String x:Key="Terminal_StopError">Terminal Stop Error</system:String>
     
     <!-- Performance Page -->
     <system:String x:Key="Performance_Overall">Overall Performance</system:String>

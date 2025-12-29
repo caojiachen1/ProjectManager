@@ -424,16 +424,16 @@ namespace ProjectManager.ViewModels.Pages
                     {
                         if (session.Process.HasExited)
                         {
-                            session.UpdateStatus("已停止", false);
+                            session.UpdateStatus(TerminalStatus.Stopped, false);
                         }
                         else
                         {
-                            session.UpdateStatus("运行中", true);
+                            session.UpdateStatus(TerminalStatus.Running, true);
                         }
                     }
                     else
                     {
-                        session.UpdateStatus("未启动", false);
+                        session.UpdateStatus(TerminalStatus.Stopped, false);
                     }
                 }
             }

@@ -143,7 +143,7 @@
                 <!-- 状态显示 -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="{DynamicResource Terminal_Status}" Foreground="#CCCCCC" Margin="0,0,4,0"/>
-                    <TextBlock Text="{Binding ViewModel.SelectedSession.Status}" 
+                    <TextBlock Text="{Binding ViewModel.SelectedSession.StatusDisplay}" 
                                Foreground="{Binding ViewModel.SelectedSession.IsRunning, Converter={StaticResource BooleanToColorConverter}}"
                                FontWeight="Bold"/>
                     <TextBlock Text="{DynamicResource Terminal_Project}" Foreground="#CCCCCC" Margin="16,0,4,0"/>

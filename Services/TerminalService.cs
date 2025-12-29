@@ -19,11 +19,24 @@ namespace ProjectManager.Services
         private readonly object _lockObject = new();
         private readonly ISettingsService _settingsService;
         private readonly IErrorDisplayService _errorDisplayService;
+        private readonly ILanguageService _languageService;
 
-        public TerminalService(ISettingsService settingsService, IErrorDisplayService errorDisplayService)
+        public TerminalService(ISettingsService settingsService, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {
             _settingsService = settingsService;
             _errorDisplayService = errorDisplayService;
+            _languageService = languageService;
+
+            _languageService.LanguageChanged += (s, e) =>
+            {
+                lock (_lockObject)
+                {
+                    foreach (var session in _sessions.Values)
+                    {
+                        session.RefreshStatus();
+                    }
+                }
+            };
         }
 
         /// <summary>
@@ -105,14 +118,14 @@ namespace ProjectManager.Services
                 if (session.IsRunning)
                 {
                     var s0 = await _settingsService.GetSettingsAsync();
-                    session.AddOutputRawWithTimestamp("终端已在运行中\r\n", s0.ShowTerminalTimestamps);
+                    session.AddOutputRawWithTimestamp(_languageService.GetString("Terminal_AlreadyRunning") + "\r\n", s0.ShowTerminalTimestamps);
                     return false;
                 }
 
-                session.UpdateStatus("正在启动...", false);
+                session.UpdateStatus(TerminalStatus.Starting, false);
                 var settings = await _settingsService.GetSettingsAsync();
-                session.AddOutputRawWithTimestamp($"启动命令: {session.Command}\r\n", settings.ShowTerminalTimestamps);
-                session.AddOutputRawWithTimestamp($"工作目录: {session.ProjectPath}\r\n", settings.ShowTerminalTimestamps);
+                session.AddOutputRawWithTimestamp($"{_languageService.GetString("Terminal_StartCommand")}{session.Command}\r\n", settings.ShowTerminalTimestamps);
+                session.AddOutputRawWithTimestamp($"{_languageService.GetString("Terminal_WorkingDir")} {session.ProjectPath}\r\n", settings.ShowTerminalTimestamps);
 
                 // 设置环境变量 - 优先使用传入的环境变量，否则使用会话中存储的环境变量（复制避免外部被修改）
                 var envVars = (environmentVariables ?? session.EnvironmentVariables) != null
@@ -126,7 +139,7 @@ namespace ProjectManager.Services
                 var commandSequence = new List<string>();
                 if (envVars != null && envVars.Any())
                 {
-                    session.AddOutputRawWithTimestamp("设置环境变量:\r\n", settings.ShowTerminalTimestamps);
+                    session.AddOutputRawWithTimestamp(_languageService.GetString("Terminal_SettingEnvVars") + "\r\n", settings.ShowTerminalTimestamps);
                     foreach (var env in envVars)
                     {
                         session.AddOutputRawWithTimestamp($"  {env.Key}={env.Value}\r\n", settings.ShowTerminalTimestamps);
@@ -206,8 +219,8 @@ namespace ProjectManager.Services
                 // 处理进程退出
                 process.Exited += (sender, e) =>
                 {
-                    session.UpdateStatus("已停止", false);
-                    session.AddOutputRawWithTimestamp($"进程已退出，退出代码: {process.ExitCode}\r\n", settings.ShowTerminalTimestamps);
+                    session.UpdateStatus(TerminalStatus.Stopped, false);
+                    session.AddOutputRawWithTimestamp($"{_languageService.GetString("Terminal_ProcessExited")}{process.ExitCode}\r\n", settings.ShowTerminalTimestamps);
                     try { cts.Cancel(); } catch { }
                 };
 
@@ -233,7 +246,7 @@ namespace ProjectManager.Services
                             }
                             catch { }
                             session.Process = child;
-                            session.AddOutputRawWithTimestamp($"检测到子进程 PID={child.Id} ({child.ProcessName})\r\n", settings.ShowTerminalTimestamps);
+                            session.AddOutputRawWithTimestamp(string.Format(_languageService.GetString("Terminal_ChildProcessDetected"), child.Id, child.ProcessName) + "\r\n", settings.ShowTerminalTimestamps);
                             break;
                         }
                     }
@@ -242,18 +255,18 @@ namespace ProjectManager.Services
                 _ = ReadStreamAsync(process.StandardOutput.BaseStream);
                 _ = ReadStreamAsync(process.StandardError.BaseStream);
 
-                session.UpdateStatus("运行中", true);
-                session.AddOutputRawWithTimestamp("终端已启动\r\n", settings.ShowTerminalTimestamps);
+                session.UpdateStatus(TerminalStatus.Running, true);
+                session.AddOutputRawWithTimestamp(_languageService.GetString("Terminal_Started") + "\r\n", settings.ShowTerminalTimestamps);
 
                 return true;
             }
             catch (Exception ex)
             {
-                session.UpdateStatus("启动失败", false);
+                session.UpdateStatus(TerminalStatus.StartFailed, false);
                 var s1 = await _settingsService.GetSettingsAsync();
-                session.AddOutputRawWithTimestamp($"启动失败: {ex.Message}\r\n", s1.ShowTerminalTimestamps);
+                session.AddOutputRawWithTimestamp(string.Format(_languageService.GetString("Terminal_StartFailedMessage"), ex.Message) + "\r\n", s1.ShowTerminalTimestamps);
                 // 显示终端启动错误
-                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端启动失败: {ex.Message}", "终端启动错误"));
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync(string.Format(_languageService.GetString("Terminal_StartFailedMessage"), ex.Message), _languageService.GetString("Terminal_StartError")));
                 return false;
             }
         }
@@ -304,16 +317,16 @@ namespace ProjectManager.Services
                     catch { }
 
                     var s2 = _settingsService.GetSettingsAsync().Result;
-                    session.AddOutputRawWithTimestamp("终端已强制停止\r\n", s2.ShowTerminalTimestamps);
+                    session.AddOutputRawWithTimestamp(_languageService.GetString("Terminal_ForceStopped") + "\r\n", s2.ShowTerminalTimestamps);
                 }
-                session.UpdateStatus("已停止", false);
+                session.UpdateStatus(TerminalStatus.Stopped, false);
             }
             catch (Exception ex)
             {
                 var s3 = _settingsService.GetSettingsAsync().Result;
-                session.AddOutputRawWithTimestamp($"停止失败: {ex.Message}\r\n", s3.ShowTerminalTimestamps);
+                session.AddOutputRawWithTimestamp(string.Format(_languageService.GetString("Terminal_StopFailedMessage"), ex.Message) + "\r\n", s3.ShowTerminalTimestamps);
                 // 显示终端停止错误
-                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync($"终端停止失败: {ex.Message}", "终端停止错误"));
+                _ = Task.Run(async () => await _errorDisplayService.ShowErrorAsync(string.Format(_languageService.GetString("Terminal_StopFailedMessage"), ex.Message), _languageService.GetString("Terminal_StopError")));
             }
         }
 

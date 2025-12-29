@@ -286,6 +286,22 @@
     <system:String x:Key="Terminal_SessionCount">会话数:</system:String>
     <system:String x:Key="Terminal_ScrollTop">滚动到顶部</system:String>
     <system:String x:Key="Terminal_ScrollBottom">滚动到底部</system:String>
+    <system:String x:Key="Terminal_AlreadyRunning">终端已在运行中</system:String>
+    <system:String x:Key="Terminal_Starting">正在启动...</system:String>
+    <system:String x:Key="Terminal_StartCommand">启动命令: </system:String>
+    <system:String x:Key="Terminal_SettingEnvVars">设置环境变量:</system:String>
+    <system:String x:Key="Terminal_Stopped">已停止</system:String>
+    <system:String x:Key="Terminal_ProcessExited">进程已退出，退出代码: </system:String>
+    <system:String x:Key="Terminal_ChildProcessDetected">检测到子进程 PID={0} ({1})</system:String>
+    <system:String x:Key="Terminal_Running">运行中</system:String>
+    <system:String x:Key="Terminal_Started">终端已启动</system:String>
+    <system:String x:Key="Terminal_StartFailed">启动失败</system:String>
+    <system:String x:Key="Terminal_StartFailedMessage">启动失败: {0}</system:String>
+    <system:String x:Key="Terminal_StartError">终端启动错误</system:String>
+    <system:String x:Key="Terminal_ForceStopped">终端已强制停止</system:String>
+    <system:String x:Key="Terminal_StopFailed">停止失败</system:String>
+    <system:String x:Key="Terminal_StopFailedMessage">停止失败: {0}</system:String>
+    <system:String x:Key="Terminal_StopError">终端停止错误</system:String>
     
     <!-- 性能监控页面 -->
     <system:String x:Key="Performance_Overall">整体性能</system:String>
