@@ -200,6 +200,7 @@
     
     <!-- 通用按钮 -->
     <system:String x:Key="Button_OK">确定</system:String>
+    <system:String x:Key="Button_Confirm">确认</system:String>
     <system:String x:Key="Button_Cancel">取消</system:String>
     <system:String x:Key="Button_Save">保存</system:String>
     <system:String x:Key="Button_Delete">删除</system:String>

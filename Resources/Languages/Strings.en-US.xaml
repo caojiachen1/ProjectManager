@@ -200,6 +200,7 @@
     
     <!-- Common Buttons -->
     <system:String x:Key="Button_OK">OK</system:String>
+    <system:String x:Key="Button_Confirm">Confirm</system:String>
     <system:String x:Key="Button_Cancel">Cancel</system:String>
     <system:String x:Key="Button_Save">Save</system:String>
     <system:String x:Key="Button_Delete">Delete</system:String>

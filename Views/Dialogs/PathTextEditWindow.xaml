@@ -70,16 +70,16 @@
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right"
                         Margin="0,16,0,0">
+                <ui:Button Content="{DynamicResource Button_Confirm}" 
+                           Command="{Binding SaveCommand}"
+                           Appearance="Primary"
+                           IsDefault="True"
+                           Padding="20,8"/>
                 <ui:Button Content="{DynamicResource Button_Cancel}" 
                            Command="{Binding CancelCommand}"
                            Appearance="Secondary"
                            IsCancel="True"
                            Margin="0,0,8,0"
-                           Padding="20,8"/>
-                <ui:Button Content="{DynamicResource Button_Confirm}" 
-                           Command="{Binding SaveCommand}"
-                           Appearance="Primary"
-                           IsDefault="True"
                            Padding="20,8"/>
             </StackPanel>
         </Grid>
