@@ -106,7 +106,7 @@ namespace ProjectManager.ViewModels.Pages
             }
 
             // 当设置属性发生变化时自动保存
-            if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(CurrentTheme) && e.PropertyName != nameof(AvailableLanguages))
+            if (e.PropertyName != nameof(AppVersion) && e.PropertyName != nameof(AvailableLanguages))
             {
                 await SaveAllSettingsAsync();
             }
@@ -125,10 +125,12 @@ namespace ProjectManager.ViewModels.Pages
 
         private async Task InitializeViewModelAsync()
         {
-            CurrentTheme = ApplicationThemeManager.GetAppTheme();
             AppVersion = $"项目管理器 - {GetAssemblyVersion()}";
 
             var settings = await _settingsService.GetSettingsAsync();
+            
+            // 优先从设置中加载主题，若为 Unknown 则回退到系统当前主题
+            CurrentTheme = settings.Theme == ApplicationTheme.Unknown ? ApplicationThemeManager.GetAppTheme() : settings.Theme;
             GitUserName = settings.GitUserName;
             GitUserEmail = settings.GitUserEmail;
             GitExecutablePath = settings.GitExecutablePath;
@@ -168,6 +170,7 @@ namespace ProjectManager.ViewModels.Pages
                 UseCmdChcp65001 = UseCmdChcp65001,
                 DefaultStartupPage = DefaultStartupPage,
                 ShowTerminalTimestamps = ShowTerminalTimestamps,
+                Theme = CurrentTheme,
                 Language = SelectedLanguage
             };
 

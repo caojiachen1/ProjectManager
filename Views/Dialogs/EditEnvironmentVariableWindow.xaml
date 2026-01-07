@@ -112,16 +112,16 @@
             <StackPanel Grid.Row="2" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right">
-                <ui:Button Content="{DynamicResource Button_Cancel}" 
-                           Appearance="Secondary"
-                           IsCancel="True"
-                           Click="CancelButton_Click"
-                           Margin="0,0,8,0"
-                           Padding="24,8"/>
                 <ui:Button Content="{DynamicResource Button_OK}" 
                            Appearance="Primary"
                            IsDefault="True"
                            Command="{Binding SaveCommand}"
+                           Margin="0,0,8,0"
+                           Padding="24,8"/>
+                <ui:Button Content="{DynamicResource Button_Cancel}" 
+                           Appearance="Secondary"
+                           IsCancel="True"
+                           Click="CancelButton_Click"
                            Padding="24,8"/>
             </StackPanel>
         </Grid>
