@@ -30,6 +30,7 @@ namespace ProjectManager.ViewModels.Dialogs
         private bool _isListMode = true; // 默认是列表模式
 
         private string _originalPath = string.Empty;
+        private bool _isInternalUpdate;
 
         public event EventHandler<bool>? CloseRequested;
 
@@ -79,7 +80,15 @@ namespace ProjectManager.ViewModels.Dialogs
 
         private void UpdateEditText()
         {
-            EditText = string.Join(";", PathItems.Select(p => p.Path));
+            _isInternalUpdate = true;
+            try
+            {
+                EditText = string.Join(";", PathItems.Select(p => p.Path));
+            }
+            finally
+            {
+                _isInternalUpdate = false;
+            }
         }
 
         [RelayCommand]
@@ -176,10 +185,12 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             if (SelectedPathItem == null) return;
 
-            var index = PathItems.IndexOf(SelectedPathItem);
+            var item = SelectedPathItem;
+            var index = PathItems.IndexOf(item);
             if (index > 0)
             {
                 PathItems.Move(index, index - 1);
+                SelectedPathItem = item;
                 UpdateEditText();
             }
         }
@@ -189,16 +200,20 @@ namespace ProjectManager.ViewModels.Dialogs
         {
             if (SelectedPathItem == null) return;
 
-            var index = PathItems.IndexOf(SelectedPathItem);
+            var item = SelectedPathItem;
+            var index = PathItems.IndexOf(item);
             if (index < PathItems.Count - 1)
             {
                 PathItems.Move(index, index + 1);
+                SelectedPathItem = item;
                 UpdateEditText();
             }
         }
 
         partial void OnEditTextChanged(string value)
         {
+            if (_isInternalUpdate) return;
+
             if (string.IsNullOrWhiteSpace(value))
             {
                 PathItems.Clear();
