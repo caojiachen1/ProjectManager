@@ -126,6 +126,29 @@ namespace ProjectManager.ViewModels.Pages
                             true));
                     }
 
+                    // 自定义排序：按前缀下划线长度降序，然后按名称排序
+                    userVars.Sort((a, b) =>
+                    {
+                        int aPrefixUnderscores = a.Name.Length - a.Name.TrimStart('_').Length;
+                        int bPrefixUnderscores = b.Name.Length - b.Name.TrimStart('_').Length;
+                        
+                        if (aPrefixUnderscores != bPrefixUnderscores)
+                            return bPrefixUnderscores.CompareTo(aPrefixUnderscores); // 降序：前缀下划线长的排前面
+                        
+                        return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                    });
+                    
+                    systemVars.Sort((a, b) =>
+                    {
+                        int aPrefixUnderscores = a.Name.Length - a.Name.TrimStart('_').Length;
+                        int bPrefixUnderscores = b.Name.Length - b.Name.TrimStart('_').Length;
+                        
+                        if (aPrefixUnderscores != bPrefixUnderscores)
+                            return bPrefixUnderscores.CompareTo(aPrefixUnderscores); // 降序：前缀下划线长的排前面
+                        
+                        return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                    });
+
                     return (userVars, systemVars);
                 });
 
