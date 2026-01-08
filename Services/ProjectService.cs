@@ -14,7 +14,6 @@ namespace ProjectManager.Services
     {
         private readonly string _projectsFilePath;
         private readonly ObservableCollection<Project> _projects;
-        private readonly ReadOnlyObservableCollection<Project> _projectsView;
         private readonly TerminalService _terminalService;
         private readonly IGitService _gitService;
         private readonly IErrorDisplayService _errorDisplayService;
@@ -28,7 +27,7 @@ namespace ProjectManager.Services
         public event EventHandler<ProjectStatusChangedEventArgs>? ProjectStatusChanged;
         public event EventHandler<ProjectPropertyChangedEventArgs>? ProjectPropertyChanged;
 
-        public ReadOnlyObservableCollection<Project> Projects => _projectsView;
+        public ObservableCollection<Project> Projects => _projects;
 
         public ProjectService(TerminalService terminalService, IGitService gitService, IErrorDisplayService errorDisplayService)
         {
@@ -40,7 +39,6 @@ namespace ProjectManager.Services
             Directory.CreateDirectory(appFolder);
             _projectsFilePath = Path.Combine(appFolder, "projects.json");
             _projects = new ObservableCollection<Project>();
-            _projectsView = new ReadOnlyObservableCollection<Project>(_projects);
             // 延迟加载项目，不阻塞构造函数
             _ = EnsureInitializedAsync();
         }

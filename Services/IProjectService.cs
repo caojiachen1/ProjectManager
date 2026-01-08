@@ -6,7 +6,7 @@ namespace ProjectManager.Services
 {
     public interface IProjectService
     {
-        ReadOnlyObservableCollection<Project> Projects { get; }
+        ObservableCollection<Project> Projects { get; }
         Task<List<Project>> GetProjectsAsync();
         Task<bool> SaveProjectAsync(Project project);
         Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects);

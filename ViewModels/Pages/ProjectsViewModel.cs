@@ -44,7 +44,7 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _hasProjects = true;
 
-        public ReadOnlyObservableCollection<Project> Projects { get; }
+        public ObservableCollection<Project> Projects { get; }
 
         public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService, ILanguageService languageService)
         {

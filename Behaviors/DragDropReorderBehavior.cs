@@ -244,9 +244,19 @@ namespace ProjectManager.Behaviors
         {
             if (oldIndex == newIndex) return;
 
-            if (list is ObservableCollection<object> ocObj)
+            // 尝试通过反射调用 Move 方法，以支持各种泛型类型的 ObservableCollection<T>
+            // 因为 ObservableCollection<T> 并不继承自一个带有 Move 方法的非泛型基类
+            var moveMethod = list.GetType().GetMethod("Move", new[] { typeof(int), typeof(int) });
+            if (moveMethod != null)
             {
-                ocObj.Move(oldIndex, newIndex);
+                moveMethod.Invoke(list, new object[] { oldIndex, newIndex });
+                return;
+            }
+
+            // 检查集合是否只读，避免抛出异常
+            if (list.IsReadOnly)
+            {
+                System.Diagnostics.Debug.WriteLine("DragDropReorder: Collection is read-only, cannot perform reorder.");
                 return;
             }
 
