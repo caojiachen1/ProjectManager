@@ -192,6 +192,19 @@ namespace ProjectManager.Behaviors
         {
             if (sender is not RichTextBox rtb) return;
 
+            // 如果视口高度或内容高度发生变化（如窗口最小化/最大化/调整大小），忽略自动滚动逻辑的禁启用判断
+            // 这种情况下我们希望保持原有的滚动意图：
+            // 1. 如果之前在底部（AutoScroll=true），继续保持在底部
+            // 2. 如果之前在中间（AutoScroll=false），保持当前的 VerticalOffset（由系统默认行为处理）
+            if (e.ViewportHeightChange != 0 || e.ExtentHeightChange != 0)
+            {
+                if (GetAutoScroll(rtb))
+                {
+                    rtb.ScrollToEnd();
+                }
+                return;
+            }
+
             // 如果滚动到底部（允许一定的误差，例如2像素），重新启用自动滚动
             if (e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - 2.0)
             {
@@ -202,7 +215,7 @@ namespace ProjectManager.Behaviors
             }
             else
             {
-                // 如果用户向上滚动，或者在非底部位置发生滚动变化
+                // 如果用户动作引起了明显的向上滚动，或者在非底部位置发生滚动变化
                 // 我们禁用自动滚动
                 if (e.VerticalChange < 0 || (e.VerticalChange > 0 && e.VerticalOffset + e.ViewportHeight < e.ExtentHeight - 2.0))
                 {
