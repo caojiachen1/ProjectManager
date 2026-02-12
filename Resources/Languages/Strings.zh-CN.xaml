@@ -257,6 +257,7 @@
     <system:String x:Key="Toolbar_NewProject">新建项目</system:String>
     <system:String x:Key="Toolbar_GitClone">Git克隆</system:String>
     <system:String x:Key="Toolbar_Refresh">刷新</system:String>
+    <system:String x:Key="Toolbar_RefreshTooltip">重新读取项目列表并刷新Git和运行状态</system:String>
     <system:String x:Key="Toolbar_FilterAll">全部</system:String>
     <system:String x:Key="Toolbar_FilterRunning">运行中</system:String>
     <system:String x:Key="Toolbar_FilterStopped">已停止</system:String>

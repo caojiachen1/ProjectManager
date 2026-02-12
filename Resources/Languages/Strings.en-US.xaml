@@ -257,6 +257,7 @@
     <system:String x:Key="Toolbar_NewProject">New Project</system:String>
     <system:String x:Key="Toolbar_GitClone">Git Clone</system:String>
     <system:String x:Key="Toolbar_Refresh">Refresh</system:String>
+    <system:String x:Key="Toolbar_RefreshTooltip">Reload project list and refresh Git and running status</system:String>
     <system:String x:Key="Toolbar_FilterAll">All</system:String>
     <system:String x:Key="Toolbar_FilterRunning">Running</system:String>
     <system:String x:Key="Toolbar_FilterStopped">Stopped</system:String>

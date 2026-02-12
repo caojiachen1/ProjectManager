@@ -8,6 +8,7 @@ namespace ProjectManager.Services
     {
         ObservableCollection<Project> Projects { get; }
         Task<List<Project>> GetProjectsAsync();
+        Task ReloadAsync();
         Task<bool> SaveProjectAsync(Project project);
         Task SaveProjectsOrderAsync(IEnumerable<Project> orderedProjects);
         Task DeleteProjectAsync(string projectId);

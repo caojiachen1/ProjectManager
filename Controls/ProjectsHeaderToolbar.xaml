@@ -49,6 +49,8 @@
                 Content="{DynamicResource Toolbar_Refresh}"
                 Icon="{ui:SymbolIcon ArrowSync24}"
                 Command="{Binding RefreshCommand}"
+                IsEnabled="{Binding IsRefreshing, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
+                ToolTip="{DynamicResource Toolbar_RefreshTooltip}"
                 Margin="4,0,0,0" />
         </StackPanel>
     </Grid>

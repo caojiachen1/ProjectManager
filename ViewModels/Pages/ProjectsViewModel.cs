@@ -44,6 +44,9 @@ namespace ProjectManager.ViewModels.Pages
         [ObservableProperty]
         private bool _hasProjects = true;
 
+        [ObservableProperty]
+        private bool _isRefreshing = false;
+
         public ObservableCollection<Project> Projects { get; }
 
         public ProjectsViewModel(IProjectService projectService, INavigationService navigationService, IServiceProvider serviceProvider, IErrorDisplayService errorDisplayService, ILanguageService languageService)
@@ -415,9 +418,28 @@ namespace ProjectManager.ViewModels.Pages
         [RelayCommand]
         private async Task Refresh()
         {
-            // 强制刷新所有项目的Git信息
-            await _projectService.RefreshAllProjectsGitInfoAsync();
-            await LoadProjects();
+            if (IsRefreshing) return;
+
+            try
+            {
+                IsRefreshing = true;
+                // 在后台线程执行耗时的刷新操作
+                await Task.Run(async () =>
+                {
+                    await _projectService.ReloadAsync();
+                });
+                
+                HasProjects = Projects.Any();
+                FilteredProjects?.Refresh();
+            }
+            catch (Exception ex)
+            {
+                await _errorDisplayService.ShowExceptionAsync(ex, "刷新项目失败");
+            }
+            finally
+            {
+                IsRefreshing = false;
+            }
         }
 
         [RelayCommand]
