@@ -6,7 +6,7 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  mc:Ignorable="d"
                  Title="{DynamicResource Git_CloneTitle}"
-                 Height="500"
+                 Height="600"
                  Width="700"
                  WindowStartupLocation="CenterOwner"
                  ResizeMode="NoResize"
