@@ -78,6 +78,7 @@ namespace ProjectManager.Services
                         "Projects" => typeof(Views.Pages.ProjectsPage),
                         "Terminal" => typeof(Views.Pages.TerminalPage),
                         "Performance" => typeof(Views.Pages.PerformancePage),
+                        "EnvironmentVariables" => typeof(Views.Pages.SystemEnvironmentVariablesPage),
                         _ => typeof(Views.Pages.DashboardPage)
                     };
 

@@ -295,6 +295,7 @@
                     <ComboBoxItem Content="{DynamicResource Nav_Projects}" Tag="Projects"/>
                     <ComboBoxItem Content="{DynamicResource Nav_Terminal}" Tag="Terminal"/>
                     <ComboBoxItem Content="{DynamicResource Nav_Performance}" Tag="Performance"/>
+                    <ComboBoxItem Content="{DynamicResource Nav_Environment}" Tag="EnvironmentVariables"/>
                 </ComboBox>
             </Grid>
         </ui:Card>
